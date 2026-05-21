@@ -1,0 +1,942 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Phi Long Catering - Hệ Thống Quản Lý Thực Đơn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght=700;800&family=Great+Vibes&family=Montserrat:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-dark: #660c0c;
+            --primary-light: #8e1919;
+            --gold-light: #f5d782;
+            --gold-dark: #b8860b;
+            --android-bg: #f8f9fa;
+            --text-dark: #212529;
+            --card-shadow: 0 4px 14px rgba(0,0,0,0.06);
+            --paper-bg: #fefcf7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--android-bg);
+            color: var(--text-dark);
+            padding-bottom: 85px; 
+            overflow-x: hidden;
+        }
+
+        /* --- THIẾT KẾ MỚI CHO APP BAR --- */
+        .app-bar {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            color: white;
+            padding: 10px 20px; /* Điều chỉnh đệm cho gọn gàng */
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); /* Bóng đổ đậm hơn để tạo độ sâu */
+            display: flex;
+            align-items: center;
+            justify-content: center; /* Căn giữa nội dung chính */
+            border-bottom: 2px solid var(--gold-light);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 20px; /* Không gian giữa logo và văn bản */
+            max-width: 600px; /* Cùng kích thước với container chính */
+            width: 100%;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-img {
+            max-width: 100%;
+            max-height: 50px; /* Điều chỉnh độ cao logo cho phù hợp */
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); /* Thêm bóng đổ cho logo nổi bật */
+        }
+
+        .brand-text-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .brand-text-container h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem; /* Giảm kích thước tên thương hiệu một chút */
+            color: var(--gold-light);
+            letter-spacing: 1px;
+            font-weight: 800;
+            margin-bottom: -2px; /* Điều chỉnh khoảng cách */
+        }
+
+        .brand-text-container p {
+            font-family: 'Montserrat', sans-serif; /* Sử dụng Montserrat cho khẩu hiệu */
+            font-size: 0.85rem; /* Giảm kích thước khẩu hiệu */
+            color: white;
+            font-weight: 500;
+            margin-top: 0;
+        }
+        /* --- KẾT THÚC THIẾT KẾ MỚI --- */
+
+        /* Thanh phân loại chung */
+        .top-category-bar {
+            background: white;
+            padding: 12px 8px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            position: sticky;
+            top: 75px; 
+            z-index: 99;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            scrollbar-width: none; 
+        }
+        
+        .top-category-bar::-webkit-scrollbar {
+            display: none; 
+        }
+
+        .top-tab-btn {
+            background: #f1f3f5;
+            border: 1px solid #e9ecef;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #495057;
+            cursor: pointer;
+            white-space: nowrap; 
+            transition: all 0.2s;
+        }
+
+        .top-tab-btn.active {
+            background: var(--primary-dark);
+            color: var(--gold-light);
+            border-color: var(--primary-dark);
+        }
+
+        /* Container chính chứa các màn hình */
+        .app-container {
+            padding: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border-left: 3.5px solid var(--gold-dark);
+            padding-left: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .refresh-sample-btn {
+            background: #fff;
+            color: #27ae60;
+            border: 1px solid #27ae60;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            text-transform: none;
+            transition: all 0.2s;
+        }
+
+        .refresh-sample-btn:active {
+            background: #27ae60;
+            color: white;
+        }
+
+        .app-screen {
+            display: none;
+        }
+
+        .app-screen.active {
+            display: block;
+            animation: appSlideIn 0.2s ease-out;
+        }
+
+        /* DANH SÁCH MÓN ĂN LẺ NÂNG CẤP BẮT MẮT */
+        .dishes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .dish-card-app {
+            background: white;
+            border-radius: 16px;
+            display: flex;
+            padding: 14px;
+            gap: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border-left: 4.5px solid var(--gold-dark); /* Thước viền vàng hoàng gia quý phái */
+            align-items: flex-start;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .dish-card-app:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .img-thumb-container {
+            width: 90px;
+            height: 90px;
+            border-radius: 12px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #e9ecef;
+            position: relative;
+            cursor: pointer;
+            border: 1px solid var(--gold-light); /* Khung viền mỏng vàng quanh ảnh */
+            box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+        }
+
+        .dish-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .dish-img-overlay-zoom {
+            position: absolute;
+            bottom: 2px; right: 2px;
+            background: rgba(102, 12, 12, 0.8);
+            color: var(--gold-light);
+            width: 20px; height: 20px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+        }
+
+        .dish-details {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 90px;
+        }
+
+        .dish-title {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: var(--primary-dark); /* Chữ đổi sang màu đỏ rượu sang quý */
+            line-height: 1.3;
+            letter-spacing: 0.2px;
+        }
+
+        /* Phần diễn giải mô tả món lẻ phối màu than chì nghiêng cao cấp */
+        .dish-desc {
+            font-size: 0.78rem;
+            color: #4b5563; /* Đổi sang màu than chì đậm đà quý tộc */
+            line-height: 1.4;
+            margin-top: 5px;
+            margin-bottom: 6px;
+            font-style: italic; /* Nghiêng nhẹ chuẩn menu tiệc lớn */
+            font-weight: 500;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .add-app-btn {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light)); /* Nút dạng Gradient đỏ sang chảnh */
+            color: var(--gold-light); /* Chữ in màu vàng Gold rực rỡ */
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            cursor: pointer;
+            align-self: flex-end;
+            margin-top: auto;
+            box-shadow: 0 3px 8px rgba(102, 12, 12, 0.2);
+            transition: all 0.2s;
+        }
+
+        .add-app-btn:active {
+            transform: scale(0.92);
+            background: var(--gold-dark);
+            color: white;
+        }
+
+        /* LƯỚI THỰC ĐƠN MẪU GỢI Ý */
+        .sample-menu-container-embedded {
+            background: white;
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .sample-menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .sample-menu-thumb-card {
+            background: #fafbfc;
+            border: 1px solid #eef0f2;
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sample-image-container {
+            width: 100%;
+            height: 130px;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            background-color: #f1f3f5;
+        }
+
+        .sample-menu-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .sample-image-overlay {
+            position: absolute;
+            top: 6px; left: 6px;
+            font-size: 0.65rem;
+            background: var(--primary-dark);
+            color: var(--gold-light);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .zoom-btn-trigger {
+            position: absolute;
+            bottom: 6px; right: 6px;
+            background: rgba(102, 12, 12, 0.85);
+            color: var(--gold-light);
+            border: none;
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .sample-card-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #212529;
+            text-align: center;
+            margin: 2px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .apply-sample-btn {
+            background: var(--primary-light);
+            color: var(--gold-light);
+            border: none;
+            padding: 7px 0;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .sheet-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding-top: 12px;
+            margin-top: 12px;
+            border-top: 1px solid #f1f3f5;
+        }
+
+        .sheet-page-btn {
+            background: #fff;
+            color: var(--primary-dark);
+            border: 1px solid var(--primary-dark);
+            padding: 5px 11px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .sheet-page-btn.active {
+            background: var(--primary-dark);
+            color: var(--gold-light);
+        }
+
+        /* TẤM THIỆP THỰC ĐƠN HOÀNG GIA */
+        .wedding-menu-box {
+            background-color: var(--paper-bg);
+            border: 3px solid var(--gold-dark);
+            outline: 10px double var(--primary-dark);
+            outline-offset: -7px;
+            padding: 35px 24px;
+            width: 100%;
+            min-height: 520px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: var(--card-shadow);
+        }
+
+        .wedding-menu-box::before {
+            content: "⚜ ⚜";
+            position: absolute;
+            top: 12px;
+            color: var(--gold-dark);
+            font-size: 0.9rem;
+            letter-spacing: 6px;
+        }
+
+        .menu-header {
+            text-align: center;
+            margin-bottom: 22px;
+            border-bottom: 2px double var(--gold-dark);
+            padding-bottom: 10px;
+            width: 100%;
+        }
+
+        .menu-header h2 {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2.8rem;
+            color: var(--primary-dark);
+            line-height: 1;
+        }
+
+        .menu-header .sub-title {
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            color: var(--gold-dark);
+            letter-spacing: 3px;
+            margin-top: 5px;
+            font-weight: 800;
+        }
+
+        .menu-body {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-grow: 1;
+        }
+
+        .selected-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed rgba(184, 134, 11, 0.25);
+        }
+
+        .item-content {
+            flex-grow: 1;
+            padding-right: 6px;
+        }
+
+        .item-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            line-height: 1.4;
+        }
+
+        .item-note {
+            font-size: 0.78rem;
+            font-style: italic;
+            color: #555;
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-sub-btn {
+            background: none; border: none;
+            color: #c0392b;
+            font-size: 0.7rem;
+            cursor: pointer;
+            margin-left: 4px;
+            font-weight: 600;
+        }
+
+        .menu-footer {
+            text-align: center;
+            margin-top: 25px;
+            width: 100%;
+            border-top: 2px double var(--gold-dark);
+            padding-top: 12px;
+        }
+
+        .footer-brand {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            color: var(--primary-dark);
+            font-weight: 800;
+        }
+
+        .footer-phone {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .footer-thanks {
+            font-family: 'Great Vibes', cursive;
+            font-size: 1.6rem;
+            color: var(--gold-dark);
+        }
+
+        .action-area {
+            margin-top: 16px;
+            margin-bottom: 10px;
+        }
+
+        .save-btn-app {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2);
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            margin-top: 45px;
+            font-size: 0.88rem;
+        }
+
+        .html2canvas-container .delete-btn,
+        .html2canvas-container .delete-sub-btn {
+            display: none !important;
+        }
+
+        /* THANH ĐIỀU HƯỚNG DƯỚI ĐÁY */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 66px;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #e9ecef;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
+            z-index: 999;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 33.33%; height: 100%;
+            gap: 4px;
+            position: relative;
+        }
+
+        .nav-item .icon { font-size: 1.25rem; }
+        .nav-item.active { color: var(--primary-dark); font-weight: 700; }
+
+        .nav-badge {
+            position: absolute;
+            top: 6px; right: 28%;
+            background: #e74c3c;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 1px 5px;
+            border-radius: 10px;
+            border: 1px solid white;
+        }
+
+        /* MODAL LIGHTBOX XEM CHI TIẾT VÀ PHÓNG TO ẢNH */
+        .lightbox-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.92);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .lightbox-card-preview {
+            background-color: var(--paper-bg);
+            border: 3px solid var(--gold-dark);
+            outline: 8px double var(--primary-dark);
+            outline-offset: -5px;
+            padding: 30px 20px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            animation: appSlideIn 0.25s ease-out;
+        }
+
+        .lightbox-close-btn {
+            position: absolute;
+            top: -45px; right: 0;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+
+        /* Style dành riêng cho xem ảnh đơn món lẻ */
+        .lightbox-single-img-mode {
+            padding: 14px !important;
+            background: white !important;
+            border-radius: 12px;
+            outline: none !important;
+        }
+
+        .lightbox-dish-big-img {
+            width: 100%;
+            max-height: 280px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .lightbox-menu-list {
+            margin: 15px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .lightbox-menu-item {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #222;
+            border-bottom: 1px dashed rgba(184,134,11,0.3);
+            padding-bottom: 4px;
+        }
+
+        .lightbox-action-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 11px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-top: 15px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        @keyframes appSlideIn {
+            from { opacity: 0; transform: scale(0.9) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-bar">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="logo.png" alt="Phi Long Catering Logo" class="logo-img">
+            </div>
+            <div class="brand-text-container">
+                <h1>PHI LONG CATERING</h1>
+                <p>Hương vị hoàn hảo cho ngày vui trọn vẹn</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="top-category-bar" id="topCategoryBar"></div>
+
+    <div class="app-container">
+        
+        <div class="app-screen active" id="screenDishes">
+            <div class="section-title" id="currentCategoryTitle">Món ăn: GỎI</div>
+            <div class="dishes-list" id="dishesListContainer"></div>
+        </div>
+
+        <div class="app-screen" id="screenSamples">
+            <div class="section-title">
+                <span id="currentSampleGroupTitle">Hạng Tiệc: TẤT CẢ</span>
+                <button class="refresh-sample-btn" onclick="shuffleSampleImages()"><i class="fa-solid fa-arrows-rotate"></i> Làm mới mẫu</button>
+            </div>
+            <div class="sample-menu-container-embedded">
+                <div class="sample-menu-grid" id="embeddedSampleMenusGrid"></div>
+                <div class="sheet-pagination" id="embeddedPaginationControls"></div>
+            </div>
+        </div>
+
+        <div class="app-screen" id="screenMenu">
+            <div class="section-title">Xem Trước Thiệp Thực Đơn Để Xuất Ảnh</div>
+            <div class="wedding-menu-box" id="weddingMenu">
+                <div class="menu-header">
+                    <h2>Thực Đơn</h2>
+                    <div class="sub-title" id="weddingMenuSubtitle">Mỹ Vị Ngày Cưới</div>
+                </div>
+                
+                <div class="menu-body" id="menuBody">
+                    <div class="empty-message">Anh chưa chọn món hoặc chưa áp dụng thực đơn mẫu nào hết...</div>
+                </div>
+
+                <div class="menu-footer">
+                    <div class="footer-brand">Dịch Vụ Nấu Ăn Phi Long</div>
+                    <div class="footer-phone">Hotline: 0909.05.06.17</div>
+                    <div class="footer-thanks">Trân trọng cảm ơn quý khách!</div>
+                </div>
+            </div>
+
+            <div class="action-area">
+                <button class="save-btn-app" onclick="saveMenuAsImage()">📸 XUẤT ẢNH THỰC ĐƠN GỬI KHÁCH</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" id="navHome" onclick="switchScreen('dishes')">
+            <span class="icon">🍽️</span>
+            <span>Chọn Món Lẻ</span>
+        </div>
+        <div class="nav-item" id="navSamples" onclick="switchScreen('samples')">
+            <span class="icon">✨</span>
+            <span>Thực Đơn Mẫu</span>
+        </div>
+        <div class="nav-item" id="navCart" onclick="switchScreen('menu')">
+            <span class="icon">📜</span>
+            <span>Thực Đơn Đã Chọn</span>
+            <span class="nav-badge" id="cartBadge">0</span>
+        </div>
+    </div>
+
+    <div class="lightbox-modal" id="lightboxModal" onclick="closeLightbox()">
+        <div class="lightbox-card-preview" id="lightboxContentCard" onclick="event.stopPropagation()">
+            </div>
+    </div>
+
+    <script>
+        // Bản đồ dữ liệu hình ảnh
+        const allDishImages = {
+            "Gỏi hải sản": "GOI-HAI-SAN.jpg",
+            "Gỏi ức vịt xông khói": "GOI-UC-VIT-XONG-KHOI.jpg",
+            "Gỏi ngũ sắc": "GOI-NGU-SAC.jpg",
+            "Gỏi bò bóp thấu": "GOI-BO-BOP-THAU.jpg",
+            "Gỏi củ hủ dừa tôm thịt": "GOI-CU-HU-DUA-TOM-THIT.jpeg",
+            "Gỏi ngó sen tôm thịt": "GOI-NGO-SEN-TOM-THIT.jpg",
+            "Nem nướng trứng cút": "NEM-NUONG-TRUNG-CUT.JPG",
+            "Tôm chiên bánh rế": "TOM-CHIEN-BANH-RE.JPG",
+            "Tôm chiên xù": "TOM-CHIEN-XU.JPG",
+            "Chả giò hải sản": "CHA-GIO-HAI-SAN.jpg",
+            "Chả giò truyền thống": "CHA-GIO-TRUYEN-THONG.jpg",
+            "Chả lụa, pate": "CHA-LUA-PATE.jpg",
+            "Chả quế": "CHA-QUE.jpg",
+            "Bánh bao, bánh bao chiên": "BANH-BAO-BANH-BAO-CHIEN.jpg",
+            "Nem chua Lai Vung": "NEM-CHUA-LAI-VUNG.jpg",
+            "Chả hoa trứng muối": "CHA-HOA-TRUNG-MUOI.jpg",
+            "Ốc nhồi": "OC-NHOI.jpg",
+            "Mai ghẹ nhồi thịt": "MAI-GHE-NHOI-THIT.jpg",
+            "Cá thát lát chiên giòn": "CA-THAT-LAT-CHIEN-GION.jpg",
+            "Soup cua tóc tiên": "SOUP-CUA-TOC-TIEN.jpg",
+            "Soup cua thập cẩm": "SOUP-THAP-CAM.jpg",
+            "Soup gà nấm tuyết": "SOUP-GA-NAM.jpg",
+            "Soup thập cẩm": "SOUP-THAP-CAM.jpg",
+            "Gà nấu rượu vang Pháp": "BO-HAM-RUOU-VANG.jpg",
+            "Gà tiềm ớt hiểm": "GA-TIEM-OT-HIEM.jpg",
+            "Gà quay da giòn kiểu Hoa": "GA-QUAY-DA-GION-KIEU-HOA.jpg",
+            "Gà rang muối Hong Kong": "GA-RANG-MUOI-HONG-KONG.jpg",
+            "Gà hấp mắm nhĩ": "GA-HAP-MAM-NHI.jpg",
+            "Gà nướng muối ớt": "GA-NUONG-MUOI-OT.jpg",
+            "Gà tiềm hạt sen đông cô": "GA-TIEM-HAT-SEN-DONG-CO.jpg",
+            "Gà roti - xôi": "GA-ROTI-XOI.jpg",
+            "Gà bó xôi": "GA-BO-XOI.jpg",
+            "Cá mú hấp Hồng Kông": "CA-MU-HAP-HONG-KONG.jpg",
+            "Cá mú hấp xì dầu": "CA-MU-HAP-XI-DAU.jpg",
+            "Cá mú phi lê chiên giòn sốt chanh dây": "CA-MU-PHILE-CHIEN-GION-SOT-CHANH-DAY.jpg",
+            "Cá mú chiên xù sốt chua ngọt": "CA-MU-CHIEN-XU-SOT-CHUA-NGOT.jpg",
+            "Cá chẽm hấp chanh kiểu Thái": "CA-CHEM-HAP-CHANH-KIEU-THAI.jpg",
+            "Cá chẽm sốt cam": "CA-CHEM-SOT-CAM.jpg",
+            "Cá chẽm chưng tương kiểu Hoa": "CA-CHEM-CHUNG-TUONG-KIEU-HOA.jpg",
+            "Cá chẽm sốt chua ngọt kiểu Thượng Hải": "CA-CHEM-SOT-CHUA-NGOT-KIEU-THUONG-HAI.jpg",
+            "Cá tầm rang muối": "CA-TAM-RANG-MUOI.jpg",
+            "Cá tầm sốt tiêu đen": "CA-TAM-SOT-TIEU-DEN.jpg",
+            "Bò né truyền thống": "BO-NE-TRUYEN-THONG.jpg",
+            "Bò né chanh dây": "BO-NE-CHANH-DAY.jpg",
+            "Bò nấu Sato - bánh mì": "BO-NAU-SATO-BANH-MI.jpg",
+            "Bò hầm rượu vang": "BO-HAM-RUOU-VANG.jpg",
+            "Bò nấu tiêu xanh": "BO-NAU-TIEU-XANH.jpg",
+            "Lưỡi bò nấu nho": "LUOI-BO-NAU-NHO.jpg",
+            "Bò sốt tiêu đen": "BO-SOT-TIEU-DEN.jpg",
+            "Bò kho truyền thống": "BO-KHO-TRUYEN-THONG.jpg",
+            "Bò lúc lắc khoai tây chiên": "BO-LUC-LAC-KHOAI-TAY-CHIEN.jpg",
+            "Heo sữa quay thảo mộc": "HEO-SUA-QUAY-THAO-MOC.jpg",
+            "Thăn heo cuộn măng tây sốt teriyaki": "THAN-HEO-CUON-MANG-TAY-SOT-TERYZAKI.jpg",
+            "Sườn bẹ nướng sốt mật ong": "SUON-BE-NUONG-SOT-MAT-ONG.jpg",
+            "Sườn sốt cay Thái Lan": "SUON-SOT-CAY-THAI-LAN.jpg",
+            "Giò heo quay lu da giòn": "GIO-HEO-QUAY-LU-DA-GION.jpg",
+            "Vịt tỳ bà": "VIT-TY-BA.jpg",
+            "Vịt quay sốt tiêu đen": "VIT-QUAY-SOT-TIEU-DEN.jpg",
+            "Vịt hầm bia & thảo mộc": "VIT-HAM-BIA-THAO-MOC.jpg",
+            "Vịt nướng riềng mẻ": "VIT-NUONG-RIENG-ME.JPG",
+            "Vịt tiềm bạch quả": "VIT-TIEM-BACH-QUA.jpg",
+            "Mực sốt Thái": "MUC-SOT-THAI.jpg",
+            "Mực nhồi thịt - bánh mì": "MUC-NHOI-THIT-BANH-MI.jpg",
+            "Mực né truyền thống": "MUC-NE-TRUYEN-THONG.JPG",
+            "Mực ống hấp hành gừng": "MUC-ONG-HAP-HANH-GUNG.jpg",
+            "Mực xào chua ngọt": "MUC-XAO-CHUA-NGOT.jpg",
+            "Tôm cháy bơ tỏi - bánh đúc": "TOM-CHAY-TOI-BANH-DUC.JPG",
+            "Tôm sốt chanh dây": "TOM-SOT-CHANH-DAY.jpg",
+            "Tôm càng nấu cà ri - bánh mì": "TOM-CANG-NAU-CARI-BANH-MI.jpg",
+            "Tôm sốt trứng muối": "TOM-SOT-TRUNG-MUOI.jpg",
+            "Lẩu Thái hải sản": "LAU-THAI-HAI-SAN.JPG",
+            "Lẩu hoa cúc mực": "LAU-HOA-CUC-MUC.jpg",
+            "Lẩu cua đồng hải sản": "LAU-CUA-DONG-HAI-SAN.JPG",
+            "Lẩu cá tầm măng chua": "LAU-CA-TAM-MANG-CHUA.jpg",
+            "Lẩu cá bớp măng chua": "LAU-CA-BOP-MANG-CHUA.jpg",
+            "Lẩu chanh dây hải sản": "LAU-CHANH-DAY-HAI-SAN.jpg",
+            "Lẩu kim chi hải sản": "LAU-KIM-CHI-HAI-SAN.jpg",
+            "Cù lao": "CU-LAO.jpg",
+            "Lẩu gà chanh ớt": "LAU-GA-CHANH-OT.jpg",
+            "Lẩu sate hải sản": "LAU-SATE-HAI-SAN.jpg",
+            "Cơm chiên hải sản hoàng kim": "COM-CHIEN-HAI-SAN-HOANG-KIM.jpg",
+            "Cơm chiên trái thơm": "COM-CHIEN-TRAI-THOM.jpeg",
+            "Cơm cá mặn": "COM-CA-MAN.jpg",
+            "Cơm dương châu": "COM-DUONG-CHAU.jpg",
+            "Cơm trộn hải sản": "COM-TRON-HAI-SAN.jpg",
+            "Cơm lá sen": "COM-LA-SEN.jpg",
+            "Rau câu dừa": "RAU-CAU-DUA.jpg",
+            "Sữa chua": "SUA-CHUA.jpg",
+            "Chè khúc bạch": "CHE-KHUC-BACH.jpg",
+            "Chè dưỡng nhan": "CHE-DUONG-NHAN.jpg",
+            "Chè hạt sen long nhãn": "CHE-HAT-SEN-LONG-NHAN.jpg",
+            "Chè Thái": "CHE-THAI.jpg",
+            "Tàu hủ Singapore": "TAU-HU-SINGAPORE.jpg"
+        };
+
+        const menuData = {
+            "TAB 1 - GỎI": [
+                { id: 1, name: "Gỏi hải sản", img: "GOI-HAI-SAN.jpg", desc: "Hải sản tươi giòn phối trộn rau củ thanh mát, thấm đẫm nước sốt chua cay đậm đà kích thích vị giác." },
+                { id: 2, name: "Gỏi ức vịt xông khói", img: "GOI-UC-VIT-XONG-KHOI.jpg", desc: "Ức vịt xông khói thái lát mỏng thơm bùi, hòa quyện rau mầm cùng nước sốt đặc chế chuẩn vị tiệc." },
+                { id: 3, name: "Gỏi ngũ sắc", img: "GOI-NGU-SAC.jpg", desc: "Sự kết hợp rực rỡ của 5 loại rau củ giòn ngọt cùng tôm thịt, mang ý nghĩa may mắn, đại cát cho ngày vui." },
+                { id: 4, name: "Gỏi bò bóp thấu", img: "GOI-BO-BOP-THAU.jpg", desc: "Thịt bò tái mềm thấm vị chua chát nhẹ từ chuối chát, khế chua và hành tây, rất bắt mồi." },
+                { id: 5, name: "Gỏi củ hủ dừa tôm thịt", img: "GOI-CU-HU-DUA-TOM-THIT.jpeg", desc: "Món ngon đặc sản miền Tây sông nước, củ hủ dừa giòn sần sật ngọt lịm đi kèm tôm sông, thịt ba chỉ thơm béo." },
+                { id: 6, name: "Gỏi ngó sen tôm thịt", img: "GOI-NGO-SEN-TOM-THIT.jpg", desc: "Ngó sen trắng ngần giòn rụm kết hợp cùng tôm luộc đỏ au và thịt luộc, nước mắm chua ngọt hoàng gia." }
+            ],
+            "TAB 2 - ĐỒ NGUỘI": [
+                { id: 1, name: "Nem nướng trứng cút", img: "NEM-NUONG-TRUNG-CUT.JPG", desc: "Thịt quết dai dẻo bọc quanh trứng cút béo ngậy, nướng vàng thơm sực nức." },
+                { id: 2, name: "Tôm chiên bánh rế", img: "TOM-CHIEN-BANH-RE.JPG", desc: "Tôm nguyên con ngọt thịt cuộn trong lớp bánh rế giòn tan, lạ miệng và đẹp mắt." },
+                { id: 3, name: "Tôm chiên xù", img: "TOM-CHIEN-XU.JPG", desc: "Lớp bột xù vàng ruộm bao bọc tôm tươi săn chắc, món khoái khẩu của cả người lớn lẫn trẻ em." },
+                { id: 4, name: "Chả giò hải sản", img: "CHA-GIO-HAI-SAN.jpg", desc: "Nhân hải sản đậm đà kết hợp cùng sốt béo nhẹ, cuốn bánh tráng xốp giòn rụm." },
+                { id: 5, name: "Chả giò truyền thống", img: "CHA-GIO-TRUYEN-THONG.jpg", desc: "Hương vị truyền thống quen thuộc với nhân thịt băm, khoai môn, nấm mèo đượm vị tiệc xưa." },
+                { id: 6, name: "Chả lụa, pate", img: "CHA-LUA-PATE.jpg", desc: "Chả lụa heo chuẩn sạch dai mịn kết hợp cùng pate gan béo ngậy, dùng kèm dĩa khai vị đầu tiệc." },
+                { id: 7, name: "Chả quế", img: "CHA-QUE.jpg", desc: "Chả nướng thơm lừng hương quế đặc trưng, thớ thịt ngọt dai tự nhiên." },
+                { id: 8, name: "Bánh bao, bánh bao chiên", img: "BANH-BAO-BANH-BAO-CHIEN.jpg", desc: "Bánh bao chiên vỏ ngoài vàng giòn bên trong mềm xốp, dùng kèm các món chính hoặc khai vị." },
+                { id: 9, name: "Nem chua Lai Vung", img: "NEM-CHUA-LAI-VUNG.jpg", desc: "Đặc sản Đồng Tháp vị chua thanh đằm, cay nồng ớt hiểm và tỏi, chuẩn vị khai vị miền Tây." },
+                { id: 10, name: "Chả hoa trứng muối", img: "CHA-HOA-TRUNG-MUOI.jpg", desc: "Cắt lát ra như đóa hoa rực rỡ với nhân trứng muối bùi béo, rực rỡ sắc màu bắt mắt trên bàn tiệc." },
+                { id: 11, name: "Ốc nhồi", img: "OC-NHOI.jpg", desc: "Thịt ốc băm nhồi sả thơm phức, hấp chín tới giữ nguyên độ giòn sần sật ngọt ngào." },
+                { id: 12, name: "Mai ghẹ nhồi thịt", img: "MAI-GHE-NHOI-THIT.jpg", desc: "Thịt ghẹ tươi cùng giò sống quết mịn nhồi trong mai ghẹ, hấp hoặc chiên vàng thơm ngậy." },
+                { id: 13, name: "Cá thát lát chiên giòn", img: "CA-THAT-LAT-CHIEN-GION.jpg", desc: "Cá quết kỹ dai dai, chiên vàng phồng rơm, chấm kèm tương ớt cay nhẹ kích thích." }
+            ],
+            "TAB 3 - SOUP": [
+                { id: 1, name: "Soup cua tóc tiên", img: "SOUP-CUA-TOC-TIEN.jpg", desc: "Súp sánh sệt nhiều thịt cua ngọt lịm điểm xuyết sợi tóc tiên bổ dưỡng, sang trọng." },
+                { id: 2, name: "Soup cua thập cẩm", img: "SOUP-THAP-CAM.jpg", desc: "Hòa quyện thịt cua tươi, trứng cút, nấm và bắp ngọt nấu nước dùng hầm xương trong vắt thanh tao." },
+                { id: 3, name: "Soup gà nấm tuyết", img: "SOUP-GA-NAM.jpg", desc: "Gà xé phay mềm ngọt phối cùng nấm tuyết giòn sần sật, súp ấm bụng dễ ăn mở đầu tiệc." },
+                { id: 4, name: "Soup thập cẩm", img: "SOUP-THAP-CAM.jpg", desc: "Món khai vị ấm áp giàu dinh dưỡng với sự kết hợp phong phú từ tôm, gà, nấm và trứng bắc thảo." }
+            ],
+            "TAB 4 - MÓN CHÍNH - GÀ": [
+                { id: 1, name: "Gà nấu rượu vang Pháp", img: "BO-HAM-RUOU-VANG.jpg", desc: "Thịt gà thấm đẫm sốt rượu vang Pháp nồng nàn, màu sắc quyến rũ, dùng kèm bánh mì nóng hổi." },
+                { id: 2, name: "Gà tiềm ớt hiểm", img: "GA-TIEM-OT-HIEM.jpg", desc: "Gà chiên sơ rồi tiềm cùng ớt hiểm nguyên trái và nấm, nước súp ngọt thanh ấm nồng không cay gắt." },
+                { id: 3, name: "Gà quay da giòn kiểu Hoa", img: "GA-QUAY-DA-GION-KIEU-HOA.jpg", desc: "Lớp da gà mỏng rực màu bánh mật, giòn rụm trong khi thịt bên trong vẫn giữ nguyên độ mọng nước." },
+                { id: 4, name: "Gà rang muối Hong Kong", img: "GA-RANG-MUOI-HONG-KONG.jpg", desc: "Gà chiên vàng xóc đều lớp muối tôm Hong Kong mặn mặn, cay bùi, lớp vỏ giòn sật đậm đà." },
+                { id: 5, name: "Gà hấp mắm nhĩ", img: "GA-HAP-MAM-NHI.jpg", desc: "Hấp nước mắm nhĩ thượng hạng truyền thống giúp da gà vàng mọng thơm nức hương sả và tiêu xanh." },
+                { id: 6, name: "Gà nướng muối ớt", img: "GA-NUONG-MUOI-OT.jpg", desc: "Gà thả vườn nướng mọi trên than hồng, quét nước sốt muối ớt cay nồng đậm vị dân dã miền Tây." },
+                { id: 7, name: "Gà tiềm hạt sen đông cô", img: "GA-TIEM-HAT-SEN-DONG-CO.jpg", desc: "Món ăn đại bổ với gà hầm mềm rục cùng hạt sen bùi béo và nấm đông cô thơm ngát nước dùng thượng hạng." },
+                { id: 8, name: "Gà roti - xôi", img: "GA-ROTI-XOI.jpg", desc: "Đùi/cánh gà chiên sốt roti kẹo ngọt đậm đà ăn kèm đĩa xôi nếp dẻo thơm, no bụng chắc dạ." },
+                { id: 9, name: "Gà bó xôi", img: "GA-BO-XOI.jpg", desc: "Gà nguyên con nằm trọn trong lớp xôi bọc ngoài chiên vàng giòn rụm như một trái bóng vàng may mắn." }
+            ],
+            "TAB 5 - MÓN CHÍNH - CÁ": [
+                { id: 1, name: "Cá mú hấp Hồng Kông", img: "CA-MU-HAP-HONG-KONG.jpg", desc: "Cá mú tươi nguyên con hấp cùng nước tương Hồng Kông hảo hạng, giữ nguyên vị ngọt đậm của cá biển." },
+                { id: 2, name: "Cá mú hấp xì dầu", img: "CA-MU-HAP-XI-DAU.jpg", desc: "Hương vị nồng nàn từ xì dầu, gừng chỉ và hành lá quyện vào từng thớ thịt cá mú trắng ngần, dai ngọt." },
+                { id: 3, name: "Cá mú phi lê chiên giòn sốt chanh dây", img: "CA-MU-PHILE-CHIEN-GION-SOT-CHANH-DAY.jpg", desc: "Cá mú lọc xương phi lê chiên xù giòn tan, rưới sốt chanh dây chua ngọt óng ánh sang trọng." },
+                { id: 4, name: "Cá mú chiên xù sốt chua ngọt", img: "CA-MU-CHIEN-XU-SOT-CHUA-NGOT.jpg", desc: "Cá chiên xù dựng dáng đẹp mắt, phủ lớp sốt cà chua khóm chua ngọt hài hòa chuẩn vị Hoa." },
+                { id: 5, name: "Cá chẽm hấp chanh kiểu Thái", img: "CA-CHEM-HAP-CHANH-KIEU-THAI.jpg", desc: "Cá chẽm hấp ngập trong nước sốt chanh, tỏi, ớt hiểm cay nồng chấn động vị giác kiểu Thái Lan." },
+                { id: 6, name: "Cá chẽm sốt cam", img: "CA-CHEM-SOT-CAM.jpg", desc: "Phi lê cá chiên vàng rưới sốt cam tươi thanh mát, ngọt dịu, món Âu hiện đại lên bàn tiệc cưới." },
+                { id: 7, name: "Cá chẽm chưng tương kiểu Hoa", img: "CA-CHEM-CHUNG-TUONG-KIEU-HOA.jpg", desc: "Cá chẽm hấp chín cùng bún tàu, nấm mèo và tương hột đậm đà, thơm béo đặc trưng." },
+                { id: 8, name: "Cá chẽm sốt chua ngọt kiểu Thượng Hải", img: "CA-CHEM-SOT-CHUA-NGOT-KIEU-THUONG-HAI.jpg", desc: "Cá chẽm phi lê tạo hình hoa cúc chiên giòn, đượm nước sốt đỏ lịm chua ngọt kích thích người ăn." },
+                { id: 9, name: "Cá tầm rang muối", img: "CA-TAM-RANG-MUOI.jpg", desc: "Thịt cá tầm sần sật dai ngon bọc lớp bột mỏng xóc muối bùi béo, món nhậu bén tiệc cao cấp." },
+                { id: 10, name: "Cá tầm sốt tiêu đen", img: "CA-TAM-SOT-TIEU-DEN.jpg", desc: "Cá tầm thái lát vừa miếng xào cùng sốt tiêu đen Phú Quốc cay nồng sực nức, ăn kèm bánh mì." }
+            ],
+            "TAB 6 - MÓN CHÍNH - BÒ": [
+                { id: 1, name: "Bò né truyền thống", img: "BO-NE-TRUYEN-THONG.jpg", desc: "Thịt bò phi lê bản lớn xèo xèo trên chảo gang, mềm tan quyện bơ tỏi thơm lừng ăn kèm bánh mì." },
+                { id: 2, name: "Bò né chanh dây", img: "BO-NE-CHANH-DAY.jpg", desc: "Khúc biến tấu hiện đại với sốt chanh dây chua thanh ngọt nhẹ làm miếng thịt bò mềm mại, đỡ ngấy hơn." },
+                { id: 3, name: "Bò nấu Sato - bánh mì", img: "BO-NAU-SATO-BANH-MI.jpg", desc: "Thịt nạm bò ninh nhừ cùng gia vị Sato đặc chế thơm béo, nước dùng sánh hồng chấm bánh mì cực cuốn." },
+                { id: 4, name: "Bò hầm rượu vang", img: "BO-HAM-RUOU-VANG.jpg", desc: "Thịt bò dẻo mềm ninh
