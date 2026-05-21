@@ -153,33 +153,41 @@
             animation: appSlideIn 0.2s ease-out;
         }
 
-        /* Danh sách món ăn lẻ */
+        /* DANH SÁCH MÓN ĂN LẺ NÂNG CẤP BẮT MẮT */
         .dishes-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
         }
 
         .dish-card-app {
             background: white;
-            border-radius: 14px;
+            border-radius: 16px;
             display: flex;
-            padding: 12px;
-            gap: 12px;
-            box-shadow: var(--card-shadow);
-            border: 1px solid rgba(0,0,0,0.02);
+            padding: 14px;
+            gap: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border-left: 4.5px solid var(--gold-dark); /* Thước viền vàng hoàng gia quý phái */
             align-items: flex-start;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .dish-card-app:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
         }
 
         .img-thumb-container {
-            width: 85px;
-            height: 85px;
-            border-radius: 10px;
+            width: 90px;
+            height: 90px;
+            border-radius: 12px;
             overflow: hidden;
             flex-shrink: 0;
             background: #e9ecef;
             position: relative;
             cursor: pointer;
+            border: 1px solid var(--gold-light); /* Khung viền mỏng vàng quanh ảnh */
+            box-shadow: 0 3px 8px rgba(0,0,0,0.06);
         }
 
         .dish-thumb {
@@ -191,14 +199,14 @@
         .dish-img-overlay-zoom {
             position: absolute;
             bottom: 2px; right: 2px;
-            background: rgba(0,0,0,0.5);
-            color: white;
-            width: 18px; height: 18px;
-            border-radius: 4px;
+            background: rgba(102, 12, 12, 0.8);
+            color: var(--gold-light);
+            width: 20px; height: 20px;
+            border-radius: 5px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 0.6rem;
+            font-size: 0.65rem;
         }
 
         .dish-details {
@@ -206,23 +214,26 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 85px;
+            min-height: 90px;
         }
 
         .dish-title {
-            font-size: 0.9rem;
+            font-size: 0.98rem;
             font-weight: 700;
-            color: #212529;
+            color: var(--primary-dark); /* Chữ đổi sang màu đỏ rượu sang quý */
             line-height: 1.3;
+            letter-spacing: 0.2px;
         }
 
-        /* Phần diễn giải mô tả chi tiết món lẻ */
+        /* Phần diễn giải mô tả món lẻ phối màu than chì nghiêng cao cấp */
         .dish-desc {
-            font-size: 0.75rem;
-            color: #6c757d;
-            line-height: 1.3;
-            margin-top: 4px;
+            font-size: 0.78rem;
+            color: #4b5563; /* Đổi sang màu than chì đậm đà quý tộc */
+            line-height: 1.4;
+            margin-top: 5px;
             margin-bottom: 6px;
+            font-style: italic; /* Nghiêng nhẹ chuẩn menu tiệc lớn */
+            font-weight: 500;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             -webkit-box-orient: vertical;
@@ -230,16 +241,24 @@
         }
 
         .add-app-btn {
-            background: var(--android-bg);
-            color: var(--primary-dark);
-            border: 1px solid var(--primary-dark);
-            padding: 6px 12px;
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light)); /* Nút dạng Gradient đỏ sang chảnh */
+            color: var(--gold-light); /* Chữ in màu vàng Gold rực rỡ */
+            border: none;
+            padding: 6px 14px;
             border-radius: 20px;
             font-weight: 700;
-            font-size: 0.78rem;
+            font-size: 0.75rem;
             cursor: pointer;
             align-self: flex-end;
             margin-top: auto;
+            box-shadow: 0 3px 8px rgba(102, 12, 12, 0.2);
+            transition: all 0.2s;
+        }
+
+        .add-app-btn:active {
+            transform: scale(0.92);
+            background: var(--gold-dark);
+            color: white;
         }
 
         /* LƯỚI THỰC ĐƠN MẪU GỢI Ý */
@@ -838,7 +857,7 @@
                 { id: 2, name: "Tôm chiên bánh rế", img: "TOM-CHIEN-BANH-RE.JPG", desc: "Tôm nguyên con ngọt thịt cuộn trong lớp bánh rế giòn tan, lạ miệng và đẹp mắt." },
                 { id: 3, name: "Tôm chiên xù", img: "TOM-CHIEN-XU.JPG", desc: "Lớp bột xù vàng ruộm bao bọc tôm tươi săn chắc, món khoái khẩu của cả người lớn lẫn trẻ em." },
                 { id: 4, name: "Chả giò hải sản", img: "CHA-GIO-HAI-SAN.jpg", desc: "Nhân hải sản đậm đà kết hợp cùng sốt béo nhẹ, cuốn bánh tráng xốp giòn rụm." },
-                { id: 5, name: "Chả giò truyền thống", img: "CHA-GIO-TRUYEN-THONG.jpg", desc: "Hương vị truyền thống quen violent với nhân thịt băm, khoai môn, nấm mèo đượm vị tiệc xưa." },
+                { id: 5, name: "Chả giò truyền thống", img: "CHA-GIO-TRUYEN-THONG.jpg", desc: "Hương vị truyền thống quen thuộc với nhân thịt băm, khoai môn, nấm mèo đượm vị tiệc xưa." },
                 { id: 6, name: "Chả lụa, pate", img: "CHA-LUA-PATE.jpg", desc: "Chả lụa heo chuẩn sạch dai mịn kết hợp cùng pate gan béo ngậy, dùng kèm dĩa khai vị đầu tiệc." },
                 { id: 7, name: "Chả quế", img: "CHA-QUE.jpg", desc: "Chả nướng thơm lừng hương quế đặc trưng, thớ thịt ngọt dai tự nhiên." },
                 { id: 8, name: "Bánh bao, bánh bao chiên", img: "BANH-BAO-BANH-BAO-CHIEN.jpg", desc: "Bánh bao chiên vỏ ngoài vàng giòn bên trong mềm xốp, dùng kèm các món chính hoặc khai vị." },
@@ -873,7 +892,7 @@
                 { id: 5, name: "Cá chẽm hấp chanh kiểu Thái", img: "CA-CHEM-HAP-CHANH-KIEU-THAI.jpg", desc: "Cá chẽm hấp ngập trong nước sốt chanh, tỏi, ớt hiểm cay nồng chấn động vị giác kiểu Thái Lan." },
                 { id: 6, name: "Cá chẽm sốt cam", img: "CA-CHEM-SOT-CAM.jpg", desc: "Phi lê cá chiên vàng rưới sốt cam tươi thanh mát, ngọt dịu, món Âu hiện đại lên bàn tiệc cưới." },
                 { id: 7, name: "Cá chẽm chưng tương kiểu Hoa", img: "CA-CHEM-CHUNG-TUONG-KIEU-HOA.jpg", desc: "Cá chẽm hấp chín cùng bún tàu, nấm mèo và tương hột đậm đà, thơm béo đặc trưng." },
-                { id: 8, name: "Cá chẽm sốt chua ngọt kiểu Thượng Hải", img: "CA-CHEM-SOT-CHUA-NGỌT-KIEU-THUONG-HAI.jpg", desc: "Cá chẽm phi lê tạo hình hoa cúc chiên giòn, đượm nước sốt đỏ lịm chua ngọt kích thích người ăn." },
+                { id: 8, name: "Cá chẽm sốt chua ngọt kiểu Thượng Hải", img: "CA-CHEM-SOT-CHUA-NGOT-KIEU-THUONG-HAI.jpg", desc: "Cá chẽm phi lê tạo hình hoa cúc chiên giòn, đượm nước sốt đỏ lịm chua ngọt kích thích người ăn." },
                 { id: 9, name: "Cá tầm rang muối", img: "CA-TAM-RANG-MUOI.jpg", desc: "Thịt cá tầm sần sật dai ngon bọc lớp bột mỏng xóc muối bùi béo, món nhậu bén tiệc cao cấp." },
                 { id: 10, name: "Cá tầm sốt tiêu đen", img: "CA-TAM-SOT-TIEU-DEN.jpg", desc: "Cá tầm thái lát vừa miếng xào cùng sốt tiêu đen Phú Quốc cay nồng sực nức, ăn kèm bánh mì." }
             ],
@@ -884,20 +903,20 @@
                 { id: 4, name: "Bò hầm rượu vang", img: "BO-HAM-RUOU-VANG.jpg", desc: "Thịt bò dẻo mềm ninh cùng khoai tây, cà rốt và rượu vang đỏ thơm nồng nàn chuẩn phong vị Pháp." },
                 { id: 5, name: "Bò nấu tiêu xanh", img: "BO-NAU-TIEU-XANH.jpg", desc: "Bắp bò hầm thấm đượm nước sốt tiêu xanh Phú Quốc cay nhẹ, thơm nồng quyến rũ đặc trưng." },
                 { id: 6, name: "Lưỡi bò nấu nho", img: "LUOI-BO-NAU-NHO.jpg", desc: "Lưỡi bò giòn sần sật được ninh cùng sốt nho tươi ngọt thanh dịu nhẹ, món tiệc cao cấp lạ miệng." },
-                { id: 7, name: "Bò sốt tiêu đen", img: "BO-SOT-TIEU-DEN.jpg", desc: "Thịt bò xào bản lớn mềm mại b quyện nước sốt tiêu đen sánh đặc, hành tây ớt chuông ngọt giòn." },
+                { id: 7, name: "Bò sốt tiêu đen", img: "BO-SOT-TIEU-DEN.jpg", desc: "Thịt bò xào bản lớn mềm mại quyện nước sốt tiêu đen sánh đặc, hành tây ớt chuông ngọt giòn." },
                 { id: 8, name: "Bò kho truyền thống", img: "BO-KHO-TRUYEN-THONG.jpg", desc: "Hương vị bò kho đám cưới kinh điển với mùi sả, hoa hồi nồng nàn, thịt bò nạm gân dẻo thơm dầm bánh mì." },
-                { id: 9, name: "Bò lúc lắc khoai tây chiên", img: "BO-LUC-LAC-KHOAI-TAY-CHIEN.jpg", desc: "Bò cắt khối vuông xào lửa ngọn lửa lớn cháy cạnh mềm mọng, ăn cùng khoai tây chiên vàng giòn." }
+                { id: 9, name: "Bò lúc lắc khoai tây chiên", img: "BO-LUC-LAC-KHOAI-TAY-CHIEN.jpg", desc: "Bò cắt khối vuông xào ngọn lửa lớn cháy cạnh mềm mọng, ăn cùng khoai tây chiên vàng giòn." }
             ],
             "TAB 7 - MÓN CHÍNH - HEO và VỊT": [
-                { id: 1, name: "Heo sữa quay thảo mộc", img: "HEO-SUA-QUAY-THAO-MOC.jpg", desc: "Heo sữa nguyên con tẩm ướp thảo mộc, quay lu da giòn tan như bánh quy, thịt ngọt lịm đậm đà." },
+                { id: 1, name: "Heo sữa quay thảo mộc", img: "HEO-SUA-QUAY-THAO-MOC.jpg", desc: "Heo sữa quay tẩm ướp thảo mộc, quay lu da giòn tan như bánh quy, thịt ngọt lịm đậm đà." },
                 { id: 2, name: "Thăn heo cuộn măng tây sốt teriyaki", img: "THAN-HEO-CUON-MANG-TAY-SOT-TERYZAKI.jpg", desc: "Thịt thăn cuộn măng tây xanh mướt giòn ngọt, áp chảo đượm sốt Nhật Teriyaki óng ả." },
                 { id: 3, name: "Sườn bẹ nướng sốt mật ong", img: "SUON-BE-NUONG-SOT-MAT-ONG.jpg", desc: "Sườn heo bản lớn nướng chậm trên than, phủ lớp mật ong rừng vàng óng ngọt lịm thơm phức." },
                 { id: 4, name: "Sườn sốt cay Thái Lan", img: "SUON-SOT-CAY-THAI-LAN.jpg", desc: "Món sườn cay khổng lồ đượm sốt ớt xiêm xanh cay tê tái bùng nổ, chuẩn vị ẩm thực xứ Chùa Vàng." },
                 { id: 5, name: "Giò heo quay lu da giòn", img: "GIO-HEO-QUAY-LU-DA-GION.jpg", desc: "Khối giò heo nướng lu rút bớt mỡ, lớp da phồng giòn rụm ăn cùng dưa chua chống ngấy rất tốt." },
-                { id: 6, name: "Vịt tỳ bà", img: "VIT-TY-BA.jpg", desc: "Tạo hình cây đàn tỳ bà độc đáo, quay lu kỹ thuật cao cho lớp da giòn bóng bẩy, thịt thơm mềm chuẩn tỷ lệ bột." },
+                { id: 6, name: "Vịt tỳ bà", img: "VIT-TY-BA.jpg", desc: "Tạo hình cây đàn tỳ bà độc đáo, quay lu da giòn bóng bẩy, thịt thơm mềm chuẩn tỷ lệ bột." },
                 { id: 7, name: "Vịt quay sốt tiêu đen", img: "VIT-QUAY-SOT-TIEU-DEN.jpg", desc: "Vịt béo quay mật ong chặt miếng dày, rưới ngập nước sốt tiêu đen đậm đà cay nồng quyến rũ." },
                 { id: 8, name: "Vịt hầm bia & thảo mộc", img: "VIT-HAM-BIA-THAO-MOC.jpg", desc: "Thịt vịt ninh nhừ cùng bia tươi làm thớ thịt mềm ngọt ngào, thoảng hương thảo mộc thanh tao." },
-                { id: 9, name: "Vịt nướng riềng mẻ", img: "VIT-NUONG-RIENG-ME.jpeg", desc: "Vịt tẩm riềng giã nhuyễn, mẻ chua nhẹ nướng cháy sém thơm lừng hương vị ẩm thực truyền thống." },
+                { id: 9, name: "Vịt nướng riềng mẻ", img: "VIT-NUONG-RIENG-ME.JPG", desc: "Vịt tẩm riềng giã nhuyễn, mẻ chua nhẹ nướng cháy sém thơm lừng hương vị ẩm thực truyền thống." },
                 { id: 10, name: "Vịt tiềm bạch quả", img: "VIT-TIEM-BACH-QUA.jpg", desc: "Vịt tiềm nước dừa cùng bạch quả đắng nhẹ, táo đỏ ngọt thanh, món ăn bồi bổ thanh mát cho thực khách." }
             ],
             "TAB 8 - MÓN CHÍNH - TÔM và MỰC": [
@@ -915,12 +934,12 @@
                 { id: 1, name: "Lẩu Thái hải sản", img: "LAU-THAI-HAI-SAN.JPG", desc: "Nước lẩu cốt chanh cốt dừa chua cay chuẩn vị Tomyum, ngập tràn tôm mực cá viên và rau nấm tươi mơn mởn." },
                 { id: 2, name: "Lẩu hoa cúc mực", img: "LAU-HOA-CUC-MUC.jpg", desc: "Mực tươi thái hoa kết hợp nước dùng súp thanh khiết điểm xuyết hoa cúc vàng, trang nhã tinh tế." },
                 { id: 3, name: "Lẩu cua đồng hải sản", img: "LAU-CUA-DONG-HAI-SAN.JPG", desc: "Riêu cua đồng béo ngậy nguyên chất riêu đặc, kết hợp nước dùng ngọt đậm đà ăn cùng hải sản nhúng xanh mướt." },
-                { id: 4, name: "Lẩu cá tầm măng chua", img: "LAU-CA-TAM-MANG-CHUA.jpg", desc: "Thịt cá tầm béo dẻo nhiều sụn nấu cùng măng chua Tây Bắc dầm ớt, nước lẩu chua thanh giải ngấy cuối tiệc." },
-                { id: 5, name: "Lẩu cá bớp măng chua", img: "LAU-CA-BOP-MANG-CHUA.jpg", desc: "Cá bớp phi lê lát dày da dày béo ngậy nấu măng chua cay, món lẩu đám cưới kinh điển vùng sông nước." },
+                { id: 4, name: "Lẩu cá tầm măng chua", img: "LAU-CA-TAM-MANG-CHUA.jpg", desc: "Thịt cá tầm béo dẻo nấu cùng măng chua Tây Bắc dầm ớt, nước lẩu chua thanh giải ngấy cuối tiệc." },
+                { id: 5, name: "Lẩu cá bớp măng chua", img: "LAU-CA-BOP-MANG-CHUA.jpg", desc: "Cá bớp phi lê lát dày béo ngậy nấu măng chua cay, món lẩu đám cưới kinh điển vùng sông nước." },
                 { id: 6, name: "Lẩu chanh dây hải sản", img: "LAU-CHANH-DAY-HAI-SAN.jpg", desc: "Vị chua thanh mát hiện đại từ chanh dây tươi phối hợp cùng tôm mực, tạo nên nước lẩu thơm dịu độc đáo." },
-                { id: 7, name: "Lẩu kim chi hải sản", img: "LAU-KIM-CHI-HAI-SAN.jpg", desc: "Sự giao thoa ẩm thực với vị kim chi cay nồng ấm áp kết hợp đồ hải sản tươi rói nhúng lẩu tiệc." },
+                { id: 7, name: "Lẩu kim chi hải sản", img: "LAU-KIM-CHI-HAI-SAN.jpg", desc: "Sự kết hợp ẩm thực với vị kim chi cay nồng ấm áp kết hợp đồ hải sản tươi rói nhúng lẩu tiệc." },
                 { id: 8, name: "Cù lao", img: "CU-LAO.jpg", desc: "Món lẩu cù lao truyền thống miền Tây dùng than, nước dùng ngọt thanh từ tôm khô củ cải, tim gan thịt băm mọc dầy đặn." },
-                { id: 9, name: "Lẩu gà chanh ớt", img: "LAU-GA-CHANH-OT.jpg", desc: "Gà ta thả vườn nhúng nước lẩu lá chanh, ớt xiêm xanh cay nồng nàn sảng khoái kích thích vị giác." },
+                { id: 9, name: "Lẩu gà chanh ớt", img: "LAU-GA-CHANH-OT.jpg", desc: "Gà ta thả vườn nhúng nước lẩu lá chanh, ớt xiêm xanh cay nồng sảng khoái kích thích vị giác." },
                 { id: 10, name: "Lẩu sate hải sản", img: "LAU-SATE-HAI-SAN.jpg", desc: "Nước lẩu sả ớt sate vàng óng cay nồng cay xè nịnh miệng, hải sản nhúng kèm rau muống rau nhút giòn rau." }
             ],
             "TAB 10 - MÓN CƠM": [
@@ -1021,7 +1040,7 @@
                     let randomIndex = Math.floor(Math.random() * allPossibleDishes.length);
                     selectedDish = allPossibleDishes[randomIndex];
                 }
-                let dishImgFile = allDishImages[selectedDish] || "GOI-HAI-SAN.jpg";
+                let dishImgFile = allDishImages[selectedDish] || "GOI-HAI-SAN.JPG";
                 sampleMenuAssignedImages[menu.id] = dishImgFile;
             });
         }
@@ -1377,40 +1396,4 @@
                     <div class="item-content">
                         <div class="item-title">${currentNo}. ${dish}</div>
                     </div>
-                    <button class="delete-btn" onclick="removeNonGold(${index})">✕</button>
-                `;
-                menuBody.appendChild(item);
-                currentNo++;
-            });
-        }
-
-        function saveMenuAsImage() {
-            if (selectedNonGold.length === 0 && selectedGold.length === 0) {
-                alert("Thực đơn trống, chưa thể xuất ảnh được ạ!");
-                return;
-            }
-
-            const menuElement = document.getElementById('weddingMenu');
-            menuElement.classList.add('html2canvas-container');
-
-            html2canvas(menuElement, {
-                backgroundColor: '#fefcf7',
-                scale: 2, 
-                useCORS: true
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'Thuc_Don_Phi_Long.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                
-                menuElement.classList.remove('html2canvas-container');
-            }).catch(err => {
-                console.error("Lỗi khi xuất ảnh: ", err);
-                menuElement.classList.remove('html2canvas-container');
-            });
-        }
-
-        window.onload = initApp;
-    </script>
-</body>
-</html>
+                    <button class="delete-btn" onclick="removeNonGold(${index})
