@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Phi Long Catering - Hệ Thống Quản Lý Thực Đơn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght=700;800&family=Great+Vibes&family=Montserrat:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root { --primary-dark: #660c0c; --primary-light: #8e1919; --gold-light: #f5d782; --gold-dark: #b8860b; --android-bg: #f8f9fa; --text-dark: #212529; --card-shadow: 0 4px 14px rgba(0,0,0,0.06); --paper-bg: #fefcf7; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; }
+        body { background-color: var(--android-bg); padding-bottom: 85px; }
+        .app-bar { background: linear-gradient(135deg, var(--primary-dark), var(--primary-light)); color: white; padding: 16px; text-align: center; border-bottom: 2px solid var(--gold-light); }
+        .app-bar h1 { font-family: 'Cinzel', serif; color: var(--gold-light); font-size: 1.25rem; }
+        .top-category-bar { background: white; padding: 10px; display: flex; gap: 8px; overflow-x: auto; position: sticky; top: 0; z-index: 99; }
+        .top-tab-btn { background: #f1f3f5; padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; cursor: pointer; white-space: nowrap; border: 1px solid #ddd; }
+        .top-tab-btn.active { background: var(--primary-dark); color: var(--gold-light); border-color: var(--primary-dark); }
+        .app-container { padding: 12px; }
+        .app-screen { display: none; }
+        .app-screen.active { display: block; }
+        .dish-card-app { background: white; border-radius: 14px; display: flex; padding: 10px; gap: 12px; box-shadow: var(--card-shadow); margin-bottom: 10px; align-items: center; }
+        .img-thumb-container { width: 80px; height: 80px; border-radius: 10px; background: #eee; overflow: hidden; flex-shrink: 0; }
+        .dish-thumb { width: 100%; height: 100%; object-fit: cover; }
+        .dish-details { flex-grow: 1; display: flex; flex-direction: column; gap: 2px; }
+        .dish-title { font-size: 0.9rem; font-weight: 700; }
+        .dish-note { font-size: 0.75rem; color: #666; font-style: italic; }
+        .add-app-btn { background: var(--android-bg); border: 1px solid var(--primary-dark); color: var(--primary-dark); padding: 5px 10px; border-radius: 20px; cursor: pointer; font-size: 0.75rem; align-self: flex-start; }
+        .wedding-menu-box { background-color: var(--paper-bg); border: 3px solid var(--gold-dark); padding: 20px; width: 100%; }
+        .selected-item { padding: 10px 0; border-bottom: 1px dashed #ccc; display: flex; justify-content: space-between; }
+        .delete-btn { background: #e74c3c; color: white; border: none; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; }
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: white; display: flex; justify-content: space-around; padding: 15px; border-top: 1px solid #ccc; z-index: 999; }
+    </style>
+</head>
+<body>
+
+    <div class="app-bar"><h1>PHI LONG CATERING</h1></div>
+    <div class="top-category-bar" id="topCategoryBar"></div>
+
+    <div class="app-container">
+        <div class="app-screen active" id="screenDishes">
+            <div id="dishesListContainer"></div>
+        </div>
+        <div class="app-screen" id="screenMenu">
+            <div class="wedding-menu-box" id="weddingMenu">
+                <div style="text-align:center; font-family:'Great Vibes'; font-size:2rem; margin-bottom:20px;">Thực Đơn</div>
+                <div id="menuBody"></div>
+            </div>
+            <button style="width:100%; padding:15px; margin-top:20px; background:#27ae60; color:white; border:none; border-radius:10px; font-weight:700;" onclick="saveMenuAsImage()">📸 XUẤT ẢNH THỰC ĐƠN</button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div onclick="switchScreen('dishes')">🍽️ Chọn Món</div>
+        <div onclick="switchScreen('menu')">📜 Thực Đơn</div>
+    </div>
+
+    <script>
+        const menuData = {
+            "ĐỒ NGUỘI": [
+                { name: "Nem nướng trứng cút", img: "NEM-NUONG-TRUNG-CUT.JPG", note: "Nem dai ngon, trứng cút bùi" },
+                { name: "Tôm chiên bánh rế", img: "TOM-CHIEN-BANH-RE.JPG", note: "Vỏ giòn rụm, tôm tươi" },
+                { name: "Tôm chiên xù", img: "TOM-CHIEN-XU.JPG", note: "Chiên xù vàng óng" },
+                { name: "Chả giò hải sản", img: "CHA-GIO-HAI-SAN.jpg", note: "Nhân hải sản đậm đà" },
+                { name: "Chả giò truyền thống", img: "CHA-GIO-TRUYEN-THONG.jpg", note: "Công thức gia truyền" },
+                { name: "Chả lụa, pate", img: "CHA-LUA-PATE.jpg", note: "Chả lụa nóng, pate béo" },
+                { name: "Chả quế", img: "CHA-QUE.jpg", note: "Thơm mùi quế" },
+                { name: "Bánh bao, bánh bao chiên", img: "BANH-BAO-BANH-BAO-CHIEN.jpg", note: "Vỏ mềm, nhân thịt trứng" },
+                { name: "Nem chua Lai Vung", img: "NEM-CHUA-LAI-VUNG.jpg", note: "Đặc sản Lai Vung" },
+                { name: "Chả hoa trứng muối", img: "CHA-HOA-TRUNG-MUOI.jpg", note: "Trứng muối béo ngậy" },
+                { name: "Ốc nhồi", img: "OC-NHOI.jpg", note: "Ốc băm gia vị đậm đà" },
+                { name: "Mai ghẹ nhồi thịt", img: "MAI-GHE-NHOI-THIT.jpg", note: "Thịt ghẹ tươi" },
+                { name: "Cá thát lát chiên giòn", img: "CA-THAT-LAT-CHIEN-GION.jpg", note: "Cá thát lát nạo, giòn rụm" }
+            ]
+        };
+
+        let selectedItems = [];
+
+        function renderDishes() {
+            const container = document.getElementById('dishesListContainer');
+            container.innerHTML = '';
+            menuData["ĐỒ NGUỘI"].forEach(dish => {
+                const card = document.createElement('div');
+                card.className = 'dish-card-app';
+                card.innerHTML = `
+                    <div class="img-thumb-container"><img class="dish-thumb" src="images/${dish.img}"></div>
+                    <div class="dish-details">
+                        <div class="dish-title">${dish.name}</div>
+                        <div class="dish-note">${dish.note}</div>
+                        <button class="add-app-btn" onclick="addDish('${dish.name.replace(/'/g, "\\'")}')">➕ Thêm</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function addDish(dishName) {
+            const dish = menuData["ĐỒ NGUỘI"].find(d => d.name === dishName);
+            if (dish && !selectedItems.find(i => i.name === dishName)) {
+                selectedItems.push(dish);
+                renderMenu();
+            }
+        }
+
+        function renderMenu() {
+            const menuBody = document.getElementById('menuBody');
+            menuBody.innerHTML = '';
+            selectedItems.forEach((dish, index) => {
+                const item = document.createElement('div');
+                item.className = 'selected-item';
+                item.innerHTML = `
+                    <div>
+                        <div class="dish-title">${dish.name}</div>
+                        <div class="dish-note">${dish.note}</div>
+                    </div>
+                    <button class="delete-btn" onclick="removeItem(${index})">✕</button>
+                `;
+                menuBody.appendChild(item);
+            });
+        }
+
+        function removeItem(index) {
+            selectedItems.splice(index, 1);
+            renderMenu();
+        }
+
+        function switchScreen(screen) {
+            document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screen === 'menu' ? 'screenMenu' : 'screenDishes').classList.add('active');
+        }
+
+        function saveMenuAsImage() {
+            html2canvas(document.getElementById('weddingMenu')).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Thuc_Don_Phi_Long.png';
+                link.href = canvas.toDataURL();
+                link.click();
+            });
+        }
+
+        renderDishes();
+    </script>
+</body>
+</html>
