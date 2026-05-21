@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Phi Long Catering - Hệ Thống Quản Lý Thực Đơn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght=700;800&family=Great+Vibes&family=Montserrat:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    
+    <style>
+        :root { --primary-dark: #660c0c; --primary-light: #8e1919; --gold-light: #f5d782; --gold-dark: #b8860b; --android-bg: #f8f9fa; --text-dark: #212529; --card-shadow: 0 4px 14px rgba(0,0,0,0.06); --paper-bg: #fefcf7; }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Montserrat', sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--android-bg); color: var(--text-dark); padding-bottom: 85px; overflow-x: hidden; }
+        .app-bar { background: linear-gradient(135deg, var(--primary-dark), var(--primary-light)); color: white; padding: 16px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.15); display: flex; flex-direction: column; align-items: center; border-bottom: 2px solid var(--gold-light); }
+        .app-bar h1 { font-family: 'Cinzel', serif; font-size: 1.25rem; color: var(--gold-light); letter-spacing: 1px; font-weight: 800; }
+        .app-bar p { font-family: 'Great Vibes', cursive; font-size: 1.1rem; color: #fff; margin-top: 2px; }
+        .top-category-bar { background: white; padding: 12px 8px; display: flex; gap: 8px; overflow-x: auto; position: sticky; top: 75px; z-index: 99; box-shadow: 0 4px 8px rgba(0,0,0,0.05); }
+        .top-tab-btn { background: #f1f3f5; border: 1px solid #e9ecef; padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 700; color: #495057; cursor: pointer; white-space: nowrap; transition: all 0.2s; }
+        .top-tab-btn.active { background: var(--primary-dark); color: var(--gold-light); border-color: var(--primary-dark); }
+        .app-container { padding: 12px; max-width: 600px; margin: 0 auto; }
+        .section-title { font-size: 0.95rem; font-weight: 700; color: var(--primary-dark); margin-bottom: 12px; border-left: 3.5px solid var(--gold-dark); padding-left: 8px; }
+        .app-screen { display: none; }
+        .app-screen.active { display: block; }
+        .dishes-list { display: flex; flex-direction: column; gap: 12px; }
+        .dish-card-app { background: white; border-radius: 14px; display: flex; padding: 10px; gap: 12px; box-shadow: var(--card-shadow); align-items: center; }
+        .dish-details { flex-grow: 1; display: flex; flex-direction: column; }
+        .add-app-btn { background: var(--android-bg); color: var(--primary-dark); border: 1px solid var(--primary-dark); padding: 6px 12px; border-radius: 20px; font-weight: 700; font-size: 0.78rem; cursor: pointer; align-self: flex-end; }
+        .wedding-menu-box { background-color: var(--paper-bg); border: 3px solid var(--gold-dark); padding: 35px 24px; min-height: 520px; box-shadow: var(--card-shadow); }
+        .selected-item { display: flex; justify-content: space-between; padding-bottom: 6px; border-bottom: 1px dashed rgba(184, 134, 11, 0.25); margin-bottom: 10px; }
+        .delete-btn { background: #e74c3c; color: white; border: none; width: 20px; height: 20px; border-radius: 50%; cursor: pointer; font-size: 0.7rem; }
+        .delete-sub-btn { background: none; border: none; color: #c0392b; font-size: 0.7rem; cursor: pointer; margin-left: 5px; }
+        .bottom-nav { position: fixed; bottom: 0; left: 0; right: 0; height: 66px; background: white; display: flex; justify-content: space-around; align-items: center; border-top: 1px solid #e9ecef; z-index: 999; }
+        .nav-item { display: flex; flex-direction: column; align-items: center; color: #6c757d; font-size: 0.75rem; cursor: pointer; }
+        .nav-item.active { color: var(--primary-dark); font-weight: 700; }
+        .nav-badge { background: #e74c3c; color: white; font-size: 0.65rem; padding: 1px 5px; border-radius: 10px; position: absolute; top: 5px; }
+    </style>
+</head>
+<body>
+
+    <div class="app-bar">
+        <h1>PHI LONG CATERING</h1>
+        <p>Hương vị hoàn hảo cho ngày vui trọn vẹn</p>
+    </div>
+
+    <div class="top-category-bar" id="topCategoryBar"></div>
+
+    <div class="app-container">
+        <div class="app-screen active" id="screenDishes">
+            <div class="section-title" id="currentCategoryTitle">Món ăn</div>
+            <div class="dishes-list" id="dishesListContainer"></div>
+        </div>
+
+        <div class="app-screen" id="screenMenu">
+            <div class="section-title">Thiệp Thực Đơn</div>
+            <div class="wedding-menu-box" id="weddingMenu">
+                <div class="menu-header" style="text-align:center;"><h2>Thực Đơn</h2></div>
+                <div class="menu-body" id="menuBody"></div>
+                <div class="menu-footer" style="text-align:center; margin-top:20px;">
+                    <div class="footer-brand">Dịch Vụ Nấu Ăn Phi Long</div>
+                    <div class="footer-phone">0909.05.06.17</div>
+                </div>
+            </div>
+            <button class="save-btn-app" style="margin-top:20px; background:#27ae60; color:white; border:none; padding:15px; width:100%; border-radius:10px;" onclick="saveMenuAsImage()">📸 XUẤT ẢNH THỰC ĐƠN</button>
+        </div>
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" onclick="switchScreen('dishes')"><span class="icon">🍽️</span><span>Chọn Món</span></div>
+        <div class="nav-item" onclick="switchScreen('menu')"><span class="icon">📜</span><span>Thực Đơn</span><span class="nav-badge" id="cartBadge">0</span></div>
+    </div>
+
+    <script>
+        const menuData = {
+            "TAB 1 - GỎI": [{id: 1, name: "Gỏi hải sản"}, {id: 2, name: "Gỏi ngũ sắc"}],
+            "TAB 2 - ĐỒ NGUỘI": [{id: 3, name: "Chả giò"}, {id: 4, name: "Nem nướng"}],
+            "TAB 3 - MÓN CHÍNH": [{id: 5, name: "Gà quay"}, {id: 6, name: "Bò hầm"}]
+        };
+
+        let selectedNonGold = [];
+        let selectedGold = [];
+
+        function addDish(dishName, category) {
+            if (category.toUpperCase().includes("ĐỒ NGUỘI")) {
+                if (!selectedGold.includes(dishName)) { selectedGold.push(dishName); renderMenu(); }
+            } else {
+                if (!selectedNonGold.includes(dishName)) { selectedNonGold.push(dishName); renderMenu(); }
+            }
+        }
+
+        function renderMenu() {
+            const menuBody = document.getElementById('menuBody');
+            menuBody.innerHTML = '';
+            
+            if (selectedGold.length > 0) {
+                const item = document.createElement('div');
+                item.className = 'selected-item';
+                item.innerHTML = `<div>1. Đồ Nguội (${selectedGold.join(', ')})</div><button class="delete-btn" onclick="removeAllGold()">✕</button>`;
+                menuBody.appendChild(item);
+            }
+            
+            selectedNonGold.forEach((dish, idx) => {
+                const item = document.createElement('div');
+                item.className = 'selected-item';
+                item.innerHTML = `<div>${selectedGold.length > 0 ? idx+2 : idx+1}. ${dish}</div><button class="delete-btn" onclick="removeNonGold(${idx})">✕</button>`;
+                menuBody.appendChild(item);
+            });
+        }
+
+        function removeAllGold() { selectedGold = []; renderMenu(); }
+        function removeNonGold(idx) { selectedNonGold.splice(idx, 1); renderMenu(); }
+        function switchScreen(id) { 
+            document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+            document.getElementById('screen' + id.charAt(0).toUpperCase() + id.slice(1)).classList.add('active');
+        }
+
+        // Khởi tạo hiển thị món ăn
+        function init() {
+            const container = document.getElementById('dishesListContainer');
+            Object.keys(menuData).forEach(cat => {
+                menuData[cat].forEach(d => {
+                    container.innerHTML += `<div class="dish-card-app"><div class="dish-details"><div>${d.name}</div><button class="add-app-btn" onclick="addDish('${d.name}', '${cat}')">Chọn món</button></div></div>`;
+                });
+            });
+        }
+        init();
+    </script>
+</body>
+</html>
