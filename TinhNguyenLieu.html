@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="color-scheme" content="light">
+    
+    <title>DVNA Phi Long - Hệ Thống Quản Lý Tiệc (Cloud)</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        body { background-color: #f8fafc !important; color: #0f172a !important; }
+        
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .app-card {
+            background: rgba(255,255,255,0.92);
+            backdrop-filter: blur(14px);
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.6);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.06);
+        }
+
+        .glass-header {
+            background: rgba(255,255,255,0.75)!important;
+            backdrop-filter: blur(14px);
+        }
+
+        .floating-btn {
+            border-radius: 18px;
+            box-shadow: 0 8px 25px rgba(245,158,11,0.25);
+        }
+
+        input, select, button {
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
+
+        /* --- MENU ANDROID BOTTOM NAV --- */
+        #mobile-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: rgba(255, 255, 255, 0.98);
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 12px 0 calc(12px + env(safe-area-inset-bottom)) 0;
+            z-index: 99999;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+        }
+        #mobile-bottom-nav button {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 12px;
+            font-weight: 700;
+            color: #94a3b8;
+            background: transparent;
+            border: none;
+            flex: 1;
+            transition: all 0.2s ease;
+        }
+        #mobile-bottom-nav button.active-nav {
+            color: #d97706;
+        }
+        #mobile-bottom-nav button i {
+            font-size: 22px;
+            transition: transform 0.2s ease;
+        }
+        #mobile-bottom-nav button.active-nav i {
+            transform: scale(1.15);
+        }
+
+        @media (min-width: 768px) {
+            #mobile-bottom-nav { display: none !important; }
+        }
+        @media (max-width: 767px) {
+            #desktop-top-nav { display: none !important; }
+            body { padding-bottom: 90px !important; }
+            footer { display: none !important; }
+            header h1 { font-size: 20px !important; }
+            .grid { gap: 14px !important; }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-amber-50 via-white to-orange-50 font-sans min-h-screen antialiased">
+
+    <header class="glass-header border-b border-white/40 p-4 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3.5">
+                <div class="shrink-0">
+                    <img src="logo.png" onerror="this.onerror=null; this.src='https://placehold.co/150x150/f59e0b/ffffff?text=Phi+Long';" class="w-13 h-13 object-cover rounded-2xl shadow-md border border-amber-100" alt="Logo Phi Long">
+                </div>
+                <div>
+                    <h1 class="text-2xl font-black tracking-tight bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">DVNA PHI LONG</h1>
+                    <p class="text-xs font-semibold text-slate-500 tracking-wide uppercase">Hệ Thống Quản Lý Thực Đơn (Đám Mây Supabase)</p>
+                </div>
+            </div>
+            <div id="near-party-alert" class="hidden bg-rose-50 border border-rose-200 p-3 rounded-2xl max-w-md shadow-sm">
+                <div class="flex items-start gap-3">
+                    <span class="flex h-3 w-3 relative mt-1.5 shrink-0">
+                        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                        <span class="relative inline-flex rounded-full h-3 w-3 bg-rose-500"></span>
+                    </span>
+                    <div>
+                        <h4 class="text-xs font-black text-rose-800 uppercase tracking-wider">Tiệc sắp diễn ra (Trong 5 ngày)</h4>
+                        <p id="alert-content" class="text-xs text-rose-600 font-medium mt-0.5 leading-relaxed"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <nav id="desktop-top-nav" class="bg-white border-b border-slate-200 sticky top-[81px] z-40 shadow-sm">
+        <div class="max-w-7xl mx-auto flex overflow-x-auto px-2">
+            <button onclick="switchTab('tab-dishes')" id="btn-tab-dishes" class="tab-btn active px-6 py-4 font-bold text-sm border-b-2 border-amber-600 text-amber-600 flex items-center gap-2.5 transition-all"><i class="fa-solid fa-burger text-base"></i> Danh Mục Món Ăn</button>
+            <button onclick="switchTab('tab-menus')" id="btn-tab-menus" class="tab-btn px-6 py-4 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-amber-600 flex items-center gap-2.5 transition-all"><i class="fa-solid fa-calendar-check text-base"></i> Đặt Thực Đơn Tiệc</button>
+            <button onclick="switchTab('tab-calc')" id="btn-tab-calc" class="tab-btn px-6 py-4 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-amber-600 flex items-center gap-2.5 transition-all"><i class="fa-solid fa-basket-shopping text-base"></i> Tính Vật Tư Đi Chợ</button>
+        </div>
+    </nav>
+
+    <main class="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
+        <div id="tab-dishes" class="tab-content active">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <div class="app-card p-5 space-y-5 lg:sticky lg:top-[160px] max-h-[calc(100vh-200px)] overflow-y-auto shadow-sm">
+                    <div class="border-b border-slate-100 pb-3">
+                        <h3 class="text-base font-black text-slate-900 flex items-center gap-2"><i class="fa-solid fa-circle-plus text-amber-500"></i> THÊM MÓN ĂN MỚI</h3>
+                    </div>
+                    <div class="space-y-3">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Tên Món Ăn *</label>
+                            <input type="text" id="dish-name" placeholder="Ví dụ: Lẩu Cua Đồng, Vịt Quay..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-medium">
+                        </div>
+                        <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200/60 space-y-3">
+                            <input type="text" id="ing-name" placeholder="Tên nguyên liệu..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs">
+                            <div class="grid grid-cols-2 gap-2">
+                                <input type="number" step="any" id="ing-weight" placeholder="Số lượng" class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs">
+                                <select id="ing-unit" class="w-full bg-white border border-slate-200 rounded-lg text-xs">
+                                    <option value="gam">gam</option>
+                                    <option value="kg">kg</option>
+                                    <option value="cái">cái</option>
+                                    <option value="chai">chai</option>
+                                    <option value="bọc">bọc</option>
+                                    <option value="miếng">miếng</option>
+                                    <option value="ổ">ổ</option>
+                                    <option value="quả">quả</option>
+                                    <option value="trái">trái</option>
+                                    <option value="con">con</option>
+                                    <option value="hộp">hộp</option>
+                                    <option value="lon">lon</option>
+                                    <option value="lít">lít</option>
+                                    <option value="ml">ml</option>
+                                    <option value="bó">bó</option>
+                                    <option value="tép">tép</option>
+                                    <option value="củ">củ</option>
+                                    <option value="nhánh">nhánh</option>
+                                    <option value="khác">khác...</option>
+                                </select>
+                            </div>
+                            <select id="ing-type" class="w-full bg-white border border-slate-200 rounded-lg text-xs">
+                                <option value="bò">Bò</option>
+                                <option value="gà">Gà</option>
+                                <option value="heo">Heo</option>
+                                <option value="cá">Cá</option>
+                                <option value="tôm">Tôm</option>
+                                <option value="cua">Cua</option>
+                                <option value="ghẹ">Ghẹ</option>
+                                <option value="rau củ quả">Rau Củ Quả</option>
+                                <option value="nguyên liệu">Nguyên Liệu</option>
+                                <option value="gia vị">Gia vị</option>
+                                <option value="nước chấm">Nước chấm</option>
+                                <option value="khác">Khác...</option>
+                            </select>
+                            <button onclick="addIngredientToTempList()" class="w-full bg-white text-amber-700 border border-amber-200 font-bold text-xs py-2 rounded-lg cursor-pointer hover:bg-amber-50"><i class="fa-solid fa-plus-circle"></i> Đưa Vào Danh Sách</button>
+                            <div id="temp-ing-list" class="flex flex-wrap gap-1.5 pt-2 max-h-24 overflow-y-auto"></div>
+                        </div>
+                    </div>
+                    <div class="flex gap-2 pt-2">
+                        <button onclick="resetDishForm()" class="bg-slate-100 text-slate-600 font-bold text-xs px-3 py-3 rounded-xl cursor-pointer hover:bg-slate-200"><i class="fa-solid fa-rotate-left"></i></button>
+                        <button onclick="addDish()" class="flex-1 bg-amber-600 text-white font-bold text-sm py-3 rounded-xl shadow-sm cursor-pointer hover:bg-amber-700"><i class="fa-solid fa-circle-check"></i> Lưu Cấu Trúc Món</button>
+                    </div>
+                    <div class="bg-emerald-50/50 border border-emerald-100 rounded-xl p-3.5 space-y-2.5">
+                        <span class="block text-[11px] font-black text-emerald-800 uppercase"><i class="fa-solid fa-file-excel"></i> Đồng bộ từ Excel</span>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button onclick="downloadExcelTemplate()" class="bg-white text-slate-700 border border-slate-200 font-bold text-xs py-2 rounded-lg text-center cursor-pointer hover:bg-slate-50">Tải File Mẫu</button>
+                            <label class="bg-emerald-700 text-white font-bold text-xs py-2 rounded-lg text-center cursor-pointer hover:bg-emerald-800">
+                                Nạp File Trực
+                                <input type="file" id="excel-file" accept=".xlsx, .xls" class="hidden" onchange="importExcel(this)">
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="app-card px-4 py-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+                        <h3 class="text-sm font-black text-slate-900 uppercase tracking-wider flex items-center gap-2 shrink-0"><i class="fa-solid fa-layer-group text-amber-500"></i> DANH MỤC MÓN ĂN</h3>
+                        <div class="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+                            <input type="text" id="dish-search" placeholder="Tìm tên món..." class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs w-full sm:w-48 focus:outline-none" oninput="filterDishes()">
+                            <select id="dish-filter-group" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs w-full sm:w-36 focus:outline-none" onchange="filterDishes()">
+                                <option value="">Tất cả nhóm</option>
+                                <option value="gỏi">Gỏi / Nộm</option>
+                                <option value="đồ nguội">Đồ nguội / Chả</option>
+                                <option value="soup">Soup / Súp</option>
+                                <option value="bò">Bò</option>
+                                <option value="gà">Gà</option>
+                                <option value="heo">Heo</option>
+                                <option value="tôm">Tôm</option>
+                                <option value="mực">Mực</option>
+                                <option value="cá">Cá</option>
+                                <option value="lẩu">Lẩu</option>
+                                <option value="cơm">Cơm / Xôi</option>
+                                <option value="tráng miệng">Tráng miệng</option>
+                            </select>
+                            <span id="dish-count" class="bg-amber-100 text-amber-800 text-xs font-black px-3 py-1.5 rounded-xl text-center">0 món</span>
+                        </div>
+                    </div>
+                    <div id="dishes-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-menus" class="tab-content">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
+                <div class="app-card p-5 space-y-5 lg:sticky lg:top-[160px] max-h-[calc(100vh-200px)] overflow-y-auto shadow-sm">
+                    <div class="border-b border-slate-100 pb-3"><h3 class="text-base font-black text-slate-900">LÊN THỰC ĐƠN MỚI</h3></div>
+                    <div class="space-y-3.5">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Tên khách hàng *</label>
+                            <input type="text" id="menu-customer" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-medium">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Số điện thoại *</label>
+                            <input type="text" id="menu-phone" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-medium">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1">Loại tiệc</label>
+                                <select id="menu-type" class="w-full bg-slate-50 border border-slate-200 rounded-xl text-sm">
+                                    <option value="Tiệc Đính hôn">Đính hôn</option>
+                                    <option value="Vu qui">Vu qui</option>
+                                    <option value="Tân hôn">Tân hôn</option>
+                                    <option value="Tân gia">Tân gia</option>
+                                    <option value="Thôi nôi">Thôi nôi</option>
+                                    <option value="Đầy tháng">Đầy tháng</option>
+                                    <option value="Hội thảo">Hội thảo</option>
+                                    <option value="Tất niên">Tất niên</option>
+                                    <option value="Tổng kết">Tổng kết</option>
+                                    <option value="Khác">Khác...</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1">Ngày Dương Lịch *</label>
+                                <input type="date" id="menu-date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-600">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Ghi chú phòng tiệc</label>
+                            <input type="text" id="menu-note" placeholder="Ví dụ: Ít cay, nhiều nước sốt..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-medium">
+                        </div>
+                    </div>
+                    <div class="border-t border-slate-100 pt-4 space-y-2">
+                        <label class="block text-[11px] font-black text-slate-700 uppercase">Bấm chọn món vào thực đơn:</label>
+                        <div id="menu-dish-selector" class="flex flex-wrap gap-1.5 max-h-36 overflow-y-auto p-2 bg-slate-50 rounded-xl border border-slate-200"></div>
+                        <div class="space-y-1.5 pt-2" id="menu-selected-dishes-badge"></div>
+                    </div>
+                    <div class="flex gap-2 pt-2 border-t border-slate-100">
+                        <button onclick="resetMenuForm()" class="bg-slate-100 text-slate-600 font-bold text-xs px-4 py-3 rounded-xl cursor-pointer hover:bg-slate-200">Xóa Trắng</button>
+                        <button onclick="saveMenu()" class="flex-1 bg-amber-600 text-white font-bold text-sm py-3 rounded-xl shadow-sm cursor-pointer hover:bg-amber-700"><i class="fa-solid fa-bookmark"></i> Lưu Lịch Đặt Tiệc</button>
+                    </div>
+                </div>
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="app-card px-4 py-3"><h3 class="text-sm font-black text-slate-900 uppercase">Sổ theo dõi tiệc cưới đám mây</h3></div>
+                    <div id="menus-container" class="space-y-3.5"></div>
+                </div>
+            </div>
+        </div>
+
+        <div id="tab-calc" class="tab-content space-y-6">
+            <div class="app-card p-5 space-y-4">
+                <div class="border-b border-slate-100 pb-2"><h3 class="text-base font-black text-slate-900">GỘP ĐƠN ĐẶT TIỆC TIẾN HÀNH ĐI CHỢ</h3></div>
+                <div class="border border-slate-200 rounded-xl overflow-hidden bg-white overflow-x-auto">
+                    <table class="w-full text-left text-xs border-collapse min-w-[320px]">
+                        <thead>
+                            <tr class="bg-slate-50 border-b border-slate-200 font-bold uppercase text-slate-700">
+                                <th class="p-3.5 text-center w-14">Chọn</th>
+                                <th class="p-3.5">Khách Hàng Đặt Tiệc</th>
+                                <th class="p-3.5 text-center w-32">Tổng Số Bàn</th>
+                            </tr>
+                        </thead>
+                        <tbody id="calc-parties-table-body" class="divide-y divide-slate-200 text-slate-600 font-medium"></tbody>
+                    </table>
+                </div>
+                <button onclick="calculateIngredients()" class="w-full floating-btn bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold text-sm py-3.5 rounded-2xl shadow-md cursor-pointer hover:from-amber-700 hover:to-orange-700"><i class="fa-solid fa-wand-magic-sparkles"></i> KHỞI CHẠY ĐỒNG BỘ GỘP VẬT TƯ CHỢ</button>
+            </div>
+            <div id="calc-result-box" class="hidden bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
+                <div class="flex justify-between items-center pb-4 border-b border-slate-100">
+                    <h3 class="text-base font-black text-slate-900"><i class="fa-solid fa-clipboard-check text-emerald-600"></i> PHIẾU GOM NHÓM ĐI CHỢ TOÀN DIỆN</h3>
+                    <button onclick="window.print()" class="bg-slate-900 text-white font-bold text-xs px-4 py-2.5 rounded-xl cursor-pointer hover:bg-slate-800"><i class="fa-solid fa-print"></i> In Phiếu Ra Chợ</button>
+                </div>
+                <div id="calc-ingredients-output" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+            </div>
+        </div>
+    </main>
+
+    <footer class="bg-slate-900 text-slate-400 text-center py-4 text-[11px] fixed bottom-0 left-0 right-0 z-30 shadow-md">
+        <p>© 2026 <b>Dịch Vụ Nấu Ăn Phi Long</b> - Toàn bộ dữ liệu được bảo mật đám mây Supabase.</p>
+    </footer>
+
+    <div id="mobile-bottom-nav">
+        <button class="active-nav" onclick="switchTab('tab-dishes')">
+            <i class="fa-solid fa-burger"></i>
+            <span>Món ăn</span>
+        </button>
+        <button onclick="switchTab('tab-menus')">
+            <i class="fa-solid fa-calendar-check"></i>
+            <span>Tiệc</span>
+        </button>
+        <button onclick="switchTab('tab-calc')">
+            <i class="fa-solid fa-basket-shopping"></i>
+            <span>Đi chợ</span>
+        </button>
+    </div>
+
+    <script>
+        const SUPABASE_URL = "https://kslsewlljxkwcgceqxcf.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_I1NCl_wrxzsDRM8wFXgeVQ_8W_JKlKE";
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let dishesList = [];
+        let menusList = [];
+        let temporaryIngredients = [];
+        let currentEditingDishId = null;
+        let currentEditingMenuId = null;
+
+        window.addEventListener("DOMContentLoaded", async () => {
+            await loadAllCloudData();
+            checkNearPartyAlerts();
+        });
+
+        async function loadAllCloudData() {
+            try {
+                let { data: dishes, error: e1 } = await _supabase.from('dishes').select('*').order('timestamp', { ascending: false });
+                if (!e1) dishesList = dishes || [];
+                
+                let { data: menus, error: e2 } = await _supabase.from('menus').select('*');
+                if (!e2) menusList = menus || [];
+
+                filterDishes();
+                renderMenuDishSelector();
+                renderMenus();
+                renderCalcPartiesTable();
+            } catch (err) {
+                console.error("Lỗi đồng bộ Supabase Cloud:", err);
+            }
+        }
+
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => {
+                el.classList.remove('active', 'text-amber-600', 'border-amber-600');
+                el.classList.add('text-slate-500', 'border-transparent');
+            });
+            document.getElementById(tabId).classList.add('active');
+            const activeBtn = document.getElementById(`btn-${tabId}`);
+            if(activeBtn) activeBtn.classList.add('active', 'text-amber-600', 'border-amber-600');
+
+            const mobileBtns = document.querySelectorAll('#mobile-bottom-nav button');
+            mobileBtns.forEach(b => b.classList.remove('active-nav'));
+            if(tabId === 'tab-dishes') mobileBtns[0].classList.add('active-nav');
+            if(tabId === 'tab-menus') mobileBtns[1].classList.add('active-nav');
+            if(tabId === 'tab-calc') mobileBtns[2].classList.add('active-nav');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function getTypeBadgeStyle(type) {
+            const styles = {
+                "bò": "bg-rose-100 text-rose-800 border-rose-200",
+                "gà": "bg-yellow-100 text-yellow-800 border-yellow-200",
+                "heo": "bg-pink-100 text-pink-800 border-pink-200",
+                "cá": "bg-cyan-50 text-cyan-700 border-cyan-100",
+                "tôm": "bg-orange-100 text-orange-800 border-orange-200",
+                "cua": "bg-red-100 text-red-800 border-red-200",
+                "ghẹ": "bg-red-50 text-red-700 border-red-100",
+                "rau củ quả": "bg-emerald-50 text-emerald-700 border-emerald-100",
+                "nguyên liệu": "bg-purple-50 text-purple-700 border-purple-100",
+                "gia vị": "bg-amber-50 text-amber-800 border-amber-200",
+                "nước chấm": "bg-orange-50 text-orange-700 border-orange-100",
+                "khác": "bg-slate-100 text-slate-700 border-slate-200"
+            };
+            return styles[type?.toLowerCase()?.trim()] || styles["khác"];
+        }
+
+        function filterDishes() {
+            const searchVal = document.getElementById("dish-search").value.toLowerCase();
+            const groupVal = document.getElementById("dish-filter-group").value.toLowerCase();
+            const filtered = dishesList.filter(dish => {
+                const name = dish.name.toLowerCase();
+                const matchSearch = name.includes(searchVal);
+                let matchGroup = true;
+                if (groupVal) {
+                    if (groupVal === 'gỏi') matchGroup = name.includes('gỏi') || name.includes('nộm');
+                    else if (groupVal === 'đồ nguội') matchGroup = name.includes('nguội') || name.includes('chả') || name.includes('nem');
+                    else if (groupVal === 'soup') matchGroup = name.includes('soup') || name.includes('súp');
+                    else if (groupVal === 'bò') matchGroup = name.includes('bò') || name.includes('bê');
+                    else if (groupVal === 'gà') matchGroup = name.includes('gà');
+                    else if (groupVal === 'heo') matchGroup = name.includes('heo') || name.includes('lợn') || name.includes('sườn');
+                    else if (groupVal === 'tôm') matchGroup = name.includes('tôm');
+                    else if (groupVal === 'mực') matchGroup = name.includes('mực');
+                    else if (groupVal === 'cá') matchGroup = name.includes('cá');
+                    else if (groupVal === 'lẩu') matchGroup = name.includes('lẩu');
+                    else if (groupVal === 'cơm') matchGroup = name.includes('cơm') || name.includes('chiên') || name.includes('xôi');
+                    else if (groupVal === 'tráng miệng') matchGroup = name.includes('tráng miệng') || name.includes('chè') || name.includes('rau câu') || name.includes('trái cây');
+                    else matchGroup = name.includes(groupVal);
+                }
+                return matchSearch && matchGroup;
+            });
+            renderDishes(filtered);
+        }
+
+        function renderDishes(listToRender = dishesList) {
+            const container = document.getElementById("dishes-container");
+            document.getElementById("dish-count").innerText = `${listToRender.length} món`;
+            container.innerHTML = "";
+            if(listToRender.length === 0) {
+                container.innerHTML = `<div class="col-span-full p-8 text-center text-sm text-slate-400 bg-white rounded-2xl border border-slate-200">Không tìm thấy món ăn nào phù hợp...</div>`;
+                return;
+            }
+            listToRender.forEach(dish => {
+                let ingHtml = "";
+                if(dish.ingredients && dish.ingredients.length > 0) {
+                    dish.ingredients.forEach(i => {
+                        ingHtml += `<span class="inline-flex items-center border px-2 py-0.5 rounded-lg text-[11px] font-semibold ${getTypeBadgeStyle(i.type)}">${i.name}: ${i.weight} ${i.unit}</span>`;
+                    });
+                } else {
+                    ingHtml = `<span class="text-xs text-slate-400 italic">Chưa có định lượng.</span>`;
+                }
+                const card = document.createElement("div");
+                card.className = "bg-white rounded-2xl border border-slate-200 p-4.5 flex flex-col justify-between hover:border-amber-400 transition-all";
+                card.innerHTML = `
+                    <div class="space-y-3">
+                        <div class="flex justify-between items-start gap-2">
+                            <h4 class="font-black text-sm text-slate-900">${dish.name}</h4>
+                            <span class="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded-md shrink-0">Mẫu 10 người</span>
+                        </div>
+                        <div class="flex flex-wrap gap-1.5 pt-2.5 border-t border-slate-100">${ingHtml}</div>
+                    </div>
+                    <div class="flex justify-end gap-3.5 mt-4 pt-2.5 border-t border-slate-100/60">
+                        <button onclick="editDish(${dish.id})" class="text-xs font-bold text-blue-600 hover:text-blue-800 cursor-pointer"><i class="fa-solid fa-pen-to-square"></i> Sửa</button>
+                        <button onclick="removeDish(${dish.id})" class="text-xs font-bold text-rose-500 hover:text-rose-700 cursor-pointer"><i class="fa-solid fa-trash"></i> Xóa</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function addIngredientToTempList() {
+            const name = document.getElementById("ing-name").value.trim();
+            const weight = parseFloat(document.getElementById("ing-weight").value);
+            const unit = document.getElementById("ing-unit").value;
+            const type = document.getElementById("ing-type").value;
+            if (!name || isNaN(weight)) { alert("Vui lòng điền đúng tên nguyên liệu và số lượng!"); return; }
+            temporaryIngredients.push({ name, weight, unit, type });
+            renderTempIngredients();
+            document.getElementById("ing-name").value = "";
+            document.getElementById("ing-weight").value = "";
+            document.getElementById("ing-name").focus();
+        }
+
+        function renderTempIngredients() {
+            const container = document.getElementById("temp-ing-list");
+            container.innerHTML = "";
+            temporaryIngredients.forEach((i, index) => {
+                const badge = document.createElement("span");
+                badge.className = `text-[11px] font-bold px-2 py-0.5 rounded-md flex items-center gap-1 border ${getTypeBadgeStyle(i.type)}`;
+                badge.innerHTML = `${i.name} (${i.weight}${i.unit}) <i class="fa-solid fa-circle-xmark cursor-pointer opacity-70 text-slate-500" onclick="removeTempIngredient(${index})"></i>`;
+                container.appendChild(badge);
+            });
+        }
+
+        function removeTempIngredient(index) { temporaryIngredients.splice(index, 1); renderTempIngredients(); }
+
+        async function addDish() {
+            const name = document.getElementById("dish-name").value.trim();
+            if (!name) { alert("Bạn phải điền tên món ăn!"); return; }
+            const dishData = { name: name, ingredients: temporaryIngredients, timestamp: Date.now() };
+            if (currentEditingDishId) {
+                await _supabase.from('dishes').update(dishData).eq('id', currentEditingDishId);
+            } else {
+                await _supabase.from('dishes').insert([dishData]);
+            }
+            resetDishForm();
+            await loadAllCloudData();
+        }
+
+        function editDish(id) {
+            const dish = dishesList.find(d => d.id === id); if (!dish) return;
+            currentEditingDishId = dish.id;
+            document.getElementById("dish-name").value = dish.name;
+            temporaryIngredients = [...dish.ingredients];
+            renderTempIngredients(); document.getElementById("dish-name").focus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function removeDish(id) {
+            if (confirm("Xóa hẳn món ăn này trên hệ thống đám mây?")) {
+                await _supabase.from('dishes').delete().eq('id', id);
+                await loadAllCloudData();
+            }
+        }
+
+        function resetDishForm() {
+            currentEditingDishId = null; document.getElementById("dish-name").value = "";
+            temporaryIngredients = []; document.getElementById("temp-ing-list").innerHTML = "";
+        }
+
+        function downloadExcelTemplate() {
+            const headers = ["Tên món ăn", "Tên nguyên liệu", "Số lượng (Định lượng)", "Đơn vị tính", "Phân loại nguyên liệu"];
+            const data = [headers, ["Lẩu Thái Hải Sản", "Tôm sú", 10, "con", "tôm"]];
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            const wb = XLSX.utils.book_new();
+            XLSX.utils.book_append_sheet(wb, ws, "DanhSachMonAn");
+            XLSX.writeFile(wb, "Mau_Danh_Muc_Mon_An_PhiLong.xlsx");
+        }
+
+        function importExcel(input) {
+            const file = input.files[0]; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = async function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
+                let tempDishesMap = {};
+                json.forEach(row => {
+                    const dishName = row["Tên món ăn"]?.toString().trim();
+                    const ingName = row["Tên nguyên liệu"]?.toString().trim();
+                    const weight = parseFloat(row["Số lượng (Định lượng)"]);
+                    const unit = row["Đơn vị tính"]?.toString().trim() || "gam";
+                    const type = row["Phân loại nguyên liệu"]?.toString().trim() || "khác";
+                    if (dishName) {
+                        if (!tempDishesMap[dishName]) tempDishesMap[dishName] = [];
+                        if (ingName && !isNaN(weight)) tempDishesMap[dishName].push({ name: ingName, weight, unit, type: type.toLowerCase() });
+                    }
+                });
+                for (let dishName in tempDishesMap) { 
+                    await _supabase.from('dishes').insert([{ name: dishName, ingredients: tempDishesMap[dishName], timestamp: Date.now() }]); 
+                }
+                alert("Đã nhập dữ liệu từ Excel lên đám mây!");
+                await loadAllCloudData();
+                input.value = "";
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        let selectedDishIdsInMenuForm = [];
+
+        function renderMenuDishSelector() {
+            const container = document.getElementById("menu-dish-selector");
+            container.innerHTML = "";
+            dishesList.forEach(dish => {
+                const btn = document.createElement("button"); btn.type = "button";
+                btn.className = "bg-white border border-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-1.5 rounded-lg hover:bg-amber-50 cursor-pointer";
+                btn.innerText = `+ ${dish.name}`; btn.onclick = () => selectDishToMenuForm(dish.id);
+                container.appendChild(btn);
+            });
+        }
+
+        function selectDishToMenuForm(id) { if (!selectedDishIdsInMenuForm.includes(id)) { selectedDishIdsInMenuForm.push(id); renderSelectedDishesBadges(); } }
+
+        function renderSelectedDishesBadges() {
+            const container = document.getElementById("menu-selected-dishes-badge"); container.innerHTML = "";
+            selectedDishIdsInMenuForm.forEach((id, index) => {
+                const dish = dishesList.find(d => d.id === id); if (!dish) return;
+                const badge = document.createElement("div");
+                badge.className = "bg-slate-900 text-white text-xs font-semibold px-3 py-2 rounded-xl flex justify-between items-center";
+                badge.innerHTML = `<span>${index + 1}. ${dish.name}</span> <i class="fa-solid fa-circle-xmark cursor-pointer text-rose-400 text-sm" onclick="removeSelectedDishFromMenu(${id})"></i>`;
+                container.appendChild(badge);
+            });
+        }
+
+        function removeSelectedDishFromMenu(id) { selectedDishIdsInMenuForm = selectedDishIdsInMenuForm.filter(x => x !== id); renderSelectedDishesBadges(); }
+
+        async function saveMenu() {
+            const customer = document.getElementById("menu-customer").value.trim();
+            const phone = document.getElementById("menu-phone").value.trim();
+            const date = document.getElementById("menu-date").value;
+            const type = document.getElementById("menu-type").value;
+            const note = document.getElementById("menu-note").value.trim();
+            if (!customer || !phone || !date) { alert("Vui lòng nhập đầy đủ thông tin tiệc!"); return; }
+            if (selectedDishIdsInMenuForm.length === 0) { alert("Vui lòng chọn món ăn cho thực đơn!"); return; }
+            const menuData = { customer, phone, date, type, note, dishIds: selectedDishIdsInMenuForm };
+            if (currentEditingMenuId) {
+                await _supabase.from('menus').update(menuData).eq('id', currentEditingMenuId);
+            } else {
+                await _supabase.from('menus').insert([menuData]);
+            }
+            resetMenuForm();
+            await loadAllCloudData();
+            checkNearPartyAlerts();
+        }
+
+        function renderMenus() {
+            const container = document.getElementById("menus-container"); container.innerHTML = "";
+            if(menusList.length === 0) {
+                container.innerHTML = `<div class="bg-white border border-slate-200 p-8 rounded-2xl text-center text-xs text-slate-400 italic">Chưa có lịch đặt tiệc nào trên đám mây.</div>`;
+                return;
+            }
+            const today = new Date(); today.setHours(0,0,0,0);
+            menusList.forEach(menu => {
+                let dishListHtml = "";
+                menu.dishIds?.forEach(id => {
+                    const dish = dishesList.find(d => d.id === id);
+                    if (dish) dishListHtml += `<li class="text-xs text-slate-700 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-square-check text-amber-500"></i> ${dish.name}</li>`;
+                });
+                const partyDate = new Date(menu.date); partyDate.setHours(0,0,0,0);
+                const dayDiff = Math.ceil((partyDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+                let alertHtml = "";
+                if (dayDiff >= 0 && dayDiff <= 5) {
+                    alertHtml = `<div class="bg-rose-100 text-rose-700 text-[11px] font-bold px-2.5 py-1.5 rounded-lg mt-2 flex items-center gap-1.5 w-fit border border-rose-200"><i class="fa-solid fa-clock-rotate-left"></i> Sắp diễn ra (còn ${dayDiff} ngày)</div>`;
+                }
+                const block = document.createElement("div");
+                block.className = "bg-white border border-slate-200 rounded-2xl p-4.5 grid grid-cols-1 md:grid-cols-3 gap-4 hover:border-amber-300";
+                block.innerHTML = `
+                    <div class="space-y-1.5 flex flex-col">
+                        <div class="flex items-center gap-1.5">
+                            <span class="text-[10px] bg-amber-600 text-white font-black px-2 py-0.5 rounded-md uppercase">${menu.type}</span>
+                            <h4 class="font-black text-sm text-slate-900">${menu.customer}</h4>
+                        </div>
+                        <p class="text-xs font-medium text-slate-600"><i class="fa-solid fa-phone mr-1"></i> ${menu.phone}</p>
+                        <p class="text-xs text-orange-600 font-bold"><i class="fa-solid fa-calendar-day mr-1"></i> Ngày đãi: ${menu.date}</p>
+                        ${menu.note ? `<p class="text-xs text-slate-500 bg-slate-50 p-2 rounded-xl italic">Ghi chú: ${menu.note}</p>` : ''}
+                        ${alertHtml}
+                    </div>
+                    <div class="bg-slate-50/60 p-3.5 rounded-xl border border-slate-100 h-fit">
+                        <ul class="space-y-1">${dishListHtml}</ul>
+                    </div>
+                    <div class="flex md:flex-col justify-end items-center md:items-end gap-2">
+                        <button onclick="editMenu(${menu.id})" class="text-xs font-bold text-blue-600 cursor-pointer"><i class="fa-solid fa-user-pen"></i> Sửa</button>
+                        <button onclick="removeMenu(${menu.id})" class="text-xs font-bold text-rose-500 cursor-pointer"><i class="fa-solid fa-trash"></i> Hủy tiệc</button>
+                    </div>
+                `;
+                container.appendChild(block);
+            });
+        }
+
+        function editMenu(id) {
+            const menu = menusList.find(m => m.id === id); if (!menu) return;
+            currentEditingMenuId = menu.id;
+            document.getElementById("menu-customer").value = menu.customer;
+            document.getElementById("menu-phone").value = menu.phone;
+            document.getElementById("menu-date").value = menu.date;
+            document.getElementById("menu-type").value = menu.type;
+            document.getElementById("menu-note").value = menu.note;
+            selectedDishIdsInMenuForm = [...menu.dishIds];
+            renderSelectedDishesBadges(); window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function removeMenu(id) {
+            if (confirm("Chắc chắn hủy lịch tiệc này?")) {
+                await _supabase.from('menus').delete().eq('id', id);
+                await loadAllCloudData();
+                checkNearPartyAlerts();
+            }
+        }
+
+        function resetMenuForm() {
+            currentEditingMenuId = null; document.getElementById("menu-customer").value = "";
+            document.getElementById("menu-phone").value = ""; document.getElementById("menu-date").value = "";
+            document.getElementById("menu-note").value = ""; selectedDishIdsInMenuForm = []; 
+            document.getElementById("menu-selected-dishes-badge").innerHTML = "";
+        }
+
+        function checkNearPartyAlerts() {
+            const alertBox = document.getElementById("near-party-alert"); const alertContent = document.getElementById("alert-content");
+            const today = new Date(); today.setHours(0,0,0,0); let nearParties = [];
+            menusList.forEach(m => {
+                const partyDate = new Date(m.date); partyDate.setHours(0,0,0,0);
+                const dayDiff = Math.ceil((partyDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+                if (dayDiff >= 0 && dayDiff <= 5) nearParties.push(`• Khách <b>${m.customer}</b> (${m.date} - ${m.type})`);
+            });
+            if (nearParties.length > 0) { alertBox.classList.remove("hidden"); alertContent.innerHTML = nearParties.join("<br>"); } else { alertBox.classList.add("hidden"); }
+        }
+
+        /* --- PHẦN SỬA ĐỔI CHÍNH: HIỂN THỊ 3 CỘT GỌN GÀNG --- */
+        function renderCalcPartiesTable() {
+            const tbody = document.getElementById("calc-parties-table-body"); tbody.innerHTML = "";
+            if (menusList.length === 0) { 
+                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-400 italic">Không có dữ liệu thực đơn tiệc.</td></tr>`; 
+                return; 
+            }
+            
+            menusList.forEach(menu => {
+                const tr = document.createElement("tr");
+                tr.innerHTML = `
+                    <td class="p-3.5 text-center">
+                        <input type="checkbox" value="${menu.id}" class="calc-party-checkbox scale-125 accent-amber-600 cursor-pointer">
+                    </td>
+                    
+                    <td class="p-3.5 py-3 text-slate-950">
+                        <div class="font-black text-sm text-slate-900">${menu.customer} <span class="text-[11px] font-normal text-slate-400 ml-1">(ĐT: ${menu.phone})</span></div>
+                        <div class="text-[11px] text-slate-600 font-bold mt-1 flex flex-wrap items-center gap-1.5">
+                            <span class="text-orange-600"><i class="fa-solid fa-calendar-day"></i> Ngày đãi: ${menu.date}</span>
+                            <span class="text-slate-300">|</span>
+                            <span class="bg-amber-50 border border-amber-200 text-amber-800 px-1.5 py-0.2 rounded font-bold uppercase text-[10px]">${menu.type}</span>
+                        </div>
+                    </td>
+                    
+                    <td class="p-3.5 text-center">
+                        <input type="number" min="1" value="10" id="tables-for-menu-${menu.id}" class="w-full max-w-24 bg-slate-50 border border-slate-200 rounded-lg text-center font-black focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
+        function calculateIngredients() {
+            const checkboxes = document.querySelectorAll(".calc-party-checkbox:checked");
+            if (checkboxes.length === 0) { alert("Vui lòng tích chọn ít nhất một tiệc!"); return; }
+            let masterIngredients = {};
+            checkboxes.forEach(cb => {
+                const menuId = parseInt(cb.value); const menu = menusList.find(m => m.id === menuId);
+                const tablesCount = parseFloat(document.getElementById(`tables-for-menu-${menuId}`).value) || 0;
+                if (!menu || tablesCount <= 0) return;
+                menu.dishIds?.forEach(dId => {
+                    const dish = dishesList.find(d => d.id === dId); if (!dish || !dish.ingredients) return;
+                    dish.ingredients.forEach(ing => {
+                        const typeKey = ing.type?.toLowerCase()?.trim() || "khác"; 
+                        const ingKey = `${ing.name?.toLowerCase()?.trim()}_${ing.unit?.toLowerCase()?.trim()}`;
+                        if (!masterIngredients[typeKey]) masterIngredients[typeKey] = {};
+                        const computedWeight = ing.weight * tablesCount;
+                        if (!masterIngredients[typeKey][ingKey]) {
+                            masterIngredients[typeKey][ingKey] = { name: ing.name, totalWeight: computedWeight, unit: ing.unit, type: ing.type };
+                        } else { masterIngredients[typeKey][ingKey].totalWeight += computedWeight; }
+                    });
+                });
+            });
+            renderCalculatedOutput(masterIngredients);
+        }
+
+        function renderCalculatedOutput(masterData) {
+            const box = document.getElementById("calc-result-box"); const container = document.getElementById("calc-ingredients-output");
+            container.innerHTML = ""; box.classList.remove("hidden"); 
+            const categories = Object.keys(masterData);
+            if (categories.length === 0) {
+                 container.innerHTML = `<div class="col-span-full p-4 text-center text-slate-500 italic">Không có nguyên liệu nào để tính toán.</div>`;
+                 return;
+            }
+            categories.forEach(cat => {
+                const catData = masterData[cat];
+                if (catData && Object.keys(catData).length > 0) {
+                    const catBlock = document.createElement("div");
+                    catBlock.className = "bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-sm";
+                    let listItemsHtml = "";
+                    for (let k in catData) {
+                        let item = catData[k];
+                        let formattedWeight = Math.round(item.totalWeight * 100) / 100;
+                        let displayUnit = item.unit || "";
+                        if (item.unit && item.unit.toLowerCase() === "gam" && formattedWeight >= 1000) {
+                            formattedWeight = Math.round((formattedWeight / 1000) * 100) / 100;
+                            displayUnit = "kg";
+                        }
+                        listItemsHtml += `
+                            <div class="flex justify-between items-center py-2 border-b border-slate-200/50 last:border-0">
+                                <span class="font-bold text-slate-800 text-xs">${item.name}</span>
+                                <span class="bg-white border border-slate-200 px-2.5 py-0.5 rounded-lg font-black text-slate-900 text-xs">${formattedWeight} ${displayUnit}</span>
+                            </div>
+                        `;
+                    }
+                    catBlock.innerHTML = `<div><h4 class="text-xs font-black uppercase tracking-wider text-slate-900 mb-3 border-b pb-2">Nhóm/Quầy: <span class="capitalize">${cat}</span></h4><div class="divide-y divide-slate-100">${listItemsHtml}</div></div>`;
+                    container.appendChild(catBlock);
+                }
+            });
+            box.scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
