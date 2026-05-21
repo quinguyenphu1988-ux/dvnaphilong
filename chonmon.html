@@ -1396,4 +1396,40 @@
                     <div class="item-content">
                         <div class="item-title">${currentNo}. ${dish}</div>
                     </div>
-                    <button class="delete-btn" onclick="removeNonGold(${index})
+                    <button class="delete-btn" onclick="removeNonGold(${index})">✕</button>
+                `;
+                menuBody.appendChild(item);
+                currentNo++;
+            });
+        }
+
+        function saveMenuAsImage() {
+            if (selectedNonGold.length === 0 && selectedGold.length === 0) {
+                alert("Thực đơn trống, chưa thể xuất ảnh được ạ!");
+                return;
+            }
+
+            const menuElement = document.getElementById('weddingMenu');
+            menuElement.classList.add('html2canvas-container');
+
+            html2canvas(menuElement, {
+                backgroundColor: '#fefcf7',
+                scale: 2, 
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Thuc_Don_Phi_Long.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                menuElement.classList.remove('html2canvas-container');
+            }).catch(err => {
+                console.error("Lỗi khi xuất ảnh: ", err);
+                menuElement.classList.remove('html2canvas-container');
+            });
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
