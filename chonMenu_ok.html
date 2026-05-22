@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Phi Long Catering - Hệ Thống Quản Lý Thực Đơn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght=700;800&family=Great+Vibes&family=Montserrat:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary-dark: #660c0c;
+            --primary-light: #8e1919;
+            --gold-light: #f5d782;
+            --gold-dark: #b8860b;
+            --android-bg: #f8f9fa;
+            --text-dark: #212529;
+            --card-shadow: 0 4px 14px rgba(0,0,0,0.06);
+        }
+        body { font-family: 'Montserrat', sans-serif; background-color: var(--android-bg); color: var(--text-dark); margin: 0; padding: 10px; }
+        .menu-container { background: #fefcf7; border: 2px solid var(--gold-dark); padding: 20px; max-width: 400px; margin: auto; }
+        .delete-btn { color: red; cursor: pointer; }
+        .item-content { display: flex; align-items: center; }
+    </style>
+</head>
+<body>
+    <div id="weddingMenu" class="menu-container">
+        <h1>Phi Long Catering</h1>
+        <div id="menuBody"></div>
+    </div>
+    <button onclick="saveMenuAsImage()">Tải ảnh thực đơn</button>
+    <script>
+        let selectedNonGold = [];
+        let selectedGold = [];
+        function removeNonGold(index) {
+            selectedNonGold.splice(index, 1);
+            renderMenu();
+        }
+        function renderMenu() {
+            const menuBody = document.getElementById('menuBody');
+            menuBody.innerHTML = '';
+            let currentNo = 1;
+            selectedNonGold.forEach((dish, index) => {
+                const item = document.createElement('div');
+                item.innerHTML = `
+                    <div class="item-content">
+                        <div class="item-title">${currentNo}. ${dish}</div>
+                    </div>
+                    <button class="delete-btn" onclick="removeNonGold(${index})">✕</button>
+                `;
+                menuBody.appendChild(item);
+                currentNo++;
+            });
+        }
+        function saveMenuAsImage() {
+            const menuElement = document.getElementById('weddingMenu');
+            html2canvas(menuElement, { backgroundColor: '#fefcf7', scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Thuc_Don_Phi_Long.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>
