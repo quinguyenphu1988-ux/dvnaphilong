@@ -57,13 +57,6 @@
             border: 1px solid #f1f5f9;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        @media (hover: hover) {
-            .premium-dish-card:hover {
-                transform: translateY(-4px);
-                box-shadow: 0 12px 24px rgba(217, 119, 6, 0.08);
-                border-color: #fde68a;
-            }
-        }
 
         /* --- MENU ANDROID BOTTOM NAV --- */
         #mobile-bottom-nav {
@@ -123,10 +116,13 @@
 <body class="bg-gradient-to-br from-amber-50 via-white to-orange-50 font-sans min-h-screen antialiased text-slate-900">
 
     <header class="glass-header border-b border-slate-100 p-4 sticky top-0 z-50 shadow-sm">
-        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center text-center sm:text-left gap-2">
-            <div>
-                <h1 class="text-3xl font-extrabold tracking-tight bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 bg-clip-text text-transparent drop-shadow-sm">DVNA PHI LONG</h1>
-                <p class="text-xs font-bold text-amber-600 tracking-wide mt-0.5">Tiệc ngon, trọn niềm vui — ĐT: 0909.05.06.17</p>
+        <div class="max-w-7xl mx-auto flex flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3.5">
+                <img src="logo.png" alt="Logo Phi Long" class="w-14 h-14 object-cover rounded-2xl border border-amber-100 shadow-sm" onerror="this.style.display='none'">
+                <div>
+                    <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 bg-clip-text text-transparent drop-shadow-sm">DVNA PHI LONG</h1>
+                    <p class="text-xs font-bold text-amber-600 tracking-wide mt-0.5">Tiệc ngon, trọn niềm vui — ĐT: 0909.05.06.17</p>
+                </div>
             </div>
         </div>
     </header>
@@ -141,7 +137,7 @@
 
     <main class="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
         <div id="tab-dishes" class="tab-content active">
-            <div id="dishes-container" class="space-y-10"></div>
+            <div id="dishes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
         </div>
 
         <div id="tab-menus" class="tab-content">
@@ -264,12 +260,11 @@
         let currentEditingMenuId = null;
         let globalCalculatedMarket = null; 
 
-        // Hàm thông minh kết hợp ngẫu nhiên các cấu trúc ngữ pháp ẩm thực để tạo ra câu diễn giải duy nhất không bị trùng
+        // Hàm thông minh sinh chuỗi diễn giải ngẫu nhiên theo ID chống trùng lặp nội dung hoàn toàn
         function dynamicExplanationGenerator(dishName, dishId) {
             const name = dishName.trim();
             const lowerName = name.toLowerCase();
             
-            // Bộ mảng từ khóa mở đầu mang tính nghệ thuật ẩm thực
             const openings = [
                 `Thưởng thức tinh hoa ẩm thực từ món ${name}`,
                 `Đặc sản ${name} trứ danh được chế biến tỉ mỉ`,
@@ -278,7 +273,6 @@
                 `Lựa chọn lý tưởng cho thực đơn tiệc sang trọng với ${name}`
             ];
 
-            // Bộ từ khóa kết thúc dựa vào dòng món ăn
             const endings_goi = [
                 ", sở hữu vị chua ngọt đậm đà, giòn mát thanh nhẹ vô cùng kích thích vị giác đầu tiệc.",
                 ", hòa quyện nước mắm kẹo chua cay độc quyền, tôn vinh độ tươi giòn của rau củ đi kèm.",
@@ -305,11 +299,10 @@
 
             const endings_default = [
                 ", chuẩn vị đầu bếp tiệc chuyên nghiệp, mang đến trải nghiệm ẩm thực vô cùng thơm ngon và bổ dưỡng.",
-                ", đậm đà bản sắc truyền thống kết hợp decor tinh tế, nâng tầm đẳng cấp bữa tiệc gia đình anh.",
+                ", đậm đà bản sắc truyền thống kết hợp decor tinh tế, nâng tầm đẳng cấp bữa tiệc quý khách.",
                 ", hấp dẫn từ màu sắc đến hương vị, cam kết mang đến sự hài lòng trọn vẹn cho mọi quý thực khách."
             ];
 
-            // Dùng số ID của món ăn để chọn câu cố định (không bị đổi sau mỗi lần load lại trang)
             const openIdx = dishId % openings.length;
             let endIdx = dishId % 3;
 
@@ -412,80 +405,38 @@
             container.innerHTML = "";
             
             if(!listToRender || listToRender.length === 0) {
-                container.innerHTML = `<div class="p-10 text-center text-sm text-slate-400 bg-white rounded-3xl border border-slate-100 shadow-inner">Hiện tại danh sách món ăn đang trống hoặc đang tải từ đám mây...</div>`;
+                container.innerHTML = `<div class="col-span-full p-10 text-center text-sm text-slate-400 bg-white rounded-3xl border border-slate-100 shadow-inner">Hiện tại danh sách món ăn đang trống hoặc đang tải từ đám mây...</div>`;
                 return;
             }
 
-            // Tiến hành phân chia nhóm món ăn động chuẩn Android để gom nhóm trực quan
-            const groups = {
-                "Khai Vị / Đồ Nguội / Soup": [],
-                "Các Món Lẩu / Cù Lao": [],
-                "Món Chính (Thịt, Hải Sản)": [],
-                "Cơm / Xôi / Tráng Miệng": [],
-                "Món Ăn Khác": []
-            };
-
+            // Kết xuất hiển thị: Gom mảng và đổ lưới liên tục chuẩn xác theo cột category
             listToRender.forEach(dish => {
                 if (!dish || !dish.name) return;
-                const name = dish.name.toLowerCase().trim();
                 
-                if (name.includes('gỏi') || name.includes('nộm') || name.includes('chả') || name.includes('nem') || name.includes('nguội') || name.includes('soup') || name.includes('súp')) {
-                    groups["Khai Vị / Đồ Nguội / Soup"].push(dish);
-                } else if (name.includes('lẩu') || name.includes('cù lao')) {
-                    groups["Các Món Lẩu / Cù Lao"].push(dish);
-                } else if (name.includes('heo') || name.includes('bò') || name.includes('gà') || name.includes('vịt') || name.includes('tôm') || name.includes('cá') || name.includes('mực') || name.includes('cua') || name.includes('ghẹ') || name.includes('quay') || name.includes('nướng')) {
-                    groups["Món Chính (Thịt, Hải Sản)"].push(dish);
-                } else if (name.includes('cơm') || name.includes('xôi') || name.includes('chè') || name.includes('rau câu') || name.includes('sữa chua') || name.includes('tráng miệng') || name.includes('tàu hủ') || name.includes('trái cây')) {
-                    groups["Cơm / Xôi / Tráng Miệng"].push(dish);
-                } else {
-                    groups["Món Ăn Khác"].push(dish);
-                }
-            });
+                const imgUrl = dish.image_url ? dish.image_url : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60";
+                
+                // Lọc hiển thị category đè lên góc thẻ để phân biệt danh mục
+                const categoryBadge = dish.category ? dish.category.trim() : "Món Khác";
+                
+                // Áp dụng bộ phát sinh ngữ pháp ẩm thực động theo ID để không bao giờ bị trùng lặp câu chữ
+                const description = dish.description ? dish.description : dynamicExplanationGenerator(dish.name, dish.id);
 
-            // Kết xuất hiển thị theo phong cách Gom Nhóm Thẻ Hiện Đại hoàn toàn mới
-            for (const [groupName, dishes] of Object.entries(groups)) {
-                if (dishes && dishes.length > 0) {
-                    const groupSection = document.createElement("div");
-                    groupSection.className = "space-y-4 w-full block";
-                    
-                    // Tạo block tiêu đề nhóm sang trọng phong cách Android mới
-                    groupSection.innerHTML = `
-                        <div class="premium-group-header p-3.5 flex justify-between items-center shadow-xs">
-                            <h3 class="text-sm font-black text-amber-900 uppercase tracking-wider flex items-center gap-2">
-                                <i class="fa-solid fa-layer-group text-amber-700"></i> ${groupName}
-                            </h3>
-                            <span class="bg-amber-600 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full">${dishes.length} món</span>
+                const card = document.createElement("div");
+                card.className = "premium-dish-card flex flex-col min-h-[300px]";
+                card.innerHTML = `
+                    <div class="h-48 w-full overflow-hidden bg-slate-50 relative">
+                        <img src="${imgUrl}" alt="${dish.name}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'">
+                        <span class="absolute top-3 right-3 text-[10px] bg-amber-600/90 backdrop-blur-sm text-white font-black px-2.5 py-1 rounded-md uppercase tracking-wider">${categoryBadge}</span>
+                    </div>
+                    <div class="p-5 flex-1 flex flex-col justify-between bg-white">
+                        <div class="space-y-2">
+                            <h4 class="font-extrabold text-base text-amber-700 tracking-tight leading-snug">${dish.name}</h4>
+                            <p class="text-xs text-slate-500 font-medium leading-relaxed italic border-l-3 border-amber-500 pl-3 mt-1.5">${description}</p>
                         </div>
-                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-1 group-grid"></div>
-                    `;
-                    
-                    const gridContainer = groupSection.querySelector(".group-grid");
-
-                    dishes.forEach(dish => {
-                        const imgUrl = dish.image_url ? dish.image_url : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60";
-                        
-                        // Áp dụng hàm sinh mô tả động ngẫu nhiên theo ID chống trùng lặp
-                        const description = dish.description ? dish.description : dynamicExplanationGenerator(dish.name, dish.id);
-
-                        const card = document.createElement("div");
-                        card.className = "premium-dish-card flex flex-col min-h-[300px]";
-                        card.innerHTML = `
-                            <div class="h-48 w-full overflow-hidden bg-slate-50 relative">
-                                <img src="${imgUrl}" alt="${dish.name}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'">
-                            </div>
-                            <div class="p-5 flex-1 flex flex-col justify-between bg-white">
-                                <div class="space-y-2">
-                                    <h4 class="font-extrabold text-base text-amber-700 tracking-tight leading-snug">${dish.name}</h4>
-                                    <p class="text-xs text-slate-500 font-medium leading-relaxed italic border-l-3 border-amber-500 pl-3 mt-1.5">${description}</p>
-                                </div>
-                            </div>
-                        `;
-                        gridContainer.appendChild(card);
-                    });
-
-                    container.appendChild(groupSection);
-                }
-            }
+                    </div>
+                `;
+                container.appendChild(card);
+            });
         }
 
         let selectedDishIdsInMenuForm = [];
