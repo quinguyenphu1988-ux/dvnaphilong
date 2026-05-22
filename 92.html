@@ -1,0 +1,1338 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Phi Long Catering - Hệ Thống Quản Lý Thực Đơn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght=700;800&family=Great+Vibes&family=Montserrat:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            --primary-dark: #660c0c;
+            --primary-light: #8e1919;
+            --gold-light: #f5d782;
+            --gold-dark: #b8860b;
+            --android-bg: #f8f9fa;
+            --text-dark: #212529;
+            --card-shadow: 0 4px 14px rgba(0,0,0,0.06);
+            --paper-bg: #fefcf7;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Montserrat', sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            background-color: var(--android-bg);
+            color: var(--text-dark);
+            padding-bottom: 85px; 
+            overflow-x: hidden;
+        }
+
+        /* App Bar thiết kế cao cấp kết hợp Logo thương hiệu chính chủ */
+        .app-bar {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light));
+            color: white;
+            padding: 10px 20px; 
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2); 
+            display: flex;
+            align-items: center;
+            justify-content: center; 
+            border-bottom: 2px solid var(--gold-light);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            gap: 16px; 
+            max-width: 600px; 
+            width: 100%;
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-img {
+            max-width: 100%;
+            max-height: 50px; 
+            width: auto;
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); 
+        }
+
+        .brand-text-container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .brand-text-container h1 {
+            font-family: 'Cinzel', serif;
+            font-size: 1.1rem; 
+            color: var(--gold-light);
+            letter-spacing: 1px;
+            font-weight: 800;
+            margin-bottom: -2px; 
+        }
+
+        .brand-text-container p {
+            font-family: 'Montserrat', sans-serif; 
+            font-size: 0.85rem; 
+            color: white;
+            font-weight: 500;
+            margin-top: 0;
+        }
+
+        /* Thanh phân loại chung */
+        .top-category-bar {
+            background: white;
+            padding: 12px 8px;
+            display: flex;
+            gap: 8px;
+            overflow-x: auto;
+            position: sticky;
+            top: 75px; 
+            z-index: 99;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+            scrollbar-width: none; 
+        }
+        
+        .top-category-bar::-webkit-scrollbar {
+            display: none; 
+        }
+
+        .top-tab-btn {
+            background: #f1f3f5;
+            border: 1px solid #e9ecef;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #495057;
+            cursor: pointer;
+            white-space: nowrap; 
+            transition: all 0.2s;
+        }
+
+        .top-tab-btn.active {
+            background: var(--primary-dark);
+            color: var(--gold-light);
+            border-color: var(--primary-dark);
+        }
+
+        /* Container chính chứa các màn hình */
+        .app-container {
+            padding: 12px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .section-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: var(--primary-dark);
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            border-left: 3.5px solid var(--gold-dark);
+            padding-left: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .refresh-sample-btn {
+            background: #fff;
+            color: #27ae60;
+            border: 1px solid #27ae60;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.72rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            text-transform: none;
+            transition: all 0.2s;
+        }
+
+        .refresh-sample-btn:active {
+            background: #27ae60;
+            color: white;
+        }
+
+        .app-screen {
+            display: none;
+        }
+
+        .app-screen.active {
+            display: block;
+            animation: appSlideIn 0.2s ease-out;
+        }
+
+        /* Giao diện danh sách món lẻ bắt mắt, quý phái viền Gold */
+        .dishes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .dish-card-app {
+            background: white;
+            border-radius: 16px;
+            display: flex;
+            padding: 14px;
+            gap: 14px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+            border-left: 4.5px solid var(--gold-dark); 
+            align-items: flex-start;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .dish-card-app:active {
+            transform: scale(0.98);
+            box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+        }
+
+        .img-thumb-container {
+            width: 90px;
+            height: 90px;
+            border-radius: 12px;
+            overflow: hidden;
+            flex-shrink: 0;
+            background: #e9ecef;
+            position: relative;
+            cursor: pointer;
+            border: 1px solid var(--gold-light); 
+            box-shadow: 0 3px 8px rgba(0,0,0,0.06);
+        }
+
+        .dish-thumb {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .dish-img-overlay-zoom {
+            position: absolute;
+            bottom: 2px; right: 2px;
+            background: rgba(102, 12, 12, 0.8);
+            color: var(--gold-light);
+            width: 20px; height: 20px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.65rem;
+        }
+
+        .dish-details {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 90px;
+        }
+
+        .dish-title {
+            font-size: 0.98rem;
+            font-weight: 700;
+            color: var(--primary-dark); 
+            line-height: 1.3;
+            letter-spacing: 0.2px;
+        }
+
+        .dish-desc {
+            font-size: 0.78rem;
+            color: #4b5563; 
+            line-height: 1.4;
+            margin-top: 5px;
+            margin-bottom: 6px;
+            font-style: italic; 
+            font-weight: 500;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .add-app-btn {
+            background: linear-gradient(135deg, var(--primary-dark), var(--primary-light)); 
+            color: var(--gold-light); 
+            border: none;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 0.75rem;
+            cursor: pointer;
+            align-self: flex-end;
+            margin-top: auto;
+            box-shadow: 0 3px 8px rgba(102, 12, 12, 0.2);
+            transition: all 0.2s;
+        }
+
+        .add-app-btn:active {
+            transform: scale(0.92);
+            background: var(--gold-dark);
+            color: white;
+        }
+
+        /* LƯỚI THỰC ĐƠN MẪU GỢI Ý */
+        .sample-menu-container-embedded {
+            background: white;
+            border-radius: 16px;
+            padding: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .sample-menu-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .sample-menu-thumb-card {
+            background: #fafbfc;
+            border: 1px solid #eef0f2;
+            border-radius: 12px;
+            padding: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .sample-image-container {
+            width: 100%;
+            height: 130px;
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            border: 1px solid #e2e8f0;
+            background-color: #f1f3f5;
+        }
+
+        .sample-menu-img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .sample-image-overlay {
+            position: absolute;
+            top: 6px; left: 6px;
+            font-size: 0.65rem;
+            background: var(--primary-dark);
+            color: var(--gold-light);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+        }
+
+        .zoom-btn-trigger {
+            position: absolute;
+            bottom: 6px; right: 6px;
+            background: rgba(102, 12, 12, 0.85);
+            color: var(--gold-light);
+            border: none;
+            width: 26px; height: 26px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .sample-card-title {
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #212529;
+            text-align: center;
+            margin: 2px 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 1;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .apply-sample-btn {
+            background: var(--primary-light);
+            color: var(--gold-light);
+            border: none;
+            padding: 7px 0;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .sheet-pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            padding-top: 12px;
+            margin-top: 12px;
+            border-top: 1px solid #f1f3f5;
+        }
+
+        .sheet-page-btn {
+            background: #fff;
+            color: var(--primary-dark);
+            border: 1px solid var(--primary-dark);
+            padding: 5px 11px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .sheet-page-btn.active {
+            background: var(--primary-dark);
+            color: var(--gold-light);
+        }
+
+        /* TẤM THIỆP THỰC ĐƠN HOÀNG GIA */
+        .wedding-menu-box {
+            background-color: var(--paper-bg);
+            border: 3px solid var(--gold-dark);
+            outline: 10px double var(--primary-dark);
+            outline-offset: -7px;
+            padding: 35px 24px;
+            width: 100%;
+            min-height: 520px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            box-shadow: var(--card-shadow);
+        }
+
+        .wedding-menu-box::before {
+            content: "⚜ ⚜";
+            position: absolute;
+            top: 12px;
+            color: var(--gold-dark);
+            font-size: 0.9rem;
+            letter-spacing: 6px;
+        }
+
+        .menu-header {
+            text-align: center;
+            margin-bottom: 22px;
+            border-bottom: 2px double var(--gold-dark);
+            padding-bottom: 10px;
+            width: 100%;
+        }
+
+        .menu-header h2 {
+            font-family: 'Great Vibes', cursive;
+            font-size: 2.8rem;
+            color: var(--primary-dark);
+            line-height: 1;
+        }
+
+        .menu-header .sub-title {
+            font-family: 'Cinzel', serif;
+            font-size: 0.85rem;
+            color: var(--gold-dark);
+            letter-spacing: 3px;
+            margin-top: 5px;
+            font-weight: 800;
+        }
+
+        .menu-body {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex-grow: 1;
+        }
+
+        .selected-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed rgba(184, 134, 11, 0.25);
+        }
+
+        .item-content {
+            flex-grow: 1;
+            padding-right: 6px;
+        }
+
+        .item-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #1a1a1a;
+            line-height: 1.4;
+        }
+
+        .item-note {
+            font-size: 0.78rem;
+            font-style: italic;
+            color: #555;
+            margin-top: 2px;
+            line-height: 1.3;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            width: 18px; height: 18px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .delete-sub-btn {
+            background: none; border: none;
+            color: #c0392b;
+            font-size: 0.7rem;
+            cursor: pointer;
+            margin-left: 4px;
+            font-weight: 600;
+        }
+
+        .menu-footer {
+            text-align: center;
+            margin-top: 25px;
+            width: 100%;
+            border-top: 2px double var(--gold-dark);
+            padding-top: 12px;
+        }
+
+        .footer-brand {
+            font-family: 'Cinzel', serif;
+            font-size: 0.9rem;
+            color: var(--primary-dark);
+            font-weight: 800;
+        }
+
+        .footer-phone {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #222;
+        }
+
+        .footer-thanks {
+            font-family: 'Great Vibes', cursive;
+            font-size: 1.6rem;
+            color: var(--gold-dark);
+        }
+
+        .action-area {
+            margin-top: 16px;
+            margin-bottom: 10px;
+        }
+
+        .save-btn-app {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 14px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            box-shadow: 0 4px 10px rgba(39, 174, 96, 0.2);
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #999;
+            font-style: italic;
+            margin-top: 45px;
+            font-size: 0.88rem;
+        }
+
+        .html2canvas-container .delete-btn,
+        .html2canvas-container .delete-sub-btn {
+            display: none !important;
+        }
+
+        /* THANH ĐIỀU HƯỚNG DƯỚI ĐÁY */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0; left: 0; right: 0;
+            height: 66px;
+            background: white;
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            border-top: 1px solid #e9ecef;
+            box-shadow: 0 -4px 12px rgba(0,0,0,0.06);
+            z-index: 999;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            width: 33.33%; height: 100%;
+            gap: 4px;
+            position: relative;
+        }
+
+        .nav-item .icon { font-size: 1.25rem; }
+        .nav-item.active { color: var(--primary-dark); font-weight: 700; }
+
+        .nav-badge {
+            position: absolute;
+            top: 6px; right: 28%;
+            background: #e74c3c;
+            color: white;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 1px 5px;
+            border-radius: 10px;
+            border: 1px solid white;
+        }
+
+        /* MODAL LIGHTBOX XEM CHI TIẾT VÀ PHÓNG TO ẢNH */
+        .lightbox-modal {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0,0,0,0.92);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+        }
+
+        .lightbox-card-preview {
+            background-color: var(--paper-bg);
+            border: 3px solid var(--gold-dark);
+            outline: 8px double var(--primary-dark);
+            outline-offset: -5px;
+            padding: 30px 20px;
+            width: 100%;
+            max-width: 380px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative;
+            animation: appSlideIn 0.25s ease-out;
+        }
+
+        .lightbox-close-btn {
+            position: absolute;
+            top: -45px; right: 0;
+            color: white;
+            font-size: 1.8rem;
+            cursor: pointer;
+        }
+
+        /* Style dành riêng cho xem ảnh đơn món lẻ */
+        .lightbox-single-img-mode {
+            padding: 14px !important;
+            background: white !important;
+            border-radius: 12px;
+            outline: none !important;
+        }
+
+        .lightbox-dish-big-img {
+            width: 100%;
+            max-height: 280px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        .lightbox-menu-list {
+            margin: 15px 0;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .lightbox-menu-item {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #222;
+            border-bottom: 1px dashed rgba(184,134,11,0.3);
+            padding-bottom: 4px;
+        }
+
+        .lightbox-action-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 11px 16px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 700;
+            margin-top: 15px;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        @keyframes appSlideIn {
+            from { opacity: 0; transform: scale(0.9) translateY(10px); }
+            to { opacity: 1; transform: scale(1) translateY(0); }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="app-bar">
+        <div class="header-content">
+            <div class="logo-container">
+                <img src="logo1.png" alt="Phi Long Catering Logo" class="logo-img" onerror="handleLogoFallback(this)">
+            </div>
+            <div class="brand-text-container">
+                <h1>PHI LONG CATERING</h1>
+                <p>Hương vị hoàn hảo cho ngày vui trọn vẹn</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="top-category-bar" id="topCategoryBar"></div>
+
+    <div class="app-container">
+        
+        <div class="app-screen active" id="screenDishes">
+            <div class="section-title" id="currentCategoryTitle">Món ăn: GỎI</div>
+            <div id="loadingIndicator" style="text-align:center; padding:20px; color:var(--primary-dark); font-weight:bold; font-size:14px; font-style:italic;">
+                Đang tải dữ liệu từ máy chủ, vui lòng đợi...
+            </div>
+            <div class="dishes-list" id="dishesListContainer"></div>
+        </div>
+
+        <div class="app-screen" id="screenSamples">
+            <div class="section-title">
+                <span id="currentSampleGroupTitle">Hạng Tiệc: TẤT CẢ</span>
+                <button class="refresh-sample-btn" onclick="shuffleSampleImages()"><i class="fa-solid fa-arrows-rotate"></i> Làm mới mẫu</button>
+            </div>
+            <div class="sample-menu-container-embedded">
+                <div class="sample-menu-grid" id="embeddedSampleMenusGrid"></div>
+                <div class="sheet-pagination" id="embeddedPaginationControls"></div>
+            </div>
+        </div>
+
+        <div class="app-screen" id="screenMenu">
+            <div class="section-title">Xem Trước Thiệp Thực Đơn Để Xuất Ảnh</div>
+            <div class="wedding-menu-box" id="weddingMenu">
+                <div class="menu-header">
+                    <h2>Thực Đơn</h2>
+                    <div class="sub-title" id="weddingMenuSubtitle">Mỹ Vị Ngày Cưới</div>
+                </div>
+                
+                <div class="menu-body" id="menuBody">
+                    <div class="empty-message">Anh chưa chọn món hoặc chưa áp dụng thực đơn mẫu nào hết...</div>
+                </div>
+
+                <div class="menu-footer">
+                    <div class="footer-brand">Dịch Vụ Nấu Ăn Phi Long</div>
+                    <div class="footer-phone">Hotline: 0909.05.06.17</div>
+                    <div class="footer-thanks">Trân trọng cảm ơn quý khách!</div>
+                </div>
+            </div>
+
+            <div class="action-area">
+                <button class="save-btn-app" onclick="saveMenuAsImage()">📸 XUẤT ẢNH THỰC ĐƠN GỬI KHÁCH</button>
+            </div>
+        </div>
+
+    </div>
+
+    <div class="bottom-nav">
+        <div class="nav-item active" id="navHome" onclick="switchScreen('dishes')">
+            <span class="icon">🍽️</span>
+            <span>Chọn Món Lẻ</span>
+        </div>
+        <div class="nav-item" id="navSamples" onclick="switchScreen('samples')">
+            <span class="icon">✨</span>
+            <span>Thực Đơn Mẫu</span>
+        </div>
+        <div class="nav-item" id="navCart" onclick="switchScreen('menu')">
+            <span class="icon">📜</span>
+            <span>Thực Đơn Đã Chọn</span>
+            <span class="nav-badge" id="cartBadge">0</span>
+        </div>
+    </div>
+
+    <div class="lightbox-modal" id="lightboxModal" onclick="closeLightbox()">
+        <div class="lightbox-card-preview" id="lightboxContentCard" onclick="event.stopPropagation()">
+            </div>
+    </div>
+
+    <script>
+        // --- 1. KHỞI TẠO KẾT NỐI SUPABASE ---
+        const SUPABASE_URL = "https://kslsewlljxkwcgceqxcf.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_I1NCl_wrxzsDRM8wFXgeVQ_8W_JKlKE";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // --- 2. CHUYỂN DỮ LIỆU CỐ ĐỊNH THÀNH BIẾN ĐỂ CẬP NHẬT TỪ CSDL ---
+        // Biến let thay vì const để có thể ghi đè dữ liệu mới từ CSDL
+        let allDishImages = {};
+        let menuData = {};
+
+        // Thực đơn mẫu (giữ nguyên vì nó không có trên CSDL)
+        const sampleMenus = [
+            { id: 0, title: "Hương Sắc Mekong", tag: "TRUYỀN THỐNG", group: "TRUYỀN THỐNG", gold: ["Chả giò truyền thống", "Nem chua Lai Vung", "Chả quế", "Chả lụa, pate"], nonGold: ["Gỏi củ hủ dừa tôm thịt", "Gà hấp mắm nhĩ", "Bò hầm rượu vang", "Lẩu Thái hải sản", "Rau câu dừa"] },
+            { id: 1, title: "Phụng Thành Tiệc", tag: "ĐẶC SẮC", group: "ĐẶC SẮC", gold: ["Tôm chiên bánh rế", "Chả lụa, pate", "Nem nướng trứng cút", "Bánh bao chiên", "Chả hoa trứng muối"], nonGold: ["Gỏi ngũ sắc", "Cá mú phi lê sốt chanh dây", "Vịt tỳ bà", "Lẩu cua đồng hải sản", "Chè dưỡng nhan"] },
+            { id: 2, title: "Đồng Nội Duyên", tag: "BÌNH DÂN", group: "BÌNH DÂN", gold: ["Nem nướng trứng cút", "Chả quế", "Chả giò truyền thống", "Bánh bao chiên"], nonGold: ["Gỏi bò bóp thấu", "Gà tiềm ớt hiểm", "Tôm sốt trứng muối", "Cù lao", "Rau câu dừa"] },
+            { id: 3, title: "Duyên Thắm Tình", tag: "TIÊU CHUẨN", group: "TIÊU CHUẨN", gold: ["Chả giò hải sản", "Tôm chiên xù", "Nem chua Lai Vung", "Chả lụa, pate"], nonGold: ["Gỏi ngó sen tôm thịt", "Heo sữa quay thảo mộc", "Mực sốt Thái", "Lẩu Thái hải sản", "Chè hạt sen long nhãn"] },
+            { id: 4, title: "Phú Quý Đại Cát", tag: "SANG TRỌNG", group: "SANG TRỌNG", gold: ["Chả hoa trứng muối", "Nem nướng trứng cút", "Chả quế", "Chả giò truyền thống"], nonGold: ["Gỏi hải sản", "Cá mú hấp Hồng Kông", "Bò nấu tiêu xanh", "Lẩu Thái hải sản", "Cơm chiên trái thơm", "Chè dưỡng nhan"] },
+            { id: 5, title: "Bách Niên Hảo Hợp", tag: "HOÀNG GIA", group: "HOÀNG GIA", gold: ["Chả giò truyền thống", "Tôm chiên bánh rế", "Nem chua Lai Vung", "Chả quế"], nonGold: ["Soup cua tóc tiên", "Gà quay da giòn kiểu Hoa", "Tôm cháy bơ tỏi - bánh đúc", "Lẩu cua đồng hải sản", "Rau câu dừa"] },
+            { id: 7, title: "Long Phụng Hòa Minh", tag: "VIP CAO CẤP", group: "CAO CẤP", gold: ["Chả hoa trứng muối", "Chả lụa, pate", "Nem nướng trứng cút", "Tôm chiên xù"], nonGold: ["Gỏi ức vịt xông khói", "Vịt tỳ bà", "Cá chẽm hấp chanh kiểu Thái", "Cù lao", "Chè hạt sen long nhãn"] },
+            { id: 8, title: "Kết Tình Trăm Năm", tag: "TIÊU CHUẨN", group: "TIÊU CHUẨN", gold: ["Nem chua Lai Vung", "Tôm chiên xù", "Chả giò truyền thống", "Bánh bao chiên"], nonGold: ["Gỏi ngũ sắc", "Gà bó xôi", "Mực sốt Thái", "Lẩu Thái hải sản", "Rau câu dừa"] },
+            { id: 9, title: "Nghĩa Tình Phu Thê", tag: "BÌNH DÂN", group: "BÌNH DÂN", gold: ["Chả giò hải sản", "Bánh bao chiên", "Nem nướng trứng cút", "Chả quế"], nonGold: ["Gỏi bò bóp thấu", "Gà hấp mắm nhĩ", "Tôm sốt trứng muối", "Cù lao", "Rau câu dừa"] },
+            { id: 10, title: "Sắc Son Vẹn Tròn", tag: "ĐẶC SẮC", group: "ĐẶC SẮC", gold: ["Nem nướng trứng cút", "Chả quế", "Chả giò truyền thống", "Chả lụa, pate"], nonGold: ["Gỏi củ hủ dừa tôm thịt", "Vịt tỳ bà", "Bò lúc lắc khoai tây chiên", "Lẩu cua đồng hải sản", "Chè dưỡng nhan"] },
+            { id: 11, title: "Mỹ Vị Uyên Ương", tag: "SANG TRỌNG", group: "SANG TRỌNG", gold: ["Chả hoa trứng muối", "Chả giò truyền thống", "Nem chua Lai Vung", "Chả quế"], nonGold: ["Soup cua tóc tiên", "Cá mú phi lê chiên giòn sốt chanh dây", "Bò hầm rượu vang", "Lẩu Thái hải sản", "Cơm chiên hải sản hoàng kim", "Rau câu dừa"] },
+            { id: 12, title: "Hạnh Phúc Vàng", tag: "TRUYỀN THỐNG", group: "TRUYỀN THỐNG", gold: ["Tôm chiên bánh rế", "Nem chua Lai Vung", "Nem nướng trứng cút", "Chả quế"], nonGold: ["Gỏi hải sản", "Gà tiềm ớt hiểm", "Giò heo quay lu da giòn", "Lẩu cua đồng hải sản", "Chè hạt sen long nhãn"] },
+            { id: 13, title: "Tơ Hồng Se Duyên", tag: "TIÊU CHUẨN", group: "TIÊU CHUẨN", gold: ["Chả giò hải sản", "Nem nướng trứng cút", "Chả lụa, pate", "Bánh bao chiên"], nonGold: ["Gỏi ngó sen tôm thịt", "Gà quay da giòn kiểu Hoa", "Tôm sốt chanh dây", "Lẩu Thái hải sản", "Rau câu dừa"] },
+            { id: 14, title: "Vĩnh Kết Đồng Tâm", tag: "VIP CAO CẤP", group: "CAO CẤP", gold: ["Chả hoa trứng muối", "Tôm chiên xù", "Nem chua Lai Vung", "Chả quế"], nonGold: ["Gỏi ngũ sắc", "Cá mú hấp Hồng Kông", "Heo sữa quay thảo mộc", "Cù lao", "Chè dưỡng nhan"] },
+            { id: 15, title: "Kim Ngọc Mãn Đường", tag: "HOÀNG GIA", group: "HOÀNG GIA", gold: ["Chả giò truyền thống", "Chả lụa, pate", "Nem nướng trứng cút", "Chả quế"], nonGold: ["Soup gà nấm tuyết", "Vịt tỳ bà", "Bò nấu tiêu xanh", "Lẩu Thái hải sản", "Cơm chiên trái thơm", "Chè hạt sen long nhãn"] },
+            { id: 16, title: "Thiên Niên Tình Sử", tag: "ĐẶC SẮC", group: "ĐẶC SẮC", gold: ["Nem chua Lai Vung", "Chả quế", "Chả giò truyền thống", "Chả lụa, pate"], nonGold: ["Gỏi ức vịt xông khói", "Gà hấp mắm nhĩ", "Tôm cháy bơ tỏi - bánh đúc", "Lẩu cua đồng hải sản", "Rau câu dừa"] },
+            { id: 17, title: "Khánh Hỷ Lâm Môn", tag: "BÌNH DÂN", group: "BÌNH DÂN", gold: ["Chả giò truyền thống", "Nem nướng trứng cút", "Chả quế", "Bánh bao chiên"], nonGold: ["Gỏi bò bóp thấu", "Giò heo quay lu da giòn", "Cá chẽm hấp chanh kiểu Thái", "Cù lao", "Rau câu dừa"] },
+            { id: 18, title: "Cát Tường Như Ý", tag: "TIÊU CHUẨN", group: "TIÊU CHUẨN", gold: ["Chả giò hải sản", "Tôm chiên bánh rế", "Nem chua Lai Vung", "Chả quế"], nonGold: ["Gỏi củ hủ dừa tôm thịt", "Gà tiềm ớt hiểm", "Bò lúc lắc khoai tây chiên", "Lẩu Thái hải sản", "Chè dưỡng nhan"] },
+            { id: 19, title: "Thịnh Vượng An Khang", tag: "SANG TRỌNG", group: "SANG TRỌNG", gold: ["Chả hoa trứng muối", "Nem chua Lai Vung", "Nem nướng trứng cút", "Chả quế"], nonGold: ["Gỏi hải sản", "Giò heo quay lu da giòn", "Mực sốt Thái", "Lẩu cua đồng hải sản", "Cơm chiên hải sản hoàng kim", "Chè hạt sen long nhãn"] },
+            { id: 20, title: "HOÀNG GIA Tiệc Cưới", tag: "HOÀNG GIA", group: "HOÀNG GIA", gold: ["Chả giò truyền thống", "Tôm chiên xù", "Nem chua Lai Vung", "Chả quế"], nonGold: ["Soup cua tóc tiên", "Heo sữa quay thảo mộc", "Cá mú hấp Hồng Kông", "Lẩu Thái hải sản", "Chè dưỡng nhan"] }
+        ];
+
+        let selectedNonGold = [];
+        let selectedGold = [];
+        
+        let currentAppTab = "dishes"; 
+        let activeDishCategory = "TAB 1 - GỎI"; // Tab mặc định
+        let activeSampleGroup = "ALL"; 
+
+        let embeddedCurrentPage = 1;
+        const itemsPerPage = 6; 
+
+        let sampleMenuAssignedImages = {};
+
+        function cleanId(name) {
+            return encodeURIComponent(name).replace(/%/g, '_');
+        }
+
+        // BỘ ĐIỀU PHỐI LOGO LỖI CHỐNG KHUNG TRẮNG KHI CHẠY OFFLINE TRÊN ACODE
+        function handleLogoFallback(imgElement) {
+            let step = parseInt(imgElement.getAttribute('data-retry-step') || '0');
+            const logoVariations = [
+                'logo1.png',
+                'logo.png',
+                'images/logo1.png',
+                'images/logo.png',
+                'logo1.JPG',
+                'logo1.jpg'
+            ];
+            
+            if (step < logoVariations.length) {
+                imgElement.setAttribute('data-retry-step', step + 1);
+                setTimeout(function() {
+                    imgElement.src = logoVariations[step];
+                }, 50);
+            } else {
+                imgElement.onerror = null;
+                // Nếu chạy offline trên Acode không thấy bất kỳ tệp logo nào, ẩn icon lỗi để giữ khung App Bar sạch đẹp
+                imgElement.style.display = 'none';
+            }
+        }
+
+        // BỘ ĐIỀU PHỐI VÒNG LẶP TUẦN TỰ ĐA DẠNG ĐUÔI MÓN ĂN
+        function handleImageFallback(imgElement, originalSrc, isSample) {
+            if (!originalSrc) originalSrc = 'default.jpg';
+            let step = parseInt(imgElement.getAttribute('data-retry-step') || '0');
+            let baseName = originalSrc.replace(/\.(jpg|jpeg|png)$/i, '');
+            
+            const variations = [
+                'images/' + baseName.toUpperCase() + '.jpg',
+                'images/' + baseName.toUpperCase() + '.JPG',
+                'images/' + baseName.toUpperCase() + '.jpeg',
+                'images/' + baseName.toUpperCase() + '.JPEG',
+                'images/' + baseName.toLowerCase() + '.jpg',
+                'images/' + baseName.toLowerCase() + '.JPG',
+                'images/' + baseName.toLowerCase() + '.jpeg',
+                'images/' + baseName.toLowerCase() + '.JPEG',
+                baseName.toUpperCase() + '.jpg',
+                baseName.toLowerCase() + '.jpg'
+            ];
+            
+            if (step < variations.length) {
+                imgElement.setAttribute('data-retry-step', step + 1);
+                setTimeout(function() {
+                    imgElement.src = variations[step];
+                }, 50);
+            } else {
+                imgElement.onerror = null; 
+                setTimeout(function() {
+                    if (isSample) {
+                        imgElement.src = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=300&auto=format&fit=crop";
+                    } else {
+                        imgElement.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=300&auto=format&fit=crop";
+                    }
+                }, 50);
+            }
+        }
+
+        // --- 3. SỬA ĐỔI HÀM INIT ĐỂ LẤY DỮ LIỆU TỪ CSDL ---
+        async function initApp() {
+            try {
+                // Kéo dữ liệu từ bảng 'dishes' trên Supabase
+                const { data, error } = await supabase.from('dishes').select('*');
+                
+                if (error) throw error;
+
+                if (data && data.length > 0) {
+                    // Nếu có dữ liệu, chuyển hoá chúng vào cấu trúc cũ
+                    document.getElementById('loadingIndicator').style.display = 'none'; // Ẩn dòng chữ Đang tải
+                    
+                    data.forEach((dish, idx) => {
+                        // Tách tên file ảnh từ đường dẫn CSDL (VD: "./images/GOI.jpg" -> "GOI.jpg")
+                        let rawImg = dish.image_url || "";
+                        let cleanImg = rawImg.split('/').pop(); 
+                        
+                        allDishImages[dish.name] = cleanImg;
+                        
+                        if (!menuData[dish.category]) {
+                            menuData[dish.category] = [];
+                        }
+                        
+                        menuData[dish.category].push({
+                            id: idx + 1,
+                            name: dish.name,
+                            img: cleanImg,
+                            desc: "Món ăn tiệc cưới đặc sắc, đậm đà chuẩn vị miền Tây."
+                        });
+                    });
+
+                    // Cập nhật lại tab mặc định nếu bảng dữ liệu có tên tab khác
+                    const availableCategories = Object.keys(menuData);
+                    if (!availableCategories.includes(activeDishCategory) && availableCategories.length > 0) {
+                        activeDishCategory = availableCategories[0];
+                    }
+                }
+            } catch (err) {
+                console.error("Lỗi kết nối CSDL Supabase:", err);
+                document.getElementById('loadingIndicator').innerText = "Không thể kết nối máy chủ dữ liệu. Vui lòng kiểm tra lại mạng hoặc cấu hình!";
+            }
+
+            generateRandomImagesForSamples();
+            renderTopCategoryBar();
+            renderDishes();
+            renderMenu();
+        }
+
+        function generateRandomImagesForSamples() {
+            sampleMenus.forEach((menu) => {
+                let allPossibleDishes = [...menu.nonGold, ...menu.gold];
+                let selectedDish = "";
+                if (allPossibleDishes.length > 0) {
+                    let randomIndex = Math.floor(Math.random() * allPossibleDishes.length);
+                    selectedDish = allPossibleDishes[randomIndex];
+                }
+                let dishImgFile = allDishImages[selectedDish] || "GOI-HAI-SAN.jpg";
+                sampleMenuAssignedImages[menu.id] = dishImgFile;
+            });
+        }
+
+        function shuffleSampleImages() {
+            generateRandomImagesForSamples();
+            renderEmbeddedSampleMenus();
+        }
+
+        function renderTopCategoryBar() {
+            const topCategoryBar = document.getElementById('topCategoryBar');
+            topCategoryBar.innerHTML = '';
+            
+            if (currentAppTab === 'dishes') {
+                topCategoryBar.style.display = 'flex';
+                for (const category in menuData) {
+                    const btn = document.createElement('button');
+                    btn.className = `top-tab-btn ${category === activeDishCategory ? 'active' : ''}`;
+                    let cleanDisplayName = category.replace(/TAB \d+\s*-\s*/, '').replace('MÓN CHÍNH - ', '');
+                    btn.innerText = cleanDisplayName;
+                    btn.id = `top-btn-${cleanId(category)}`; 
+                    btn.onclick = () => selectDishCategory(category);
+                    topCategoryBar.appendChild(btn);
+                }
+            } else if (currentAppTab === 'samples') {
+                topCategoryBar.style.display = 'flex';
+                
+                const groups = [
+                    { key: "ALL", label: "Tất Cả Mẫu" },
+                    { key: "BÌNH DÂN", label: "Hạng Bình Dân" },
+                    { key: "TIÊU CHUẨN", label: "Hạng Tiêu Chuẩn" },
+                    { key: "ĐẶC SẮC", label: "Hạng Đặc Sắc" },
+                    { key: "SANG TRỌNG", label: "Hạng Sang Trọng" },
+                    { key: "CAO CẤP", label: "Hạng Cao Cấp" },
+                    { key: "HOÀNG GIA", label: "Hạng Hoàng Gia" },
+                    { key: "TRUYỀN THỐNG", label: "Hạng Truyền Thống" }
+                ];
+
+                groups.forEach(g => {
+                    const btn = document.createElement('button');
+                    btn.className = `top-tab-btn ${g.key === activeSampleGroup ? 'active' : ''}`;
+                    btn.innerText = g.label;
+                    btn.onclick = () => selectSampleGroup(g.key, g.label);
+                    topCategoryBar.appendChild(btn);
+                });
+            } else {
+                topCategoryBar.style.display = 'none';
+            }
+        }
+
+        function switchScreen(screenName) {
+            currentAppTab = screenName;
+            document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+            renderTopCategoryBar();
+
+            if (screenName === 'dishes') {
+                document.getElementById('screenDishes').classList.add('active');
+                document.getElementById('navHome').classList.add('active');
+            } else if (screenName === 'samples') {
+                document.getElementById('screenSamples').classList.add('active');
+                document.getElementById('navSamples').classList.add('active');
+                embeddedCurrentPage = 1; 
+                renderEmbeddedSampleMenus();
+            } else if (screenName === 'menu') {
+                document.getElementById('screenMenu').classList.add('active');
+                document.getElementById('navCart').classList.add('active');
+            }
+        }
+
+        function selectDishCategory(category) {
+            activeDishCategory = category;
+            document.querySelectorAll('.top-tab-btn').forEach(b => b.classList.remove('active'));
+            const targetBtn = document.getElementById(`top-btn-${cleanId(category)}`);
+            if (targetBtn) {
+                targetBtn.classList.add('active');
+                targetBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+            }
+            let displayTitle = category.replace(/TAB \d+\s*-\s*/, '');
+            document.getElementById('currentCategoryTitle').innerText = `Món ăn: ${displayTitle}`;
+            renderDishes();
+        }
+
+        function selectSampleGroup(groupKey, groupLabel) {
+            activeSampleGroup = groupKey;
+            document.getElementById('currentSampleGroupTitle').innerText = `Hạng Tiệc: ${groupLabel.toUpperCase()}`;
+            embeddedCurrentPage = 1;
+            renderTopCategoryBar();
+            renderEmbeddedSampleMenus();
+        }
+
+        function renderEmbeddedSampleMenus() {
+            const gridContainer = document.getElementById('embeddedSampleMenusGrid');
+            const paginationContainer = document.getElementById('embeddedPaginationControls');
+            gridContainer.innerHTML = '';
+            paginationContainer.innerHTML = '';
+
+            const filteredMenus = sampleMenus.filter(menu => {
+                if (activeSampleGroup === "ALL") return true;
+                return menu.group === activeSampleGroup;
+            });
+
+            if (filteredMenus.length === 0) {
+                gridContainer.innerHTML = '<div style="grid-column: span 2; text-align:center; color:#999; padding:20px; font-style:italic;">Hạng tiệc này hiện chưa có thực đơn mẫu sẵn...</div>';
+                return;
+            }
+
+            const totalPages = Math.ceil(filteredMenus.length / itemsPerPage);
+            const startIndex = (embeddedCurrentPage - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredMenus.length);
+
+            for (let i = startIndex; i < endIndex; i++) {
+                const menu = filteredMenus[i];
+                const card = document.createElement('div');
+                card.className = 'sample-menu-thumb-card';
+                
+                let dishImgFile = sampleMenuAssignedImages[menu.id] || "GOI-HAI-SAN.jpg";
+                
+                card.innerHTML = `
+                    <div class="sample-image-container" onclick="openSampleLightbox(${menu.id})">
+                        <img class="sample-menu-img" src="images/${dishImgFile}" alt="${menu.title}" onerror="handleImageFallback(this, '${dishImgFile}', true)">
+                        <div class="sample-image-overlay">${menu.tag}</div>
+                        <button class="zoom-btn-trigger" onclick="event.stopPropagation(); openSampleLightbox(${menu.id});">
+                            <i class="fa-solid fa-expand"></i>
+                        </button>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px; flex-grow:1;">
+                        <div class="sample-card-title">${menu.title}</div>
+                        <button class="apply-sample-btn" onclick="applySampleMenu(${menu.id})" style="margin-top:auto;">Áp dụng mẫu</button>
+                    </div>
+                `;
+                gridContainer.appendChild(card);
+            }
+
+            if (totalPages > 1) {
+                for (let p = 1; p <= totalPages; p++) {
+                    const pBtn = document.createElement('button');
+                    pBtn.className = `sheet-page-btn ${embeddedCurrentPage === p ? 'active' : ''}`;
+                    pBtn.innerText = p;
+                    pBtn.onclick = () => {
+                        embeddedCurrentPage = p;
+                        renderEmbeddedSampleMenus();
+                    };
+                    paginationContainer.appendChild(pBtn);
+                }
+            }
+        }
+
+        function renderDishes() {
+            const container = document.getElementById('dishesListContainer');
+            container.innerHTML = '';
+
+            if (!menuData[activeDishCategory]) return;
+
+            menuData[activeDishCategory].forEach(dish => {
+                const card = document.createElement('div');
+                card.className = 'dish-card-app';
+                
+                const safeDishName = dish.name.replace(/'/g, "\\'");
+                const safeCategory = activeDishCategory.replace(/'/g, "\\'");
+                const safeDesc = (dish.desc || "Món ăn tiệc cưới đặc sắc, đậm đà chuẩn vị miền Tây.").replace(/'/g, "\\'");
+
+                card.innerHTML = `
+                    <div class="img-thumb-container" onclick="openSingleDishImageLightbox('${safeDishName}', '${dish.img}', '${safeDesc}')">
+                        <img class="dish-thumb" src="images/${dish.img}" alt="${dish.name}" onerror="handleImageFallback(this, '${dish.img}', false)">
+                        <div class="dish-img-overlay-zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
+                    </div>
+                    <div class="dish-details">
+                        <div>
+                            <div class="dish-title">${dish.name}</div>
+                            <div class="dish-desc">${dish.desc || 'Món ăn tiệc cưới đặc sắc, đậm đà chuẩn vị miền Tây.'}</div>
+                        </div>
+                        <button class="add-app-btn" onclick="addDish('${safeDishName}', '${safeCategory}')">➕ Chọn món</button>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function openSingleDishImageLightbox(dishName, imgFileName, dishDesc) {
+            const cardModal = document.getElementById('lightboxContentCard');
+            cardModal.className = "lightbox-card-preview lightbox-single-img-mode";
+
+            cardModal.innerHTML = `
+                <span class="lightbox-close-btn" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></span>
+                <div style="display:flex; flex-direction:column; gap:10px; align-items:center;">
+                    <img class="lightbox-dish-big-img" src="images/${imgFileName}" alt="${dishName}" onerror="handleImageFallback(this, '${imgFileName}', false)">
+                    <h3 style="font-size:1.05rem; font-weight:700; color:var(--primary-dark); text-align:center; margin-top:5px; width:100%; border-bottom:1px dashed #ddd; padding-bottom:6px;">${dishName}</h3>
+                    <p style="font-size:0.78rem; color:#555; text-align:justify; line-height:1.4; padding:0 4px; font-style:italic;">${dishDesc}</p>
+                </div>
+            `;
+            document.getElementById('lightboxModal').style.display = 'flex';
+        }
+
+        function openSampleLightbox(id) {
+            const menu = sampleMenus.find(m => m.id === id);
+            if(!menu) return;
+
+            const cardModal = document.getElementById('lightboxContentCard');
+            cardModal.className = "lightbox-card-preview";
+
+            cardModal.innerHTML = `
+                <span class="lightbox-close-btn" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></span>
+                <div style="text-align:center; border-bottom:1px solid var(--gold-dark); padding-bottom:8px;">
+                    <h3 style="font-family:'Great Vibes', cursive; font-size:2.2rem; color:var(--primary-dark);">${menu.title}</h3>
+                    <p style="font-size:0.75rem; color:var(--gold-dark); font-weight:700; letter-spacing:1px;">${menu.tag}</p>
+                </div>
+                <div class="lightbox-menu-list" id="lightboxMenuList"></div>
+                <button class="lightbox-action-btn" id="lightboxApplyBtn">✔ Áp dụng mẫu thực đơn này</button>
+            `;
+            
+            const listContainer = document.getElementById('lightboxMenuList');
+            let currentNo = 1;
+            if(menu.gold.length > 0) {
+                const li = document.createElement('div');
+                li.className = 'lightbox-menu-item';
+                li.innerText = `${currentNo}. Khai vị Đồ Nguội ${menu.gold.length} món (${menu.gold.join(', ')})`;
+                listContainer.appendChild(li);
+                currentNo++;
+            }
+            menu.nonGold.forEach(m => {
+                const li = document.createElement('div');
+                li.className = 'lightbox-menu-item';
+                li.innerText = `${currentNo}. ${m}`;
+                listContainer.appendChild(li);
+                currentNo++;
+            });
+
+            document.getElementById('lightboxModal').style.display = 'flex';
+            
+            document.getElementById('lightboxApplyBtn').onclick = () => {
+                applySampleMenu(id);
+                closeLightbox();
+            };
+        }
+
+        function closeLightbox() {
+            document.getElementById('lightboxModal').style.display = 'none';
+        }
+
+        function applySampleMenu(id) {
+            const menu = sampleMenus.find(m => m.id === id);
+            if(!menu) return;
+
+            selectedGold = [...menu.gold];
+            selectedNonGold = [...menu.nonGold];
+            
+            renderMenu();
+            animateBadge();
+            
+            switchScreen('menu');
+            document.getElementById('weddingMenu').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function addDish(dishName, category) {
+            // Sửa "ĐỒ NỔI" thành "ĐỒ NGUỘI" để nhận diện đúng tab
+            if (category.includes("ĐỒ NGUỘI")) {
+                if (!selectedGold.includes(dishName)) {
+                    selectedGold.push(dishName);
+                    renderMenu();
+                    animateBadge();
+                } else {
+                    alert("Món đồ nguội này đã có trong khai vị rồi ạ!");
+                }
+            } else {
+                if (!selectedNonGold.includes(dishName)) {
+                    selectedNonGold.push(dishName);
+                    renderMenu();
+                    animateBadge();
+                } else {
+                    alert("Món này đã được thêm vào thực đơn rồi ạ!");
+                }
+            }
+        }
+
+        function animateBadge() {
+            const badge = document.getElementById('cartBadge');
+            badge.style.transform = 'scale(1.4)';
+            setTimeout(() => badge.style.transform = 'scale(1)', 200);
+        }
+
+        function removeNonGold(index) {
+            selectedNonGold.splice(index, 1);
+            renderMenu();
+        }
+
+        function removeAllGold() {
+            selectedGold = [];
+            renderMenu();
+        }
+
+        function removeGoldItem(gIdx) {
+            selectedGold.splice(gIdx, 1);
+            renderMenu();
+        }
+
+        function renderMenu() {
+            const menuBody = document.getElementById('menuBody');
+            const cartBadge = document.getElementById('cartBadge');
+            
+            const totalCount = selectedNonGold.length + (selectedGold.length > 0 ? 1 : 0);
+            cartBadge.innerText = totalCount;
+
+            if (selectedNonGold.length === 0 && selectedGold.length === 0) {
+                menuBody.innerHTML = '<div class="empty-message">Anh chưa chọn món hoặc chưa áp dụng thực đơn mẫu nào hết...</div>';
+                return;
+            }
+
+            menuBody.innerHTML = '';
+            let currentNo = 1;
+
+            if (selectedGold.length > 0) {
+                const item = document.createElement('div');
+                item.className = 'selected-item';
+                
+                // Trình bày danh sách món Đồ Nguội
+                const listItems = selectedGold.map((gDish, gIdx) => `
+                    <span style="display:block; margin-top:4px;">
+                        • ${gDish} 
+                        <button class="delete-sub-btn" onclick="removeGoldItem(${gIdx})">[Xóa]</button>
+                    </span>
+                `).join('');
+
+                item.innerHTML = `
+                    <div class="item-content">
+                        <div class="item-title">${currentNo}. Khai Vị Đồ Nguội (${selectedGold.length} món)</div>
+                        <div class="item-note" style="margin-left: 10px;">${listItems}</div>
+                    </div>
+                    <button class="delete-btn" onclick="removeAllGold()">✕</button>
+                `;
+
+                menuBody.appendChild(item);
+                currentNo++;
+            }
+
+            selectedNonGold.forEach((dish, index) => {
+                const item = document.createElement('div');
+                item.className = 'selected-item';
+                item.innerHTML = `
+                    <div class="item-content">
+                        <div class="item-title">${currentNo}. ${dish}</div>
+                    </div>
+                    <button class="delete-btn" onclick="removeNonGold(${index})">✕</button>
+                `;
+                menuBody.appendChild(item);
+                currentNo++;
+            });
+        }
+
+        function saveMenuAsImage() {
+            if (selectedNonGold.length === 0 && selectedGold.length === 0) {
+                alert("Thực đơn trống, chưa thể xuất ảnh được ạ!");
+                return;
+            }
+
+            const menuElement = document.getElementById('weddingMenu');
+            menuElement.classList.add('html2canvas-container');
+
+            html2canvas(menuElement, {
+                backgroundColor: '#fefcf7',
+                scale: 2, 
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Thuc_Don_Phi_Long.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                menuElement.classList.remove('html2canvas-container');
+            }).catch(err => {
+                console.error("Lỗi khi xuất ảnh: ", err);
+                menuElement.classList.remove('html2canvas-container');
+            });
+        }
+
+        // Tự động kích hoạt khi tải trang
+        window.onload = initApp;
+    </script>
+</body>
+</html>
