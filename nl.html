@@ -97,6 +97,9 @@
             header h1 { font-size: 20px !important; }
             .grid { gap: 14px !important; }
         }
+		#menus-container {
+            padding-bottom: 120px !important;
+        }
     </style>
 </head>
 <body class="bg-gradient-to-br from-amber-50 via-white to-orange-50 font-sans min-h-screen antialiased">
@@ -618,12 +621,107 @@
         function renderMenuDishSelector() {
             const container = document.getElementById("menu-dish-selector");
             container.innerHTML = "";
+            
+            // Khởi tạo bộ nhớ để giữ các nhóm đang mở khi cập nhật giao diện
+            window.openDishGroups = window.openDishGroups || ["Khai Vị / Đồ Nguội / Soup"]; 
+            
+            const groups = {
+                "Khai Vị / Đồ Nguội / Soup": [],
+                "Món Lẩu": [],
+                "Món Chính (Thịt, Hải Sản)": [],
+                "Cơm / Tráng Miệng": [],
+                "Khác": []
+            };
+
             dishesList.forEach(dish => {
-                const btn = document.createElement("button"); btn.type = "button";
-                btn.className = "bg-white border border-slate-200 text-slate-700 text-[11px] font-bold px-2.5 py-1.5 rounded-lg hover:bg-amber-50 cursor-pointer";
-                btn.innerText = `+ ${dish.name}`; btn.onclick = () => selectDishToMenuForm(dish.id);
-                container.appendChild(btn);
+                const name = dish.name.toLowerCase();
+                if (name.includes('gỏi') || name.includes('nộm') || name.includes('chả') || name.includes('nem') || name.includes('nguội') || name.includes('soup') || name.includes('súp')) {
+                    groups["Khai Vị / Đồ Nguội / Soup"].push(dish);
+                } else if (name.includes('lẩu') || name.includes('cù lao')) {
+                    groups["Món Lẩu"].push(dish);
+                } else if (name.includes('heo') || name.includes('bò') || name.includes('gà') || name.includes('vịt') || name.includes('tôm') || name.includes('cá') || name.includes('mực') || name.includes('cua') || name.includes('ghẹ')) {
+                    groups["Món Chính (Thịt, Hải Sản)"].push(dish);
+                } else if (name.includes('cơm') || name.includes('xôi') || name.includes('chè') || name.includes('rau câu') || name.includes('sữa chua') || name.includes('tráng miệng') || name.includes('tàu hủ')) {
+                    groups["Cơm / Tráng Miệng"].push(dish);
+                } else {
+                    groups["Khác"].push(dish);
+                }
             });
+
+            // Điều chỉnh lại khung chứa bên ngoài cho đẹp hơn
+            container.className = "flex flex-col max-h-64 overflow-y-auto rounded-xl gap-2";
+
+            for (const [groupName, dishes] of Object.entries(groups)) {
+                if (dishes.length > 0) {
+                    // Khung của 1 nhóm
+                    const groupDiv = document.createElement("div");
+                    groupDiv.className = "bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm shrink-0";
+
+                    // Nút nhấn để mở/Đóng nhóm
+                    const header = document.createElement("button");
+                    header.type = "button";
+                    header.className = "w-full flex justify-between items-center p-3 bg-amber-50/50 text-amber-800 font-bold text-[11px] uppercase tracking-wide focus:outline-none";
+                    
+                    const isOpen = window.openDishGroups.includes(groupName);
+                    header.innerHTML = `<span><i class="fa-solid fa-list mr-1.5 opacity-60"></i> ${groupName} (${dishes.length})</span> <i class="fa-solid fa-chevron-down transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}"></i>`;
+                    
+                    // Danh sách món ăn bên trong
+                    const listContainer = document.createElement("div");
+                    listContainer.className = `divide-y divide-slate-100 ${isOpen ? '' : 'hidden'}`; 
+                    
+                    // Xử lý sự kiện đóng/mở nhóm
+                    header.onclick = (e) => {
+                        e.preventDefault();
+                        const currentlyHidden = listContainer.classList.contains("hidden");
+                        if (currentlyHidden) {
+                            listContainer.classList.remove("hidden");
+                            header.querySelector(".fa-chevron-down").classList.add("rotate-180");
+                            if (!window.openDishGroups.includes(groupName)) window.openDishGroups.push(groupName);
+                        } else {
+                            listContainer.classList.add("hidden");
+                            header.querySelector(".fa-chevron-down").classList.remove("rotate-180");
+                            window.openDishGroups = window.openDishGroups.filter(g => g !== groupName);
+                        }
+                    };
+
+                    // Hiển thị từng món ăn thành 1 dòng lớn
+                    dishes.forEach(dish => {
+                        const isSelected = selectedDishIdsInMenuForm.includes(dish.id);
+                        
+                        const dishRow = document.createElement("div");
+                        dishRow.className = "flex justify-between items-center p-3.5 hover:bg-slate-50 transition-colors cursor-pointer active:bg-slate-100";
+                        
+                        const nameSpan = document.createElement("span");
+                        nameSpan.className = `text-[12px] ${isSelected ? 'text-amber-600 font-black' : 'text-slate-700 font-semibold'}`;
+                        nameSpan.innerText = dish.name;
+                        
+                        const actionBtn = document.createElement("div");
+                        if (isSelected) {
+                            actionBtn.className = "shrink-0 bg-amber-500 text-white w-6 h-6 flex items-center justify-center rounded-md shadow-inner";
+                            actionBtn.innerHTML = `<i class="fa-solid fa-check text-[10px]"></i>`;
+                        } else {
+                            actionBtn.className = "shrink-0 bg-slate-50 text-slate-400 w-6 h-6 flex items-center justify-center rounded-md border border-slate-200";
+                            actionBtn.innerHTML = `<i class="fa-solid fa-plus text-[10px]"></i>`;
+                        }
+
+                        // Nhấn vào dòng là chọn món
+                        dishRow.onclick = () => {
+                            if (!isSelected) {
+                                selectDishToMenuForm(dish.id);
+                                renderMenuDishSelector(); 
+                            }
+                        };
+
+                        dishRow.appendChild(nameSpan);
+                        dishRow.appendChild(actionBtn);
+                        listContainer.appendChild(dishRow);
+                    });
+
+                    groupDiv.appendChild(header);
+                    groupDiv.appendChild(listContainer);
+                    container.appendChild(groupDiv);
+                }
+            }
         }
 
         function selectDishToMenuForm(id) { if (!selectedDishIdsInMenuForm.includes(id)) { selectedDishIdsInMenuForm.push(id); renderSelectedDishesBadges(); } }
@@ -639,7 +737,11 @@
             });
         }
 
-        function removeSelectedDishFromMenu(id) { selectedDishIdsInMenuForm = selectedDishIdsInMenuForm.filter(x => x !== id); renderSelectedDishesBadges(); }
+        function removeSelectedDishFromMenu(id) { 
+            selectedDishIdsInMenuForm = selectedDishIdsInMenuForm.filter(x => x !== id); 
+            renderSelectedDishesBadges(); 
+            renderMenuDishSelector(); // Thêm dòng này để cập nhật lại giao diện chọn món
+        }
 
         async function saveMenu() {
             const customer = document.getElementById("menu-customer").value.trim();
@@ -665,7 +767,8 @@
         }
 
         function renderMenus() {
-            const container = document.getElementById("menus-container"); container.innerHTML = "";
+            const container = document.getElementById("menus-container"); 
+            container.innerHTML = "";
             if(menusList.length === 0) {
                 container.innerHTML = `<div class="bg-white border border-slate-200 p-8 rounded-2xl text-center text-xs text-slate-400 italic">Chưa có lịch đặt tiệc nào trên đám mây.</div>`;
                 return;
@@ -679,15 +782,12 @@
                 });
                 
                 const computedLunar = getLunarDateString(menu.date);
-
-                // KIỂM TRA XEM TIỆC CÓ GẦN DIỄN RA KHÔNG
                 const partyDate = new Date(menu.date); partyDate.setHours(0,0,0,0);
                 const dayDiff = Math.ceil((partyDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
                 const isNear = (dayDiff >= 0 && dayDiff <= 5);
                 
-                // CSS thay đổi nếu tiệc sắp diễn ra
                 let borderClass = isNear ? "border-rose-400 shadow-md shadow-rose-100 bg-rose-50/30" : "border-slate-200 bg-white hover:border-amber-300";
-                let alertBadge = isNear ? `<div class="inline-block bg-rose-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg mb-3 animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> CẢNH BÁO: SẮP DIỄN RA (${dayDiff === 0 ? 'HÔM NAY' : dayDiff + ' NGÀY NỮA'})</div>` : "";
+                let alertBadge = isNear ? `<div class="inline-block bg-rose-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg mb-3 animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> SẮP DIỄN RA</div>` : "";
 
                 const block = document.createElement("div");
                 block.className = `${borderClass} border rounded-2xl p-4.5 grid grid-cols-1 md:grid-cols-3 gap-4 transition-all`;
@@ -699,20 +799,21 @@
                             <h4 class="font-black text-sm text-slate-900">${menu.customer}</h4>
                         </div>
                         <p class="text-xs font-medium text-slate-600"><i class="fa-solid fa-phone mr-1"></i> ${menu.phone}</p>
-                        
                         <div class="text-xs font-bold mt-1">
-                            <div class="text-orange-600"><i class="fa-solid fa-calendar-day mr-1"></i> Dương: ${menu.date}</div>
-                            <div class="text-[13px] text-purple-700 font-black mt-1"><i class="fa-solid fa-moon mr-1"></i> Âm Lịch: ${computedLunar}</div>
+                            <div class="text-orange-600"><i class="fa-solid fa-calendar-day mr-1"></i> ${menu.date}</div>
+                            <div class="text-[11px] text-purple-700 font-black mt-1"><i class="fa-solid fa-moon mr-1"></i> Âm: ${computedLunar}</div>
                         </div>
-                        
-                        ${menu.note ? `<p class="text-xs text-slate-500 bg-slate-50 p-2 rounded-xl italic mt-1">Ghi chú: ${menu.note}</p>` : ''}
                     </div>
                     <div class="bg-white p-3.5 rounded-xl border border-slate-100 h-fit">
                         <ul class="space-y-1">${dishListHtml}</ul>
                     </div>
-                    <div class="flex md:flex-col justify-end items-center md:items-end gap-2">
-                        <button onclick="editMenu(${menu.id})" class="text-xs font-bold text-blue-600 cursor-pointer"><i class="fa-solid fa-user-pen"></i> Sửa</button>
-                        <button onclick="removeMenu(${menu.id})" class="text-xs font-bold text-rose-500 cursor-pointer"><i class="fa-solid fa-trash"></i> Hủy tiệc</button>
+                    <div class="flex justify-end items-center gap-6 pt-3 border-t border-slate-100 md:border-t-0 md:pt-0 md:flex-col md:justify-center md:gap-3">
+                        <button onclick="editMenu(${menu.id})" class="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-100">
+                            <i class="fa-solid fa-user-pen"></i> Sửa
+                        </button>
+                        <button onclick="removeMenu(${menu.id})" class="flex items-center gap-2 text-sm font-bold text-rose-600 bg-rose-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-rose-100">
+                            <i class="fa-solid fa-trash"></i> Hủy
+                        </button>
                     </div>
                 `;
                 container.appendChild(block);
