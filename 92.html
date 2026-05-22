@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Phi Long Catering - Hệ Thống Quản Lý Thực Đơn</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght=700;800&family=Great+Vibes&family=Montserrat:wght=400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        :root {
+            --primary-dark: #660c0c;
+            --primary-light: #8e1919;
+            --gold-light: #f5d782;
+            --gold-dark: #b8860b;
+            --bg-color: #f8f9fa;
+            --text-dark: #212529;
+            --card-shadow: 0 4px 14px rgba(0,0,0,0.06);
+        }
+
+        body {
+            font-family: 'Montserrat', sans-serif;
+            background-color: var(--bg-color);
+            margin: 0;
+            padding: 20px;
+            color: var(--text-dark);
+        }
+
+        .header-title {
+            text-align: center;
+            font-family: 'Cinzel', serif;
+            color: var(--primary-dark);
+            font-size: 28px;
+            margin-bottom: 30px;
+            text-transform: uppercase;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Phần danh sách món ăn từ CSDL */
+        .dish-selector {
+            flex: 1;
+            min-width: 300px;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+        }
+
+        .category-group {
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .category-header {
+            background-color: var(--primary-dark);
+            color: white;
+            padding: 12px 15px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .category-body {
+            display: none;
+            padding: 10px;
+            background-color: #fff;
+        }
+
+        .category-body.active {
+            display: block;
+        }
+
+        .dish-item-card {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #f1f1f1;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .dish-item-card:hover {
+            background-color: #fdf5e6;
+        }
+
+        .dish-image {
+            width: 50px;
+            height: 50px;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-right: 15px;
+            border: 1px solid #ddd;
+        }
+
+        .dish-info {
+            flex: 1;
+        }
+
+        .dish-name {
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .add-btn {
+            background-color: var(--gold-dark);
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        /* Phần hiển thị Thực Đơn Đã Chọn */
+        .menu-preview {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        #weddingMenu {
+            background: #fefcf7;
+            padding: 30px;
+            border: 2px solid var(--gold-dark);
+            border-radius: 10px;
+            min-height: 500px;
+            position: relative;
+        }
+
+        .menu-preview h2 {
+            font-family: 'Great Vibes', cursive;
+            color: var(--primary-dark);
+            text-align: center;
+            font-size: 36px;
+            margin-top: 0;
+            margin-bottom: 20px;
+        }
+
+        .selected-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px dashed #ccc;
+            font-size: 16px;
+            font-weight: 500;
+        }
+
+        .delete-btn {
+            background: transparent;
+            color: red;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .action-buttons {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .btn-export {
+            background-color: var(--primary-dark);
+            color: white;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .btn-export:hover {
+            background-color: var(--primary-light);
+        }
+
+        /* Ẩn nút xóa khi xuất ảnh */
+        .html2canvas-container .delete-btn {
+            display: none !important;
+        }
+        
+        #loading {
+            text-align: center;
+            padding: 20px;
+            font-weight: bold;
+            color: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+
+    <h1 class="header-title"><i class="fa-solid fa-bell-concierge"></i> Hệ Thống Quản Lý Thực Đơn Phi Long</h1>
+
+    <div class="container">
+        <div class="dish-selector">
+            <h3><i class="fa-solid fa-list"></i> Danh sách món ăn</h3>
+            <div id="loading">Đang tải dữ liệu từ máy chủ...</div>
+            <div id="dish-categories-container"></div>
+        </div>
+
+        <div class="menu-preview">
+            <div id="weddingMenu">
+                <h2>Thực Đơn Tiệc</h2>
+                <div id="selected-dishes-list">
+                    </div>
+            </div>
+            
+            <div class="action-buttons">
+                <button class="btn-export" onclick="saveMenuAsImage()">
+                    <i class="fa-solid fa-download"></i> Xuất Ảnh Thực Đơn
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // 1. KẾT NỐI SUPABASE BẰNG KEY CỦA BẠN
+        const SUPABASE_URL = "https://kslsewlljxkwcgceqxcf.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_I1NCl_wrxzsDRM8wFXgeVQ_8W_JKlKE";
+        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Biến lưu trữ
+        let allDishes = []; 
+        let selectedDishes = [];
+
+        // 2. HÀM TẢI DỮ LIỆU TỪ CSDL
+        async function loadDishesFromDatabase() {
+            try {
+                // Gọi tới bảng 'dishes'
+                const { data, error } = await supabase
+                    .from('dishes')
+                    .select('name, category, image_url')
+                    .order('category', { ascending: true }); // Sắp xếp theo nhóm
+
+                if (error) throw error;
+
+                allDishes = data;
+                document.getElementById('loading').style.display = 'none';
+                renderCategorizedDishes(allDishes);
+
+            } catch (err) {
+                console.error("Lỗi kết nối Supabase:", err);
+                document.getElementById('loading').innerText = "Lỗi tải dữ liệu. Vui lòng kiểm tra lại cấu hình!";
+            }
+        }
+
+        // 3. HÀM GOM NHÓM VÀ HIỂN THỊ DANH SÁCH MÓN THEO TỪNG TAB (ACCORDION)
+        function renderCategorizedDishes(dishes) {
+            const container = document.getElementById('dish-categories-container');
+            container.innerHTML = '';
+
+            // Gom nhóm món ăn theo cột 'category'
+            const groupedDishes = dishes.reduce((acc, dish) => {
+                if (!acc[dish.category]) acc[dish.category] = [];
+                acc[dish.category].push(dish);
+                return acc;
+            }, {});
+
+            // Tạo giao diện cho từng nhóm
+            for (const category in groupedDishes) {
+                const groupDiv = document.createElement('div');
+                groupDiv.className = 'category-group';
+
+                // Tiêu đề nhóm
+                const headerDiv = document.createElement('div');
+                headerDiv.className = 'category-header';
+                headerDiv.innerHTML = `${category} <i class="fa-solid fa-chevron-down"></i>`;
+                
+                // Nội dung món ăn trong nhóm
+                const bodyDiv = document.createElement('div');
+                bodyDiv.className = 'category-body';
+
+                // Lặp qua từng món trong nhóm để tạo giao diện hiển thị ảnh và tên
+                groupedDishes[category].forEach(dish => {
+                    const dishItem = document.createElement('div');
+                    dishItem.className = 'dish-item-card';
+                    
+                    // Xử lý ảnh (nếu ảnh rỗng hoặc lỗi thì dùng ảnh mặc định)
+                    const imgSrc = dish.image_url ? dish.image_url : './images/default.jpg';
+
+                    dishItem.innerHTML = `
+                        <img src="${imgSrc}" class="dish-image" alt="${dish.name}" onerror="this.src='https://via.placeholder.com/50?text=No+Image'">
+                        <div class="dish-info">
+                            <div class="dish-name">${dish.name}</div>
+                        </div>
+                        <button class="add-btn" onclick="addDishToMenu('${dish.name}')"><i class="fa-solid fa-plus"></i> Chọn</button>
+                    `;
+                    bodyDiv.appendChild(dishItem);
+                });
+
+                // Xử lý sự kiện Đóng/Mở nhóm món ăn
+                headerDiv.onclick = () => {
+                    bodyDiv.classList.toggle('active');
+                    const icon = headerDiv.querySelector('i');
+                    icon.classList.toggle('fa-chevron-up');
+                    icon.classList.toggle('fa-chevron-down');
+                };
+
+                groupDiv.appendChild(headerDiv);
+                groupDiv.appendChild(bodyDiv);
+                container.appendChild(groupDiv);
+            }
+        }
+
+        // 4. CHỨC NĂNG CHỌN MÓN VÀO THỰC ĐƠN
+        function addDishToMenu(dishName) {
+            selectedDishes.push(dishName);
+            renderSelectedMenu();
+        }
+
+        // 5. CHỨC NĂNG XÓA MÓN KHỎI THỰC ĐƠN
+        function removeDishFromMenu(index) {
+            selectedDishes.splice(index, 1);
+            renderSelectedMenu();
+        }
+
+        // 6. HIỂN THỊ DANH SÁCH MÓN ĐÃ CHỌN LÊN THỰC ĐƠN BÊN PHẢI
+        function renderSelectedMenu() {
+            const listContainer = document.getElementById('selected-dishes-list');
+            listContainer.innerHTML = '';
+
+            if (selectedDishes.length === 0) {
+                listContainer.innerHTML = '<p style="text-align:center; color:#999; font-style:italic;">Chưa có món nào được chọn</p>';
+                return;
+            }
+
+            selectedDishes.forEach((dish, index) => {
+                const item = document.createElement('div');
+                item.className = 'selected-item';
+                item.innerHTML = `
+                    <span>Món ${index + 1}: ${dish}</span>
+                    <button class="delete-btn" onclick="removeDishFromMenu(${index})"><i class="fa-solid fa-xmark"></i></button>
+                `;
+                listContainer.appendChild(item);
+            });
+        }
+
+        // 7. CHỨC NĂNG XUẤT ẢNH (GIỮ NGUYÊN TỪ FILE CŨ)
+        function saveMenuAsImage() {
+            if (selectedDishes.length === 0) {
+                alert("Thực đơn trống, chưa thể xuất ảnh được ạ!");
+                return;
+            }
+
+            const menuElement = document.getElementById('weddingMenu');
+            menuElement.classList.add('html2canvas-container'); // Thêm class này để ẩn nút Xóa khi chụp ảnh
+
+            html2canvas(menuElement, {
+                backgroundColor: '#fefcf7',
+                scale: 2, 
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = 'Thuc_Don_Phi_Long_Khach_Chon.png';
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+                
+                menuElement.classList.remove('html2canvas-container');
+            }).catch(err => {
+                console.error("Lỗi khi xuất ảnh: ", err);
+                menuElement.classList.remove('html2canvas-container');
+                alert("Có lỗi khi xuất ảnh, vui lòng thử lại!");
+            });
+        }
+
+        // Khởi động ứng dụng khi trang web tải xong
+        window.onload = () => {
+            renderSelectedMenu(); // Hiển thị khung thực đơn trống ban đầu
+            loadDishesFromDatabase(); // Kéo dữ liệu từ Supabase
+        };
+    </script>
+</body>
+</html>
