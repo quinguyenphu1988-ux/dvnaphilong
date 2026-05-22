@@ -979,28 +979,38 @@
                 return;
             }
             
-            // Tạo cấu trúc dữ liệu cho Excel
-            const data = [["PHÂN LOẠI / QUẦY", "TÊN NGUYÊN LIỆU", "TỔNG SỐ LƯỢNG", "ĐƠN VỊ TÍNH"]];
+            // Khởi tạo mảng dữ liệu với cấu trúc chia nhóm
+            const data = [];
             
             for (let cat in globalCalculatedMarket) {
+                // Thêm một dòng tiêu đề nhóm (được bôi đậm/làm nổi bật bằng cách viết hoa)
+                data.push(["NHÓM: " + cat.toUpperCase(), "", "", ""]);
+                data.push(["TÊN NGUYÊN LIỆU", "TỔNG SỐ LƯỢNG", "ĐƠN VỊ", ""]);
+                
                 for (let key in globalCalculatedMarket[cat]) {
                     let item = globalCalculatedMarket[cat][key];
                     let formattedWeight = Math.round(item.totalWeight * 100) / 100;
                     let displayUnit = item.unit || "";
+                    
+                    // Quy đổi sang kg nếu là gam và >= 1000
                     if (item.unit && item.unit.toLowerCase() === "gam" && formattedWeight >= 1000) {
                         formattedWeight = Math.round((formattedWeight / 1000) * 100) / 100;
                         displayUnit = "kg";
                     }
-                    data.push([cat.toUpperCase(), item.name, formattedWeight, displayUnit]);
+                    
+                    data.push([item.name, formattedWeight, displayUnit, ""]);
                 }
+                // Thêm dòng trống giữa các nhóm cho đẹp
+                data.push(["", "", "", ""]);
             }
             
-            // Khởi tạo SheetJS và tải file
+            // Tạo Worksheet
             const ws = XLSX.utils.aoa_to_sheet(data);
             
-            // Chỉnh độ rộng cột cho đẹp
-            ws['!cols'] = [{wch: 20}, {wch: 35}, {wch: 15}, {wch: 15}];
+            // Thiết lập độ rộng cột
+            ws['!cols'] = [{wch: 35}, {wch: 15}, {wch: 15}, {wch: 10}];
             
+            // Tạo Workbook và xuất file
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "PhieuDiCho");
             XLSX.writeFile(wb, "Phieu_Di_Cho_PhiLong_Catering.xlsx");
