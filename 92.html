@@ -786,553 +786,613 @@
         <div class="lightbox-card-preview" id="lightboxContentCard" onclick="event.stopPropagation()">
             </div>
     </div>
+	
+	<script>
+        // ... (Giữ nguyên các biến Supabase, allDishImages, menuData, sampleMenus như cũ) ...
 
-    <script>
-        // --- 1. KHỞI TẠO KẾT NỐI SUPABASE ---
-        const SUPABASE_URL = "https://kslsewlljxkwcgceqxcf.supabase.co";
-        const SUPABASE_KEY = "sb_publishable_I1NCl_wrxzsDRM8wFXgeVQ_8W_JKlKE";
-        const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-
-        // --- 2. CHUYỂN DỮ LIỆU CỐ ĐỊNH THÀNH BIẾN ĐỂ CẬP NHẬT TỪ CSDL ---
-        // Biến let thay vì const để có thể ghi đè dữ liệu mới từ CSDL
-        let allDishImages = {};
-        let menuData = {};
-
-        // Thực đơn mẫu (giữ nguyên vì nó không có trên CSDL)
-        const sampleMenus = [
-            { id: 0, title: "Hương Sắc Mekong", tag: "TRUYỀN THỐNG", group: "TRUYỀN THỐNG", gold: ["Chả giò truyền thống", "Nem chua Lai Vung", "Chả quế", "Chả lụa, pate"], nonGold: ["Gỏi củ hủ dừa tôm thịt", "Gà hấp mắm nhĩ", "Bò hầm rượu vang", "Lẩu Thái hải sản", "Rau câu dừa"] },
-            { id: 1, title: "Phụng Thành Tiệc", tag: "ĐẶC SẮC", group: "ĐẶC SẮC", gold: ["Tôm chiên bánh rế", "Chả lụa, pate", "Nem nướng trứng cút", "Bánh bao chiên", "Chả hoa trứng muối"], nonGold: ["Gỏi ngũ sắc", "Cá mú phi lê sốt chanh dây", "Vịt tỳ bà", "Lẩu cua đồng hải sản", "Chè dưỡng nhan"] },
-            { id: 2, title: "Đồng Nội Duyên", tag: "BÌNH DÂN", group: "BÌNH DÂN", gold: ["Nem nướng trứng cút", "Chả quế", "Chả giò truyền thống", "Bánh bao chiên"], nonGold: ["Gỏi bò bóp thấu", "Gà tiềm ớt hiểm", "Tôm sốt trứng muối", "Cù lao", "Rau câu dừa"] },
-            { id: 3, title: "Duyên Thắm Tình", tag: "TIÊU CHUẨN", group: "TIÊU CHUẨN", gold: ["Chả giò hải sản", "Tôm chiên xù", "Nem chua Lai Vung", "Chả lụa, pate"], nonGold: ["Gỏi ngó sen tôm thịt", "Heo sữa quay thảo mộc", "Mực sốt Thái", "Lẩu Thái hải sản", "Chè hạt sen long nhãn"] },
-            { id: 4, title: "Phú Quý Đại Cát", tag: "SANG TRỌNG", group: "SANG TRỌNG", gold: ["Chả hoa trứng muối", "Nem nướng trứng cút", "Chả quế", "Chả giò truyền thống"], nonGold: ["Gỏi hải sản", "Cá mú hấp Hồng Kông", "Bò nấu tiêu xanh", "Lẩu Thái hải sản", "Cơm chiên trái thơm", "Chè dưỡng nhan"] },
-            { id: 5, title: "Bách Niên Hảo Hợp", tag: "HOÀNG GIA", group: "HOÀNG GIA", gold: ["Chả giò truyền thống", "Tôm chiên bánh rế", "Nem chua Lai Vung", "Chả quế"], nonGold: ["Soup cua tóc tiên", "Gà quay da giòn kiểu Hoa", "Tôm cháy bơ tỏi - bánh đúc", "Lẩu cua đồng hải sản", "Rau câu dừa"] },
-            { id: 7, title: "Long Phụng Hòa Minh", tag: "VIP CAO CẤP", group: "CAO CẤP", gold: ["Chả hoa trứng muối", "Chả lụa, pate", "Nem nướng trứng cút", "Tôm chiên xù"], nonGold: ["Gỏi ức vịt xông khói", "Vịt tỳ bà", "Cá chẽm hấp chanh kiểu Thái", "Cù lao", "Chè hạt sen long nhãn"] },
-            { id: 8, title: "Kết Tình Trăm Năm", tag: "TIÊU CHUẨN", group: "TIÊU CHUẨN", gold: ["Nem chua Lai Vung", "Tôm chiên xù", "Chả giò truyền thống", "Bánh bao chiên"], nonGold: ["Gỏi ngũ sắc", "Gà bó xôi", "Mực sốt Thái", "Lẩu Thái hải sản", "Rau câu dừa"] },
-            { id: 9, title: "Nghĩa Tình Phu Thê", tag: "BÌNH DÂN", group: "BÌNH DÂN", gold: ["Chả giò hải sản", "Bánh bao chiên", "Nem nướng trứng cút", "Chả quế"], nonGold: ["Gỏi bò bóp thấu", "Gà hấp mắm nhĩ", "Tôm sốt trứng muối", "Cù lao", "Rau câu dừa"] },
-            { id: 10, title: "Sắc Son Vẹn Tròn", tag: "ĐẶC SẮC", group: "ĐẶC SẮC", gold: ["Nem nướng trứng cút", "Chả quế", "Chả giò truyền thống", "Chả lụa, pate"], nonGold: ["Gỏi củ hủ dừa tôm thịt", "Vịt tỳ bà", "Bò lúc lắc khoai tây chiên", "Lẩu cua đồng hải sản", "Chè dưỡng nhan"] },
-            { id: 11, title: "Mỹ Vị Uyên Ương", tag: "SANG TRỌNG", group: "SANG TRỌNG", gold: ["Chả hoa trứng muối", "Chả giò truyền thống", "Nem chua Lai Vung", "Chả quế"], nonGold: ["Soup cua tóc tiên", "Cá mú phi lê chiên giòn sốt chanh dây", "Bò hầm rượu vang", "Lẩu Thái hải sản", "Cơm chiên hải sản hoàng kim", "Rau câu dừa"] },
-            { id: 12, title: "Hạnh Phúc Vàng", tag: "TRUYỀN THỐNG", group: "TRUYỀN THỐNG", gold: ["Tôm chiên bánh rế", "Nem chua Lai Vung", "Nem nướng trứng cút", "Chả quế"], nonGold: ["Gỏi hải sản", "Gà tiềm ớt hiểm", "Giò heo quay lu da giòn", "Lẩu cua đồng hải sản", "Chè hạt sen long nhãn"] },
-            { id: 13, title: "Tơ Hồng Se Duyên", tag: "TIÊU CHUẨN", group: "TIÊU CHUẨN", gold: ["Chả giò hải sản", "Nem nướng trứng cút", "Chả lụa, pate", "Bánh bao chiên"], nonGold: ["Gỏi ngó sen tôm thịt", "Gà quay da giòn kiểu Hoa", "Tôm sốt chanh dây", "Lẩu Thái hải sản", "Rau câu dừa"] },
-            { id: 14, title: "Vĩnh Kết Đồng Tâm", tag: "VIP CAO CẤP", group: "CAO CẤP", gold: ["Chả hoa trứng muối", "Tôm chiên xù", "Nem chua Lai Vung", "Chả quế"], nonGold: ["Gỏi ngũ sắc", "Cá mú hấp Hồng Kông", "Heo sữa quay thảo mộc", "Cù lao", "Chè dưỡng nhan"] },
-            { id: 15, title: "Kim Ngọc Mãn Đường", tag: "HOÀNG GIA", group: "HOÀNG GIA", gold: ["Chả giò truyền thống", "Chả lụa, pate", "Nem nướng trứng cút", "Chả quế"], nonGold: ["Soup gà nấm tuyết", "Vịt tỳ bà", "Bò nấu tiêu xanh", "Lẩu Thái hải sản", "Cơm chiên trái thơm", "Chè hạt sen long nhãn"] },
-            { id: 16, title: "Thiên Niên Tình Sử", tag: "ĐẶC SẮC", group: "ĐẶC SẮC", gold: ["Nem chua Lai Vung", "Chả quế", "Chả giò truyền thống", "Chả lụa, pate"], nonGold: ["Gỏi ức vịt xông khói", "Gà hấp mắm nhĩ", "Tôm cháy bơ tỏi - bánh đúc", "Lẩu cua đồng hải sản", "Rau câu dừa"] },
-            { id: 17, title: "Khánh Hỷ Lâm Môn", tag: "BÌNH DÂN", group: "BÌNH DÂN", gold: ["Chả giò truyền thống", "Nem nướng trứng cút", "Chả quế", "Bánh bao chiên"], nonGold: ["Gỏi bò bóp thấu", "Giò heo quay lu da giòn", "Cá chẽm hấp chanh kiểu Thái", "Cù lao", "Rau câu dừa"] },
-            { id: 18, title: "Cát Tường Như Ý", tag: "TIÊU CHUẨN", group: "TIÊU CHUẨN", gold: ["Chả giò hải sản", "Tôm chiên bánh rế", "Nem chua Lai Vung", "Chả quế"], nonGold: ["Gỏi củ hủ dừa tôm thịt", "Gà tiềm ớt hiểm", "Bò lúc lắc khoai tây chiên", "Lẩu Thái hải sản", "Chè dưỡng nhan"] },
-            { id: 19, title: "Thịnh Vượng An Khang", tag: "SANG TRỌNG", group: "SANG TRỌNG", gold: ["Chả hoa trứng muối", "Nem chua Lai Vung", "Nem nướng trứng cút", "Chả quế"], nonGold: ["Gỏi hải sản", "Giò heo quay lu da giòn", "Mực sốt Thái", "Lẩu cua đồng hải sản", "Cơm chiên hải sản hoàng kim", "Chè hạt sen long nhãn"] },
-            { id: 20, title: "HOÀNG GIA Tiệc Cưới", tag: "HOÀNG GIA", group: "HOÀNG GIA", gold: ["Chả giò truyền thống", "Tôm chiên xù", "Nem chua Lai Vung", "Chả quế"], nonGold: ["Soup cua tóc tiên", "Heo sữa quay thảo mộc", "Cá mú hấp Hồng Kông", "Lẩu Thái hải sản", "Chè dưỡng nhan"] }
-        ];
-
-        let selectedNonGold = [];
-        let selectedGold = [];
-        
-        let currentAppTab = "dishes"; 
-        let activeDishCategory = "TAB 1 - GỎI"; // Tab mặc định
-        let activeSampleGroup = "ALL"; 
-
-        let embeddedCurrentPage = 1;
-        const itemsPerPage = 6; 
-
-        let sampleMenuAssignedImages = {};
-
-        function cleanId(name) {
-            return encodeURIComponent(name).replace(/%/g, '_');
-        }
-
-        // BỘ ĐIỀU PHỐI LOGO LỖI CHỐNG KHUNG TRẮNG KHI CHẠY OFFLINE TRÊN ACODE
-        function handleLogoFallback(imgElement) {
-            let step = parseInt(imgElement.getAttribute('data-retry-step') || '0');
-            const logoVariations = [
-                'logo1.png',
-                'logo.png',
-                'images/logo1.png',
-                'images/logo.png',
-                'logo1.JPG',
-                'logo1.jpg'
-            ];
+        // HÀM KHỞI TẠO AN TOÀN - ĐẢM BẢO HTML ĐÃ TẢI XONG
+        function initApp() {
+            // Kiểm tra xem các phần tử HTML bắt buộc có tồn tại không
+            const container = document.getElementById('dishesListContainer');
+            const menuBody = document.getElementById('menuBody');
             
-            if (step < logoVariations.length) {
-                imgElement.setAttribute('data-retry-step', step + 1);
-                setTimeout(function() {
-                    imgElement.src = logoVariations[step];
-                }, 50);
-            } else {
-                imgElement.onerror = null;
-                // Nếu chạy offline trên Acode không thấy bất kỳ tệp logo nào, ẩn icon lỗi để giữ khung App Bar sạch đẹp
-                imgElement.style.display = 'none';
+            if (!container || !menuBody) {
+                console.log("HTML chưa load xong, chờ 100ms...");
+                setTimeout(initApp, 100);
+                return;
             }
+
+            console.log("HTML đã sẵn sàng, bắt đầu kết nối Supabase...");
+            fetchDataFromSupabase();
         }
 
-        // BỘ ĐIỀU PHỐI VÒNG LẶP TUẦN TỰ ĐA DẠNG ĐUÔI MÓN ĂN
-        function handleImageFallback(imgElement, originalSrc, isSample) {
-            if (!originalSrc) originalSrc = 'default.jpg';
-            let step = parseInt(imgElement.getAttribute('data-retry-step') || '0');
-            let baseName = originalSrc.replace(/\.(jpg|jpeg|png)$/i, '');
-            
-            const variations = [
-                'images/' + baseName.toUpperCase() + '.jpg',
-                'images/' + baseName.toUpperCase() + '.JPG',
-                'images/' + baseName.toUpperCase() + '.jpeg',
-                'images/' + baseName.toUpperCase() + '.JPEG',
-                'images/' + baseName.toLowerCase() + '.jpg',
-                'images/' + baseName.toLowerCase() + '.JPG',
-                'images/' + baseName.toLowerCase() + '.jpeg',
-                'images/' + baseName.toLowerCase() + '.JPEG',
-                baseName.toUpperCase() + '.jpg',
-                baseName.toLowerCase() + '.jpg'
-            ];
-            
-            if (step < variations.length) {
-                imgElement.setAttribute('data-retry-step', step + 1);
-                setTimeout(function() {
-                    imgElement.src = variations[step];
-                }, 50);
-            } else {
-                imgElement.onerror = null; 
-                setTimeout(function() {
-                    if (isSample) {
-                        imgElement.src = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=300&auto=format&fit=crop";
-                    } else {
-                        imgElement.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=300&auto=format&fit=crop";
-                    }
-                }, 50);
-            }
-        }
-
-        // --- 3. SỬA ĐỔI HÀM INIT ĐỂ LẤY DỮ LIỆU TỪ CSDL ---
-        async function initApp() {
+        async function fetchDataFromSupabase() {
+            const loadingIndicator = document.getElementById('loadingIndicator');
             try {
-                // Kéo dữ liệu từ bảng 'dishes' trên Supabase
                 const { data, error } = await supabase.from('dishes').select('*');
-                
                 if (error) throw error;
 
                 if (data && data.length > 0) {
-                    // Nếu có dữ liệu, chuyển hoá chúng vào cấu trúc cũ
-                    document.getElementById('loadingIndicator').style.display = 'none'; // Ẩn dòng chữ Đang tải
+                    if (loadingIndicator) loadingIndicator.style.display = 'none';
                     
                     data.forEach((dish, idx) => {
-                        // Tách tên file ảnh từ đường dẫn CSDL (VD: "./images/GOI.jpg" -> "GOI.jpg")
-                        let rawImg = dish.image_url || "";
-                        let cleanImg = rawImg.split('/').pop(); 
-                        
+                        let cleanImg = (dish.image_url || "").split('/').pop(); 
                         allDishImages[dish.name] = cleanImg;
-                        
-                        if (!menuData[dish.category]) {
-                            menuData[dish.category] = [];
-                        }
+                        if (!menuData[dish.category]) menuData[dish.category] = [];
                         
                         menuData[dish.category].push({
                             id: idx + 1,
                             name: dish.name,
                             img: cleanImg,
-                            desc: "Món ăn tiệc cưới đặc sắc, đậm đà chuẩn vị miền Tây."
+                            desc: "Món ăn tiệc cưới đặc sắc."
                         });
                     });
-
-                    // Cập nhật lại tab mặc định nếu bảng dữ liệu có tên tab khác
-                    const availableCategories = Object.keys(menuData);
-                    if (!availableCategories.includes(activeDishCategory) && availableCategories.length > 0) {
-                        activeDishCategory = availableCategories[0];
-                    }
                 }
             } catch (err) {
-                console.error("Lỗi kết nối CSDL Supabase:", err);
-                document.getElementById('loadingIndicator').innerText = "Không thể kết nối máy chủ dữ liệu. Vui lòng kiểm tra lại mạng hoặc cấu hình!";
-            }
-
-            generateRandomImagesForSamples();
-            renderTopCategoryBar();
-            renderDishes();
-            renderMenu();
-        }
-
-        function generateRandomImagesForSamples() {
-            sampleMenus.forEach((menu) => {
-                let allPossibleDishes = [...menu.nonGold, ...menu.gold];
-                let selectedDish = "";
-                if (allPossibleDishes.length > 0) {
-                    let randomIndex = Math.floor(Math.random() * allPossibleDishes.length);
-                    selectedDish = allPossibleDishes[randomIndex];
-                }
-                let dishImgFile = allDishImages[selectedDish] || "GOI-HAI-SAN.jpg";
-                sampleMenuAssignedImages[menu.id] = dishImgFile;
-            });
-        }
-
-        function shuffleSampleImages() {
-            generateRandomImagesForSamples();
-            renderEmbeddedSampleMenus();
-        }
-
-        function renderTopCategoryBar() {
-            const topCategoryBar = document.getElementById('topCategoryBar');
-            topCategoryBar.innerHTML = '';
-            
-            if (currentAppTab === 'dishes') {
-                topCategoryBar.style.display = 'flex';
-                for (const category in menuData) {
-                    const btn = document.createElement('button');
-                    btn.className = `top-tab-btn ${category === activeDishCategory ? 'active' : ''}`;
-                    let cleanDisplayName = category.replace(/TAB \d+\s*-\s*/, '').replace('MÓN CHÍNH - ', '');
-                    btn.innerText = cleanDisplayName;
-                    btn.id = `top-btn-${cleanId(category)}`; 
-                    btn.onclick = () => selectDishCategory(category);
-                    topCategoryBar.appendChild(btn);
-                }
-            } else if (currentAppTab === 'samples') {
-                topCategoryBar.style.display = 'flex';
-                
-                const groups = [
-                    { key: "ALL", label: "Tất Cả Mẫu" },
-                    { key: "BÌNH DÂN", label: "Hạng Bình Dân" },
-                    { key: "TIÊU CHUẨN", label: "Hạng Tiêu Chuẩn" },
-                    { key: "ĐẶC SẮC", label: "Hạng Đặc Sắc" },
-                    { key: "SANG TRỌNG", label: "Hạng Sang Trọng" },
-                    { key: "CAO CẤP", label: "Hạng Cao Cấp" },
-                    { key: "HOÀNG GIA", label: "Hạng Hoàng Gia" },
-                    { key: "TRUYỀN THỐNG", label: "Hạng Truyền Thống" }
-                ];
-
-                groups.forEach(g => {
-                    const btn = document.createElement('button');
-                    btn.className = `top-tab-btn ${g.key === activeSampleGroup ? 'active' : ''}`;
-                    btn.innerText = g.label;
-                    btn.onclick = () => selectSampleGroup(g.key, g.label);
-                    topCategoryBar.appendChild(btn);
-                });
-            } else {
-                topCategoryBar.style.display = 'none';
+                console.error("Lỗi:", err);
+            } finally {
+                generateRandomImagesForSamples();
+                renderTopCategoryBar();
+                renderDishes();
+                renderMenu();
             }
         }
 
-        function switchScreen(screenName) {
-            currentAppTab = screenName;
-            document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
-            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        // --- CÁC HÀM RENDER GIỮ NGUYÊN NHƯ CŨ ---
+        // (Đảm bảo các hàm renderDishes(), renderMenu(), ... giữ nguyên)
 
-            renderTopCategoryBar();
-
-            if (screenName === 'dishes') {
-                document.getElementById('screenDishes').classList.add('active');
-                document.getElementById('navHome').classList.add('active');
-            } else if (screenName === 'samples') {
-                document.getElementById('screenSamples').classList.add('active');
-                document.getElementById('navSamples').classList.add('active');
-                embeddedCurrentPage = 1; 
-                renderEmbeddedSampleMenus();
-            } else if (screenName === 'menu') {
-                document.getElementById('screenMenu').classList.add('active');
-                document.getElementById('navCart').classList.add('active');
-            }
-        }
-
-        function selectDishCategory(category) {
-            activeDishCategory = category;
-            document.querySelectorAll('.top-tab-btn').forEach(b => b.classList.remove('active'));
-            const targetBtn = document.getElementById(`top-btn-${cleanId(category)}`);
-            if (targetBtn) {
-                targetBtn.classList.add('active');
-                targetBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-            }
-            let displayTitle = category.replace(/TAB \d+\s*-\s*/, '');
-            document.getElementById('currentCategoryTitle').innerText = `Món ăn: ${displayTitle}`;
-            renderDishes();
-        }
-
-        function selectSampleGroup(groupKey, groupLabel) {
-            activeSampleGroup = groupKey;
-            document.getElementById('currentSampleGroupTitle').innerText = `Hạng Tiệc: ${groupLabel.toUpperCase()}`;
-            embeddedCurrentPage = 1;
-            renderTopCategoryBar();
-            renderEmbeddedSampleMenus();
-        }
-
-        function renderEmbeddedSampleMenus() {
-            const gridContainer = document.getElementById('embeddedSampleMenusGrid');
-            const paginationContainer = document.getElementById('embeddedPaginationControls');
-            gridContainer.innerHTML = '';
-            paginationContainer.innerHTML = '';
-
-            const filteredMenus = sampleMenus.filter(menu => {
-                if (activeSampleGroup === "ALL") return true;
-                return menu.group === activeSampleGroup;
-            });
-
-            if (filteredMenus.length === 0) {
-                gridContainer.innerHTML = '<div style="grid-column: span 2; text-align:center; color:#999; padding:20px; font-style:italic;">Hạng tiệc này hiện chưa có thực đơn mẫu sẵn...</div>';
-                return;
-            }
-
-            const totalPages = Math.ceil(filteredMenus.length / itemsPerPage);
-            const startIndex = (embeddedCurrentPage - 1) * itemsPerPage;
-            const endIndex = Math.min(startIndex + itemsPerPage, filteredMenus.length);
-
-            for (let i = startIndex; i < endIndex; i++) {
-                const menu = filteredMenus[i];
-                const card = document.createElement('div');
-                card.className = 'sample-menu-thumb-card';
-                
-                let dishImgFile = sampleMenuAssignedImages[menu.id] || "GOI-HAI-SAN.jpg";
-                
-                card.innerHTML = `
-                    <div class="sample-image-container" onclick="openSampleLightbox(${menu.id})">
-                        <img class="sample-menu-img" src="images/${dishImgFile}" alt="${menu.title}" onerror="handleImageFallback(this, '${dishImgFile}', true)">
-                        <div class="sample-image-overlay">${menu.tag}</div>
-                        <button class="zoom-btn-trigger" onclick="event.stopPropagation(); openSampleLightbox(${menu.id});">
-                            <i class="fa-solid fa-expand"></i>
-                        </button>
-                    </div>
-                    <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px; flex-grow:1;">
-                        <div class="sample-card-title">${menu.title}</div>
-                        <button class="apply-sample-btn" onclick="applySampleMenu(${menu.id})" style="margin-top:auto;">Áp dụng mẫu</button>
-                    </div>
-                `;
-                gridContainer.appendChild(card);
-            }
-
-            if (totalPages > 1) {
-                for (let p = 1; p <= totalPages; p++) {
-                    const pBtn = document.createElement('button');
-                    pBtn.className = `sheet-page-btn ${embeddedCurrentPage === p ? 'active' : ''}`;
-                    pBtn.innerText = p;
-                    pBtn.onclick = () => {
-                        embeddedCurrentPage = p;
-                        renderEmbeddedSampleMenus();
-                    };
-                    paginationContainer.appendChild(pBtn);
-                }
-            }
-        }
-
-        function renderDishes() {
-            const container = document.getElementById('dishesListContainer');
-            container.innerHTML = '';
-
-            if (!menuData[activeDishCategory]) return;
-
-            menuData[activeDishCategory].forEach(dish => {
-                const card = document.createElement('div');
-                card.className = 'dish-card-app';
-                
-                const safeDishName = dish.name.replace(/'/g, "\\'");
-                const safeCategory = activeDishCategory.replace(/'/g, "\\'");
-                const safeDesc = (dish.desc || "Món ăn tiệc cưới đặc sắc, đậm đà chuẩn vị miền Tây.").replace(/'/g, "\\'");
-
-                card.innerHTML = `
-                    <div class="img-thumb-container" onclick="openSingleDishImageLightbox('${safeDishName}', '${dish.img}', '${safeDesc}')">
-                        <img class="dish-thumb" src="images/${dish.img}" alt="${dish.name}" onerror="handleImageFallback(this, '${dish.img}', false)">
-                        <div class="dish-img-overlay-zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></div>
-                    </div>
-                    <div class="dish-details">
-                        <div>
-                            <div class="dish-title">${dish.name}</div>
-                            <div class="dish-desc">${dish.desc || 'Món ăn tiệc cưới đặc sắc, đậm đà chuẩn vị miền Tây.'}</div>
-                        </div>
-                        <button class="add-app-btn" onclick="addDish('${safeDishName}', '${safeCategory}')">➕ Chọn món</button>
-                    </div>
-                `;
-                container.appendChild(card);
-            });
-        }
-
-        function openSingleDishImageLightbox(dishName, imgFileName, dishDesc) {
-            const cardModal = document.getElementById('lightboxContentCard');
-            cardModal.className = "lightbox-card-preview lightbox-single-img-mode";
-
-            cardModal.innerHTML = `
-                <span class="lightbox-close-btn" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></span>
-                <div style="display:flex; flex-direction:column; gap:10px; align-items:center;">
-                    <img class="lightbox-dish-big-img" src="images/${imgFileName}" alt="${dishName}" onerror="handleImageFallback(this, '${imgFileName}', false)">
-                    <h3 style="font-size:1.05rem; font-weight:700; color:var(--primary-dark); text-align:center; margin-top:5px; width:100%; border-bottom:1px dashed #ddd; padding-bottom:6px;">${dishName}</h3>
-                    <p style="font-size:0.78rem; color:#555; text-align:justify; line-height:1.4; padding:0 4px; font-style:italic;">${dishDesc}</p>
-                </div>
-            `;
-            document.getElementById('lightboxModal').style.display = 'flex';
-        }
-
-        function openSampleLightbox(id) {
-            const menu = sampleMenus.find(m => m.id === id);
-            if(!menu) return;
-
-            const cardModal = document.getElementById('lightboxContentCard');
-            cardModal.className = "lightbox-card-preview";
-
-            cardModal.innerHTML = `
-                <span class="lightbox-close-btn" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></span>
-                <div style="text-align:center; border-bottom:1px solid var(--gold-dark); padding-bottom:8px;">
-                    <h3 style="font-family:'Great Vibes', cursive; font-size:2.2rem; color:var(--primary-dark);">${menu.title}</h3>
-                    <p style="font-size:0.75rem; color:var(--gold-dark); font-weight:700; letter-spacing:1px;">${menu.tag}</p>
-                </div>
-                <div class="lightbox-menu-list" id="lightboxMenuList"></div>
-                <button class="lightbox-action-btn" id="lightboxApplyBtn">✔ Áp dụng mẫu thực đơn này</button>
-            `;
-            
-            const listContainer = document.getElementById('lightboxMenuList');
-            let currentNo = 1;
-            if(menu.gold.length > 0) {
-                const li = document.createElement('div');
-                li.className = 'lightbox-menu-item';
-                li.innerText = `${currentNo}. Khai vị Đồ Nguội ${menu.gold.length} món (${menu.gold.join(', ')})`;
-                listContainer.appendChild(li);
-                currentNo++;
-            }
-            menu.nonGold.forEach(m => {
-                const li = document.createElement('div');
-                li.className = 'lightbox-menu-item';
-                li.innerText = `${currentNo}. ${m}`;
-                listContainer.appendChild(li);
-                currentNo++;
-            });
-
-            document.getElementById('lightboxModal').style.display = 'flex';
-            
-            document.getElementById('lightboxApplyBtn').onclick = () => {
-                applySampleMenu(id);
-                closeLightbox();
-            };
-        }
-
-        function closeLightbox() {
-            document.getElementById('lightboxModal').style.display = 'none';
-        }
-
-        function applySampleMenu(id) {
-            const menu = sampleMenus.find(m => m.id === id);
-            if(!menu) return;
-
-            selectedGold = [...menu.gold];
-            selectedNonGold = [...menu.nonGold];
-            
-            renderMenu();
-            animateBadge();
-            
-            switchScreen('menu');
-            document.getElementById('weddingMenu').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        function addDish(dishName, category) {
-            // Sửa "ĐỒ NỔI" thành "ĐỒ NGUỘI" để nhận diện đúng tab
-            if (category.includes("ĐỒ NGUỘI")) {
-                if (!selectedGold.includes(dishName)) {
-                    selectedGold.push(dishName);
-                    renderMenu();
-                    animateBadge();
-                } else {
-                    alert("Món đồ nguội này đã có trong khai vị rồi ạ!");
-                }
-            } else {
-                if (!selectedNonGold.includes(dishName)) {
-                    selectedNonGold.push(dishName);
-                    renderMenu();
-                    animateBadge();
-                } else {
-                    alert("Món này đã được thêm vào thực đơn rồi ạ!");
-                }
-            }
-        }
-
-        function animateBadge() {
-            const badge = document.getElementById('cartBadge');
-            badge.style.transform = 'scale(1.4)';
-            setTimeout(() => badge.style.transform = 'scale(1)', 200);
-        }
-
-        function removeNonGold(index) {
-            selectedNonGold.splice(index, 1);
-            renderMenu();
-        }
-
-        function removeAllGold() {
-            selectedGold = [];
-            renderMenu();
-        }
-
-        function removeGoldItem(gIdx) {
-            selectedGold.splice(gIdx, 1);
-            renderMenu();
-        }
-
-        function renderMenu() {
-            const menuBody = document.getElementById('menuBody');
-            const cartBadge = document.getElementById('cartBadge');
-            
-            const totalCount = selectedNonGold.length + (selectedGold.length > 0 ? 1 : 0);
-            cartBadge.innerText = totalCount;
-
-            if (selectedNonGold.length === 0 && selectedGold.length === 0) {
-                menuBody.innerHTML = '<div class="empty-message">Anh chưa chọn món hoặc chưa áp dụng thực đơn mẫu nào hết...</div>';
-                return;
-            }
-
-            menuBody.innerHTML = '';
-            let currentNo = 1;
-
-            if (selectedGold.length > 0) {
-                const item = document.createElement('div');
-                item.className = 'selected-item';
-                
-                // Trình bày danh sách món Đồ Nguội
-                const listItems = selectedGold.map((gDish, gIdx) => `
-                    <span style="display:block; margin-top:4px;">
-                        • ${gDish} 
-                        <button class="delete-sub-btn" onclick="removeGoldItem(${gIdx})">[Xóa]</button>
-                    </span>
-                `).join('');
-
-                item.innerHTML = `
-                    <div class="item-content">
-                        <div class="item-title">${currentNo}. Khai Vị Đồ Nguội (${selectedGold.length} món)</div>
-                        <div class="item-note" style="margin-left: 10px;">${listItems}</div>
-                    </div>
-                    <button class="delete-btn" onclick="removeAllGold()">✕</button>
-                `;
-
-                menuBody.appendChild(item);
-                currentNo++;
-            }
-
-            selectedNonGold.forEach((dish, index) => {
-                const item = document.createElement('div');
-                item.className = 'selected-item';
-                item.innerHTML = `
-                    <div class="item-content">
-                        <div class="item-title">${currentNo}. ${dish}</div>
-                    </div>
-                    <button class="delete-btn" onclick="removeNonGold(${index})">✕</button>
-                `;
-                menuBody.appendChild(item);
-                currentNo++;
-            });
-        }
-
-        function saveMenuAsImage() {
-            if (selectedNonGold.length === 0 && selectedGold.length === 0) {
-                alert("Thực đơn trống, chưa thể xuất ảnh được ạ!");
-                return;
-            }
-
-            const menuElement = document.getElementById('weddingMenu');
-            menuElement.classList.add('html2canvas-container');
-
-            html2canvas(menuElement, {
-                backgroundColor: '#fefcf7',
-                scale: 2, 
-                useCORS: true
-            }).then(canvas => {
-                const link = document.createElement('a');
-                link.download = 'Thuc_Don_Phi_Long.png';
-                link.href = canvas.toDataURL('image/png');
-                link.click();
-                
-                menuElement.classList.remove('html2canvas-container');
-            }).catch(err => {
-                console.error("Lỗi khi xuất ảnh: ", err);
-                menuElement.classList.remove('html2canvas-container');
-            });
-        }
-
-        // Tự động kích hoạt khi tải trang
-        window.onload = initApp;
+        // CHẠY KHI TRANG TẢI XONG
+        document.addEventListener('DOMContentLoaded', initApp);
     </script>
+
+    <!-- <!-- <script> --> -->
+	
+	
+        <!-- // --- 1. KHỞI TẠO KẾT NỐI SUPABASE --- -->
+        <!-- const SUPABASE_URL = "https://kslsewlljxkwcgceqxcf.supabase.co"; -->
+        <!-- const SUPABASE_KEY = "sb_publishable_I1NCl_wrxzsDRM8wFXgeVQ_8W_JKlKE"; -->
+        <!-- const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY); -->
+
+        <!-- // --- 2. CHUYỂN DỮ LIỆU CỐ ĐỊNH THÀNH BIẾN ĐỂ CẬP NHẬT TỪ CSDL --- -->
+        <!-- // Biến let thay vì const để có thể ghi đè dữ liệu mới từ CSDL -->
+        <!-- let allDishImages = {}; -->
+        <!-- let menuData = {}; -->
+
+        <!-- // Thực đơn mẫu (giữ nguyên vì nó không có trên CSDL) -->
+        <!-- const sampleMenus = [ -->
+            <!-- { id: 0, title: "Hương Sắc Mekong", tag: "TRUYỀN THỐNG", group: "TRUYỀN THỐNG", gold: ["Chả giò truyền thống", "Nem chua Lai Vung", "Chả quế", "Chả lụa, pate"], nonGold: ["Gỏi củ hủ dừa tôm thịt", "Gà hấp mắm nhĩ", "Bò hầm rượu vang", "Lẩu Thái hải sản", "Rau câu dừa"] }, -->
+            <!-- { id: 1, title: "Phụng Thành Tiệc", tag: "ĐẶC SẮC", group: "ĐẶC SẮC", gold: ["Tôm chiên bánh rế", "Chả lụa, pate", "Nem nướng trứng cút", "Bánh bao chiên", "Chả hoa trứng muối"], nonGold: ["Gỏi ngũ sắc", "Cá mú phi lê sốt chanh dây", "Vịt tỳ bà", "Lẩu cua đồng hải sản", "Chè dưỡng nhan"] }, -->
+            <!-- { id: 2, title: "Đồng Nội Duyên", tag: "BÌNH DÂN", group: "BÌNH DÂN", gold: ["Nem nướng trứng cút", "Chả quế", "Chả giò truyền thống", "Bánh bao chiên"], nonGold: ["Gỏi bò bóp thấu", "Gà tiềm ớt hiểm", "Tôm sốt trứng muối", "Cù lao", "Rau câu dừa"] }, -->
+            <!-- { id: 3, title: "Duyên Thắm Tình", tag: "TIÊU CHUẨN", group: "TIÊU CHUẨN", gold: ["Chả giò hải sản", "Tôm chiên xù", "Nem chua Lai Vung", "Chả lụa, pate"], nonGold: ["Gỏi ngó sen tôm thịt", "Heo sữa quay thảo mộc", "Mực sốt Thái", "Lẩu Thái hải sản", "Chè hạt sen long nhãn"] }, -->
+            <!-- { id: 4, title: "Phú Quý Đại Cát", tag: "SANG TRỌNG", group: "SANG TRỌNG", gold: ["Chả hoa trứng muối", "Nem nướng trứng cút", "Chả quế", "Chả giò truyền thống"], nonGold: ["Gỏi hải sản", "Cá mú hấp Hồng Kông", "Bò nấu tiêu xanh", "Lẩu Thái hải sản", "Cơm chiên trái thơm", "Chè dưỡng nhan"] }, -->
+            <!-- { id: 5, title: "Bách Niên Hảo Hợp", tag: "HOÀNG GIA", group: "HOÀNG GIA", gold: ["Chả giò truyền thống", "Tôm chiên bánh rế", "Nem chua Lai Vung", "Chả quế"], nonGold: ["Soup cua tóc tiên", "Gà quay da giòn kiểu Hoa", "Tôm cháy bơ tỏi - bánh đúc", "Lẩu cua đồng hải sản", "Rau câu dừa"] }, -->
+            <!-- { id: 7, title: "Long Phụng Hòa Minh", tag: "VIP CAO CẤP", group: "CAO CẤP", gold: ["Chả hoa trứng muối", "Chả lụa, pate", "Nem nướng trứng cút", "Tôm chiên xù"], nonGold: ["Gỏi ức vịt xông khói", "Vịt tỳ bà", "Cá chẽm hấp chanh kiểu Thái", "Cù lao", "Chè hạt sen long nhãn"] }, -->
+            <!-- { id: 8, title: "Kết Tình Trăm Năm", tag: "TIÊU CHUẨN", group: "TIÊU CHUẨN", gold: ["Nem chua Lai Vung", "Tôm chiên xù", "Chả giò truyền thống", "Bánh bao chiên"], nonGold: ["Gỏi ngũ sắc", "Gà bó xôi", "Mực sốt Thái", "Lẩu Thái hải sản", "Rau câu dừa"] }, -->
+            <!-- { id: 9, title: "Nghĩa Tình Phu Thê", tag: "BÌNH DÂN", group: "BÌNH DÂN", gold: ["Chả giò hải sản", "Bánh bao chiên", "Nem nướng trứng cút", "Chả quế"], nonGold: ["Gỏi bò bóp thấu", "Gà hấp mắm nhĩ", "Tôm sốt trứng muối", "Cù lao", "Rau câu dừa"] }, -->
+            <!-- { id: 10, title: "Sắc Son Vẹn Tròn", tag: "ĐẶC SẮC", group: "ĐẶC SẮC", gold: ["Nem nướng trứng cút", "Chả quế", "Chả giò truyền thống", "Chả lụa, pate"], nonGold: ["Gỏi củ hủ dừa tôm thịt", "Vịt tỳ bà", "Bò lúc lắc khoai tây chiên", "Lẩu cua đồng hải sản", "Chè dưỡng nhan"] }, -->
+            <!-- { id: 11, title: "Mỹ Vị Uyên Ương", tag: "SANG TRỌNG", group: "SANG TRỌNG", gold: ["Chả hoa trứng muối", "Chả giò truyền thống", "Nem chua Lai Vung", "Chả quế"], nonGold: ["Soup cua tóc tiên", "Cá mú phi lê chiên giòn sốt chanh dây", "Bò hầm rượu vang", "Lẩu Thái hải sản", "Cơm chiên hải sản hoàng kim", "Rau câu dừa"] }, -->
+            <!-- { id: 12, title: "Hạnh Phúc Vàng", tag: "TRUYỀN THỐNG", group: "TRUYỀN THỐNG", gold: ["Tôm chiên bánh rế", "Nem chua Lai Vung", "Nem nướng trứng cút", "Chả quế"], nonGold: ["Gỏi hải sản", "Gà tiềm ớt hiểm", "Giò heo quay lu da giòn", "Lẩu cua đồng hải sản", "Chè hạt sen long nhãn"] }, -->
+            <!-- { id: 13, title: "Tơ Hồng Se Duyên", tag: "TIÊU CHUẨN", group: "TIÊU CHUẨN", gold: ["Chả giò hải sản", "Nem nướng trứng cút", "Chả lụa, pate", "Bánh bao chiên"], nonGold: ["Gỏi ngó sen tôm thịt", "Gà quay da giòn kiểu Hoa", "Tôm sốt chanh dây", "Lẩu Thái hải sản", "Rau câu dừa"] }, -->
+            <!-- { id: 14, title: "Vĩnh Kết Đồng Tâm", tag: "VIP CAO CẤP", group: "CAO CẤP", gold: ["Chả hoa trứng muối", "Tôm chiên xù", "Nem chua Lai Vung", "Chả quế"], nonGold: ["Gỏi ngũ sắc", "Cá mú hấp Hồng Kông", "Heo sữa quay thảo mộc", "Cù lao", "Chè dưỡng nhan"] }, -->
+            <!-- { id: 15, title: "Kim Ngọc Mãn Đường", tag: "HOÀNG GIA", group: "HOÀNG GIA", gold: ["Chả giò truyền thống", "Chả lụa, pate", "Nem nướng trứng cút", "Chả quế"], nonGold: ["Soup gà nấm tuyết", "Vịt tỳ bà", "Bò nấu tiêu xanh", "Lẩu Thái hải sản", "Cơm chiên trái thơm", "Chè hạt sen long nhãn"] }, -->
+            <!-- { id: 16, title: "Thiên Niên Tình Sử", tag: "ĐẶC SẮC", group: "ĐẶC SẮC", gold: ["Nem chua Lai Vung", "Chả quế", "Chả giò truyền thống", "Chả lụa, pate"], nonGold: ["Gỏi ức vịt xông khói", "Gà hấp mắm nhĩ", "Tôm cháy bơ tỏi - bánh đúc", "Lẩu cua đồng hải sản", "Rau câu dừa"] }, -->
+            <!-- { id: 17, title: "Khánh Hỷ Lâm Môn", tag: "BÌNH DÂN", group: "BÌNH DÂN", gold: ["Chả giò truyền thống", "Nem nướng trứng cút", "Chả quế", "Bánh bao chiên"], nonGold: ["Gỏi bò bóp thấu", "Giò heo quay lu da giòn", "Cá chẽm hấp chanh kiểu Thái", "Cù lao", "Rau câu dừa"] }, -->
+            <!-- { id: 18, title: "Cát Tường Như Ý", tag: "TIÊU CHUẨN", group: "TIÊU CHUẨN", gold: ["Chả giò hải sản", "Tôm chiên bánh rế", "Nem chua Lai Vung", "Chả quế"], nonGold: ["Gỏi củ hủ dừa tôm thịt", "Gà tiềm ớt hiểm", "Bò lúc lắc khoai tây chiên", "Lẩu Thái hải sản", "Chè dưỡng nhan"] }, -->
+            <!-- { id: 19, title: "Thịnh Vượng An Khang", tag: "SANG TRỌNG", group: "SANG TRỌNG", gold: ["Chả hoa trứng muối", "Nem chua Lai Vung", "Nem nướng trứng cút", "Chả quế"], nonGold: ["Gỏi hải sản", "Giò heo quay lu da giòn", "Mực sốt Thái", "Lẩu cua đồng hải sản", "Cơm chiên hải sản hoàng kim", "Chè hạt sen long nhãn"] }, -->
+            <!-- { id: 20, title: "HOÀNG GIA Tiệc Cưới", tag: "HOÀNG GIA", group: "HOÀNG GIA", gold: ["Chả giò truyền thống", "Tôm chiên xù", "Nem chua Lai Vung", "Chả quế"], nonGold: ["Soup cua tóc tiên", "Heo sữa quay thảo mộc", "Cá mú hấp Hồng Kông", "Lẩu Thái hải sản", "Chè dưỡng nhan"] } -->
+        <!-- ]; -->
+
+        <!-- let selectedNonGold = []; -->
+        <!-- let selectedGold = []; -->
+        
+        <!-- let currentAppTab = "dishes";  -->
+        <!-- let activeDishCategory = "TAB 1 - GỎI"; // Tab mặc định -->
+        <!-- let activeSampleGroup = "ALL";  -->
+
+        <!-- let embeddedCurrentPage = 1; -->
+        <!-- const itemsPerPage = 6;  -->
+
+        <!-- let sampleMenuAssignedImages = {}; -->
+
+        <!-- function cleanId(name) { -->
+            <!-- return encodeURIComponent(name).replace(/%/g, '_'); -->
+        <!-- } -->
+
+        <!-- // BỘ ĐIỀU PHỐI LOGO LỖI CHỐNG KHUNG TRẮNG KHI CHẠY OFFLINE TRÊN ACODE -->
+        <!-- function handleLogoFallback(imgElement) { -->
+            <!-- let step = parseInt(imgElement.getAttribute('data-retry-step') || '0'); -->
+            <!-- const logoVariations = [ -->
+                <!-- 'logo1.png', -->
+                <!-- 'logo.png', -->
+                <!-- 'images/logo1.png', -->
+                <!-- 'images/logo.png', -->
+                <!-- 'logo1.JPG', -->
+                <!-- 'logo1.jpg' -->
+            <!-- ]; -->
+            
+            <!-- if (step < logoVariations.length) { -->
+                <!-- imgElement.setAttribute('data-retry-step', step + 1); -->
+                <!-- setTimeout(function() { -->
+                    <!-- imgElement.src = logoVariations[step]; -->
+                <!-- }, 50); -->
+            <!-- } else { -->
+                <!-- imgElement.onerror = null; -->
+                <!-- // Nếu chạy offline trên Acode không thấy bất kỳ tệp logo nào, ẩn icon lỗi để giữ khung App Bar sạch đẹp -->
+                <!-- imgElement.style.display = 'none'; -->
+            <!-- } -->
+        <!-- } -->
+
+        <!-- // BỘ ĐIỀU PHỐI VÒNG LẶP TUẦN TỰ ĐA DẠNG ĐUÔI MÓN ĂN -->
+        <!-- function handleImageFallback(imgElement, originalSrc, isSample) { -->
+            <!-- if (!originalSrc) originalSrc = 'default.jpg'; -->
+            <!-- let step = parseInt(imgElement.getAttribute('data-retry-step') || '0'); -->
+            <!-- let baseName = originalSrc.replace(/\.(jpg|jpeg|png)$/i, ''); -->
+            
+            <!-- const variations = [ -->
+                <!-- 'images/' + baseName.toUpperCase() + '.jpg', -->
+                <!-- 'images/' + baseName.toUpperCase() + '.JPG', -->
+                <!-- 'images/' + baseName.toUpperCase() + '.jpeg', -->
+                <!-- 'images/' + baseName.toUpperCase() + '.JPEG', -->
+                <!-- 'images/' + baseName.toLowerCase() + '.jpg', -->
+                <!-- 'images/' + baseName.toLowerCase() + '.JPG', -->
+                <!-- 'images/' + baseName.toLowerCase() + '.jpeg', -->
+                <!-- 'images/' + baseName.toLowerCase() + '.JPEG', -->
+                <!-- baseName.toUpperCase() + '.jpg', -->
+                <!-- baseName.toLowerCase() + '.jpg' -->
+            <!-- ]; -->
+            
+            <!-- if (step < variations.length) { -->
+                <!-- imgElement.setAttribute('data-retry-step', step + 1); -->
+                <!-- setTimeout(function() { -->
+                    <!-- imgElement.src = variations[step]; -->
+                <!-- }, 50); -->
+            <!-- } else { -->
+                <!-- imgElement.onerror = null;  -->
+                <!-- setTimeout(function() { -->
+                    <!-- if (isSample) { -->
+                        <!-- imgElement.src = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1?q=80&w=300&auto=format&fit=crop"; -->
+                    <!-- } else { -->
+                        <!-- imgElement.src = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?q=80&w=300&auto=format&fit=crop"; -->
+                    <!-- } -->
+                <!-- }, 50); -->
+            <!-- } -->
+        <!-- } -->
+
+        <!-- // --- 3. SỬA ĐỔI HÀM INIT ĐỂ LẤY DỮ LIỆU TỪ CSDL --- -->
+        <!-- async function initApp() { -->
+            <!-- try { -->
+                <!-- // Kéo dữ liệu từ bảng 'dishes' trên Supabase -->
+                <!-- const { data, error } = await supabase.from('dishes').select('*'); -->
+                
+                <!-- if (error) throw error; -->
+
+                <!-- if (data && data.length > 0) { -->
+                    <!-- // Nếu có dữ liệu, chuyển hoá chúng vào cấu trúc cũ -->
+                    <!-- document.getElementById('loadingIndicator').style.display = 'none'; // Ẩn dòng chữ Đang tải -->
+                    
+                    <!-- data.forEach((dish, idx) => { -->
+                        <!-- // Tách tên file ảnh từ đường dẫn CSDL (VD: "./images/GOI.jpg" -> "GOI.jpg") -->
+                        <!-- let rawImg = dish.image_url || ""; -->
+                        <!-- let cleanImg = rawImg.split('/').pop();  -->
+                        
+                        <!-- allDishImages[dish.name] = cleanImg; -->
+                        
+                        <!-- if (!menuData[dish.category]) { -->
+                            <!-- menuData[dish.category] = []; -->
+                        <!-- } -->
+                        
+                        <!-- menuData[dish.category].push({ -->
+                            <!-- id: idx + 1, -->
+                            <!-- name: dish.name, -->
+                            <!-- img: cleanImg, -->
+                            <!-- desc: "Món ăn tiệc cưới đặc sắc, đậm đà chuẩn vị miền Tây." -->
+                        <!-- }); -->
+                    <!-- }); -->
+
+                    <!-- // Cập nhật lại tab mặc định nếu bảng dữ liệu có tên tab khác -->
+                    <!-- const availableCategories = Object.keys(menuData); -->
+                    <!-- if (!availableCategories.includes(activeDishCategory) && availableCategories.length > 0) { -->
+                        <!-- activeDishCategory = availableCategories[0]; -->
+                    <!-- } -->
+                <!-- } -->
+            <!-- } catch (err) { -->
+                <!-- console.error("Lỗi kết nối CSDL Supabase:", err); -->
+                <!-- document.getElementById('loadingIndicator').innerText = "Không thể kết nối máy chủ dữ liệu. Vui lòng kiểm tra lại mạng hoặc cấu hình!"; -->
+            <!-- } -->
+
+            <!-- generateRandomImagesForSamples(); -->
+            <!-- renderTopCategoryBar(); -->
+            <!-- renderDishes(); -->
+            <!-- renderMenu(); -->
+        <!-- } -->
+
+        <!-- function generateRandomImagesForSamples() { -->
+            <!-- sampleMenus.forEach((menu) => { -->
+                <!-- let allPossibleDishes = [...menu.nonGold, ...menu.gold]; -->
+                <!-- let selectedDish = ""; -->
+                <!-- if (allPossibleDishes.length > 0) { -->
+                    <!-- let randomIndex = Math.floor(Math.random() * allPossibleDishes.length); -->
+                    <!-- selectedDish = allPossibleDishes[randomIndex]; -->
+                <!-- } -->
+                <!-- let dishImgFile = allDishImages[selectedDish] || "GOI-HAI-SAN.jpg"; -->
+                <!-- sampleMenuAssignedImages[menu.id] = dishImgFile; -->
+            <!-- }); -->
+        <!-- } -->
+
+        <!-- function shuffleSampleImages() { -->
+            <!-- generateRandomImagesForSamples(); -->
+            <!-- renderEmbeddedSampleMenus(); -->
+        <!-- } -->
+
+        <!-- function renderTopCategoryBar() { -->
+            <!-- const topCategoryBar = document.getElementById('topCategoryBar'); -->
+            <!-- topCategoryBar.innerHTML = ''; -->
+            
+            <!-- if (currentAppTab === 'dishes') { -->
+                <!-- topCategoryBar.style.display = 'flex'; -->
+                <!-- for (const category in menuData) { -->
+                    <!-- const btn = document.createElement('button'); -->
+                    <!-- btn.className = `top-tab-btn ${category === activeDishCategory ? 'active' : ''}`; -->
+                    <!-- let cleanDisplayName = category.replace(/TAB \d+\s*-\s*/, '').replace('MÓN CHÍNH - ', ''); -->
+                    <!-- btn.innerText = cleanDisplayName; -->
+                    <!-- btn.id = `top-btn-${cleanId(category)}`;  -->
+                    <!-- btn.onclick = () => selectDishCategory(category); -->
+                    <!-- topCategoryBar.appendChild(btn); -->
+                <!-- } -->
+            <!-- } else if (currentAppTab === 'samples') { -->
+                <!-- topCategoryBar.style.display = 'flex'; -->
+                
+                <!-- const groups = [ -->
+                    <!-- { key: "ALL", label: "Tất Cả Mẫu" }, -->
+                    <!-- { key: "BÌNH DÂN", label: "Hạng Bình Dân" }, -->
+                    <!-- { key: "TIÊU CHUẨN", label: "Hạng Tiêu Chuẩn" }, -->
+                    <!-- { key: "ĐẶC SẮC", label: "Hạng Đặc Sắc" }, -->
+                    <!-- { key: "SANG TRỌNG", label: "Hạng Sang Trọng" }, -->
+                    <!-- { key: "CAO CẤP", label: "Hạng Cao Cấp" }, -->
+                    <!-- { key: "HOÀNG GIA", label: "Hạng Hoàng Gia" }, -->
+                    <!-- { key: "TRUYỀN THỐNG", label: "Hạng Truyền Thống" } -->
+                <!-- ]; -->
+
+                <!-- groups.forEach(g => { -->
+                    <!-- const btn = document.createElement('button'); -->
+                    <!-- btn.className = `top-tab-btn ${g.key === activeSampleGroup ? 'active' : ''}`; -->
+                    <!-- btn.innerText = g.label; -->
+                    <!-- btn.onclick = () => selectSampleGroup(g.key, g.label); -->
+                    <!-- topCategoryBar.appendChild(btn); -->
+                <!-- }); -->
+            <!-- } else { -->
+                <!-- topCategoryBar.style.display = 'none'; -->
+            <!-- } -->
+        <!-- } -->
+
+        <!-- function switchScreen(screenName) { -->
+            <!-- currentAppTab = screenName; -->
+            <!-- document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active')); -->
+            <!-- document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active')); -->
+
+            <!-- renderTopCategoryBar(); -->
+
+            <!-- if (screenName === 'dishes') { -->
+                <!-- document.getElementById('screenDishes').classList.add('active'); -->
+                <!-- document.getElementById('navHome').classList.add('active'); -->
+            <!-- } else if (screenName === 'samples') { -->
+                <!-- document.getElementById('screenSamples').classList.add('active'); -->
+                <!-- document.getElementById('navSamples').classList.add('active'); -->
+                <!-- embeddedCurrentPage = 1;  -->
+                <!-- renderEmbeddedSampleMenus(); -->
+            <!-- } else if (screenName === 'menu') { -->
+                <!-- document.getElementById('screenMenu').classList.add('active'); -->
+                <!-- document.getElementById('navCart').classList.add('active'); -->
+            <!-- } -->
+        <!-- } -->
+
+        <!-- function selectDishCategory(category) { -->
+            <!-- activeDishCategory = category; -->
+            <!-- document.querySelectorAll('.top-tab-btn').forEach(b => b.classList.remove('active')); -->
+            <!-- const targetBtn = document.getElementById(`top-btn-${cleanId(category)}`); -->
+            <!-- if (targetBtn) { -->
+                <!-- targetBtn.classList.add('active'); -->
+                <!-- targetBtn.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' }); -->
+            <!-- } -->
+            <!-- let displayTitle = category.replace(/TAB \d+\s*-\s*/, ''); -->
+            <!-- document.getElementById('currentCategoryTitle').innerText = `Món ăn: ${displayTitle}`; -->
+            <!-- renderDishes(); -->
+        <!-- } -->
+
+        <!-- function selectSampleGroup(groupKey, groupLabel) { -->
+            <!-- activeSampleGroup = groupKey; -->
+            <!-- document.getElementById('currentSampleGroupTitle').innerText = `Hạng Tiệc: ${groupLabel.toUpperCase()}`; -->
+            <!-- embeddedCurrentPage = 1; -->
+            <!-- renderTopCategoryBar(); -->
+            <!-- renderEmbeddedSampleMenus(); -->
+        <!-- } -->
+
+        <!-- function renderEmbeddedSampleMenus() { -->
+            <!-- const gridContainer = document.getElementById('embeddedSampleMenusGrid'); -->
+            <!-- const paginationContainer = document.getElementById('embeddedPaginationControls'); -->
+            <!-- gridContainer.innerHTML = ''; -->
+            <!-- paginationContainer.innerHTML = ''; -->
+
+            <!-- const filteredMenus = sampleMenus.filter(menu => { -->
+                <!-- if (activeSampleGroup === "ALL") return true; -->
+                <!-- return menu.group === activeSampleGroup; -->
+            <!-- }); -->
+
+            <!-- if (filteredMenus.length === 0) { -->
+                <!-- gridContainer.innerHTML = '<div style="grid-column: span 2; text-align:center; color:#999; padding:20px; font-style:italic;">Hạng tiệc này hiện chưa có thực đơn mẫu sẵn...</div>'; -->
+                <!-- return; -->
+            <!-- } -->
+
+            <!-- const totalPages = Math.ceil(filteredMenus.length / itemsPerPage); -->
+            <!-- const startIndex = (embeddedCurrentPage - 1) * itemsPerPage; -->
+            <!-- const endIndex = Math.min(startIndex + itemsPerPage, filteredMenus.length); -->
+
+            <!-- for (let i = startIndex; i < endIndex; i++) { -->
+                <!-- const menu = filteredMenus[i]; -->
+                <!-- const card = document.createElement('div'); -->
+                <!-- card.className = 'sample-menu-thumb-card'; -->
+                
+                <!-- let dishImgFile = sampleMenuAssignedImages[menu.id] || "GOI-HAI-SAN.jpg"; -->
+                
+                <!-- card.innerHTML = ` -->
+                    <!-- <div class="sample-image-container" onclick="openSampleLightbox(${menu.id})"> -->
+                        <!-- <img class="sample-menu-img" src="images/${dishImgFile}" alt="${menu.title}" onerror="handleImageFallback(this, '${dishImgFile}', true)"> -->
+                        <!-- <div class="sample-image-overlay">${menu.tag}</div> -->
+                        <!-- <button class="zoom-btn-trigger" onclick="event.stopPropagation(); openSampleLightbox(${menu.id});"> -->
+                            <!-- <i class="fa-solid fa-expand"></i> -->
+                        <!-- </button> -->
+                    <!-- </div> -->
+                    <!-- <div style="display:flex; flex-direction:column; gap:4px; margin-top:2px; flex-grow:1;"> -->
+                        <!-- <div class="sample-card-title">${menu.title}</div> -->
+                        <!-- <button class="apply-sample-btn" onclick="applySampleMenu(${menu.id})" style="margin-top:auto;">Áp dụng mẫu</button> -->
+                    <!-- </div> -->
+                <!-- `; -->
+                <!-- gridContainer.appendChild(card); -->
+            <!-- } -->
+
+            <!-- if (totalPages > 1) { -->
+                <!-- for (let p = 1; p <= totalPages; p++) { -->
+                    <!-- const pBtn = document.createElement('button'); -->
+                    <!-- pBtn.className = `sheet-page-btn ${embeddedCurrentPage === p ? 'active' : ''}`; -->
+                    <!-- pBtn.innerText = p; -->
+                    <!-- pBtn.onclick = () => { -->
+                        <!-- embeddedCurrentPage = p; -->
+                        <!-- renderEmbeddedSampleMenus(); -->
+                    <!-- }; -->
+                    <!-- paginationContainer.appendChild(pBtn); -->
+                <!-- } -->
+            <!-- } -->
+        <!-- } -->
+
+        <!-- function renderDishes() { -->
+            <!-- const container = document.getElementById('dishesListContainer'); -->
+            <!-- container.innerHTML = ''; -->
+
+            <!-- if (!menuData[activeDishCategory]) return; -->
+
+            <!-- menuData[activeDishCategory].forEach(dish => { -->
+                <!-- const card = document.createElement('div'); -->
+                <!-- card.className = 'dish-card-app'; -->
+                
+                <!-- const safeDishName = dish.name.replace(/'/g, "\\'"); -->
+                <!-- const safeCategory = activeDishCategory.replace(/'/g, "\\'"); -->
+                <!-- const safeDesc = (dish.desc || "Món ăn tiệc cưới đặc sắc, đậm đà chuẩn vị miền Tây.").replace(/'/g, "\\'"); -->
+
+                <!-- card.innerHTML = ` -->
+                    <!-- <div class="img-thumb-container" onclick="openSingleDishImageLightbox('${safeDishName}', '${dish.img}', '${safeDesc}')"> -->
+                        <!-- <img class="dish-thumb" src="images/${dish.img}" alt="${dish.name}" onerror="handleImageFallback(this, '${dish.img}', false)"> -->
+                        <!-- <div class="dish-img-overlay-zoom"><i class="fa-solid fa-magnifying-glass-plus"></i></div> -->
+                    <!-- </div> -->
+                    <!-- <div class="dish-details"> -->
+                        <!-- <div> -->
+                            <!-- <div class="dish-title">${dish.name}</div> -->
+                            <!-- <div class="dish-desc">${dish.desc || 'Món ăn tiệc cưới đặc sắc, đậm đà chuẩn vị miền Tây.'}</div> -->
+                        <!-- </div> -->
+                        <!-- <button class="add-app-btn" onclick="addDish('${safeDishName}', '${safeCategory}')">➕ Chọn món</button> -->
+                    <!-- </div> -->
+                <!-- `; -->
+                <!-- container.appendChild(card); -->
+            <!-- }); -->
+        <!-- } -->
+
+        <!-- function openSingleDishImageLightbox(dishName, imgFileName, dishDesc) { -->
+            <!-- const cardModal = document.getElementById('lightboxContentCard'); -->
+            <!-- cardModal.className = "lightbox-card-preview lightbox-single-img-mode"; -->
+
+            <!-- cardModal.innerHTML = ` -->
+                <!-- <span class="lightbox-close-btn" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></span> -->
+                <!-- <div style="display:flex; flex-direction:column; gap:10px; align-items:center;"> -->
+                    <!-- <img class="lightbox-dish-big-img" src="images/${imgFileName}" alt="${dishName}" onerror="handleImageFallback(this, '${imgFileName}', false)"> -->
+                    <!-- <h3 style="font-size:1.05rem; font-weight:700; color:var(--primary-dark); text-align:center; margin-top:5px; width:100%; border-bottom:1px dashed #ddd; padding-bottom:6px;">${dishName}</h3> -->
+                    <!-- <p style="font-size:0.78rem; color:#555; text-align:justify; line-height:1.4; padding:0 4px; font-style:italic;">${dishDesc}</p> -->
+                <!-- </div> -->
+            <!-- `; -->
+            <!-- document.getElementById('lightboxModal').style.display = 'flex'; -->
+        <!-- } -->
+
+        <!-- function openSampleLightbox(id) { -->
+            <!-- const menu = sampleMenus.find(m => m.id === id); -->
+            <!-- if(!menu) return; -->
+
+            <!-- const cardModal = document.getElementById('lightboxContentCard'); -->
+            <!-- cardModal.className = "lightbox-card-preview"; -->
+
+            <!-- cardModal.innerHTML = ` -->
+                <!-- <span class="lightbox-close-btn" onclick="closeLightbox()"><i class="fa-solid fa-xmark"></i></span> -->
+                <!-- <div style="text-align:center; border-bottom:1px solid var(--gold-dark); padding-bottom:8px;"> -->
+                    <!-- <h3 style="font-family:'Great Vibes', cursive; font-size:2.2rem; color:var(--primary-dark);">${menu.title}</h3> -->
+                    <!-- <p style="font-size:0.75rem; color:var(--gold-dark); font-weight:700; letter-spacing:1px;">${menu.tag}</p> -->
+                <!-- </div> -->
+                <!-- <div class="lightbox-menu-list" id="lightboxMenuList"></div> -->
+                <!-- <button class="lightbox-action-btn" id="lightboxApplyBtn">✔ Áp dụng mẫu thực đơn này</button> -->
+            <!-- `; -->
+            
+            <!-- const listContainer = document.getElementById('lightboxMenuList'); -->
+            <!-- let currentNo = 1; -->
+            <!-- if(menu.gold.length > 0) { -->
+                <!-- const li = document.createElement('div'); -->
+                <!-- li.className = 'lightbox-menu-item'; -->
+                <!-- li.innerText = `${currentNo}. Khai vị Đồ Nguội ${menu.gold.length} món (${menu.gold.join(', ')})`; -->
+                <!-- listContainer.appendChild(li); -->
+                <!-- currentNo++; -->
+            <!-- } -->
+            <!-- menu.nonGold.forEach(m => { -->
+                <!-- const li = document.createElement('div'); -->
+                <!-- li.className = 'lightbox-menu-item'; -->
+                <!-- li.innerText = `${currentNo}. ${m}`; -->
+                <!-- listContainer.appendChild(li); -->
+                <!-- currentNo++; -->
+            <!-- }); -->
+
+            <!-- document.getElementById('lightboxModal').style.display = 'flex'; -->
+            
+            <!-- document.getElementById('lightboxApplyBtn').onclick = () => { -->
+                <!-- applySampleMenu(id); -->
+                <!-- closeLightbox(); -->
+            <!-- }; -->
+        <!-- } -->
+
+        <!-- function closeLightbox() { -->
+            <!-- document.getElementById('lightboxModal').style.display = 'none'; -->
+        <!-- } -->
+
+        <!-- function applySampleMenu(id) { -->
+            <!-- const menu = sampleMenus.find(m => m.id === id); -->
+            <!-- if(!menu) return; -->
+
+            <!-- selectedGold = [...menu.gold]; -->
+            <!-- selectedNonGold = [...menu.nonGold]; -->
+            
+            <!-- renderMenu(); -->
+            <!-- animateBadge(); -->
+            
+            <!-- switchScreen('menu'); -->
+            <!-- document.getElementById('weddingMenu').scrollIntoView({ behavior: 'smooth' }); -->
+        <!-- } -->
+
+        <!-- function addDish(dishName, category) { -->
+            <!-- // Sửa "ĐỒ NỔI" thành "ĐỒ NGUỘI" để nhận diện đúng tab -->
+            <!-- if (category.includes("ĐỒ NGUỘI")) { -->
+                <!-- if (!selectedGold.includes(dishName)) { -->
+                    <!-- selectedGold.push(dishName); -->
+                    <!-- renderMenu(); -->
+                    <!-- animateBadge(); -->
+                <!-- } else { -->
+                    <!-- alert("Món đồ nguội này đã có trong khai vị rồi ạ!"); -->
+                <!-- } -->
+            <!-- } else { -->
+                <!-- if (!selectedNonGold.includes(dishName)) { -->
+                    <!-- selectedNonGold.push(dishName); -->
+                    <!-- renderMenu(); -->
+                    <!-- animateBadge(); -->
+                <!-- } else { -->
+                    <!-- alert("Món này đã được thêm vào thực đơn rồi ạ!"); -->
+                <!-- } -->
+            <!-- } -->
+        <!-- } -->
+
+        <!-- function animateBadge() { -->
+            <!-- const badge = document.getElementById('cartBadge'); -->
+            <!-- badge.style.transform = 'scale(1.4)'; -->
+            <!-- setTimeout(() => badge.style.transform = 'scale(1)', 200); -->
+        <!-- } -->
+
+        <!-- function removeNonGold(index) { -->
+            <!-- selectedNonGold.splice(index, 1); -->
+            <!-- renderMenu(); -->
+        <!-- } -->
+
+        <!-- function removeAllGold() { -->
+            <!-- selectedGold = []; -->
+            <!-- renderMenu(); -->
+        <!-- } -->
+
+        <!-- function removeGoldItem(gIdx) { -->
+            <!-- selectedGold.splice(gIdx, 1); -->
+            <!-- renderMenu(); -->
+        <!-- } -->
+
+        <!-- function renderMenu() { -->
+            <!-- const menuBody = document.getElementById('menuBody'); -->
+            <!-- const cartBadge = document.getElementById('cartBadge'); -->
+            
+            <!-- const totalCount = selectedNonGold.length + (selectedGold.length > 0 ? 1 : 0); -->
+            <!-- cartBadge.innerText = totalCount; -->
+
+            <!-- if (selectedNonGold.length === 0 && selectedGold.length === 0) { -->
+                <!-- menuBody.innerHTML = '<div class="empty-message">Anh chưa chọn món hoặc chưa áp dụng thực đơn mẫu nào hết...</div>'; -->
+                <!-- return; -->
+            <!-- } -->
+
+            <!-- menuBody.innerHTML = ''; -->
+            <!-- let currentNo = 1; -->
+
+            <!-- if (selectedGold.length > 0) { -->
+                <!-- const item = document.createElement('div'); -->
+                <!-- item.className = 'selected-item'; -->
+                
+                <!-- // Trình bày danh sách món Đồ Nguội -->
+                <!-- const listItems = selectedGold.map((gDish, gIdx) => ` -->
+                    <!-- <span style="display:block; margin-top:4px;"> -->
+                        <!-- • ${gDish}  -->
+                        <!-- <button class="delete-sub-btn" onclick="removeGoldItem(${gIdx})">[Xóa]</button> -->
+                    <!-- </span> -->
+                <!-- `).join(''); -->
+
+                <!-- item.innerHTML = ` -->
+                    <!-- <div class="item-content"> -->
+                        <!-- <div class="item-title">${currentNo}. Khai Vị Đồ Nguội (${selectedGold.length} món)</div> -->
+                        <!-- <div class="item-note" style="margin-left: 10px;">${listItems}</div> -->
+                    <!-- </div> -->
+                    <!-- <button class="delete-btn" onclick="removeAllGold()">✕</button> -->
+                <!-- `; -->
+
+                <!-- menuBody.appendChild(item); -->
+                <!-- currentNo++; -->
+            <!-- } -->
+
+            <!-- selectedNonGold.forEach((dish, index) => { -->
+                <!-- const item = document.createElement('div'); -->
+                <!-- item.className = 'selected-item'; -->
+                <!-- item.innerHTML = ` -->
+                    <!-- <div class="item-content"> -->
+                        <!-- <div class="item-title">${currentNo}. ${dish}</div> -->
+                    <!-- </div> -->
+                    <!-- <button class="delete-btn" onclick="removeNonGold(${index})">✕</button> -->
+                <!-- `; -->
+                <!-- menuBody.appendChild(item); -->
+                <!-- currentNo++; -->
+            <!-- }); -->
+        <!-- } -->
+
+        <!-- function saveMenuAsImage() { -->
+            <!-- if (selectedNonGold.length === 0 && selectedGold.length === 0) { -->
+                <!-- alert("Thực đơn trống, chưa thể xuất ảnh được ạ!"); -->
+                <!-- return; -->
+            <!-- } -->
+
+            <!-- const menuElement = document.getElementById('weddingMenu'); -->
+            <!-- menuElement.classList.add('html2canvas-container'); -->
+
+            <!-- html2canvas(menuElement, { -->
+                <!-- backgroundColor: '#fefcf7', -->
+                <!-- scale: 2,  -->
+                <!-- useCORS: true -->
+            <!-- }).then(canvas => { -->
+                <!-- const link = document.createElement('a'); -->
+                <!-- link.download = 'Thuc_Don_Phi_Long.png'; -->
+                <!-- link.href = canvas.toDataURL('image/png'); -->
+                <!-- link.click(); -->
+                
+                <!-- menuElement.classList.remove('html2canvas-container'); -->
+            <!-- }).catch(err => { -->
+                <!-- console.error("Lỗi khi xuất ảnh: ", err); -->
+                <!-- menuElement.classList.remove('html2canvas-container'); -->
+            <!-- }); -->
+        <!-- } -->
+
+        <!-- // Tự động kích hoạt khi tải trang -->
+        <!-- window.onload = initApp; -->
+    <!-- </script> -->
 </body>
 </html>
