@@ -788,62 +788,67 @@
     </div>
 	
 	<script>
-        // ... (Giữ nguyên các biến Supabase, allDishImages, menuData, sampleMenus như cũ) ...
+    // 1. Cấu hình biến
+    const SUPABASE_URL = "https://kslsewlljxkwcgceqxcf.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_I1NCl_wrxzsDRM8wFXgeVQ_8W_JKlKE";
+    
+    let allDishImages = {};
+    let menuData = {};
 
-        // HÀM KHỞI TẠO AN TOÀN - ĐẢM BẢO HTML ĐÃ TẢI XONG
-        function initApp() {
-            // Kiểm tra xem các phần tử HTML bắt buộc có tồn tại không
-            const container = document.getElementById('dishesListContainer');
-            const menuBody = document.getElementById('menuBody');
-            
-            if (!container || !menuBody) {
-                console.log("HTML chưa load xong, chờ 100ms...");
-                setTimeout(initApp, 100);
-                return;
-            }
+    // 2. Hàm kiểm tra thư viện Supabase đã sẵn sàng chưa
+    function checkSupabaseLibrary() {
+        if (typeof supabase === 'undefined' && window.supabase) {
+            return window.supabase;
+        }
+        return typeof supabase !== 'undefined' ? supabase : null;
+    }
 
-            console.log("HTML đã sẵn sàng, bắt đầu kết nối Supabase...");
-            fetchDataFromSupabase();
+    // 3. Khởi tạo ứng dụng an toàn
+    async function initApp() {
+        console.log("Đang khởi tạo ứng dụng...");
+        
+        // Kiểm tra thư viện
+        const sb = checkSupabaseLibrary();
+        if (!sb || !sb.createClient) {
+            console.error("Thư viện Supabase chưa tải xong, đang thử lại sau 500ms...");
+            setTimeout(initApp, 500);
+            return;
         }
 
-        async function fetchDataFromSupabase() {
-            const loadingIndicator = document.getElementById('loadingIndicator');
-            try {
-                const { data, error } = await supabase.from('dishes').select('*');
-                if (error) throw error;
+        const client = sb.createClient(SUPABASE_URL, SUPABASE_KEY);
+        
+        try {
+            const { data, error } = await client.from('dishes').select('*');
+            if (error) throw error;
 
-                if (data && data.length > 0) {
-                    if (loadingIndicator) loadingIndicator.style.display = 'none';
-                    
-                    data.forEach((dish, idx) => {
-                        let cleanImg = (dish.image_url || "").split('/').pop(); 
-                        allDishImages[dish.name] = cleanImg;
-                        if (!menuData[dish.category]) menuData[dish.category] = [];
-                        
-                        menuData[dish.category].push({
-                            id: idx + 1,
-                            name: dish.name,
-                            img: cleanImg,
-                            desc: "Món ăn tiệc cưới đặc sắc."
-                        });
+            if (data) {
+                data.forEach((dish, idx) => {
+                    let cleanImg = (dish.image_url || "").split('/').pop();
+                    allDishImages[dish.name] = cleanImg;
+                    if (!menuData[dish.category]) menuData[dish.category] = [];
+                    menuData[dish.category].push({
+                        id: idx + 1,
+                        name: dish.name,
+                        img: cleanImg,
+                        desc: "Món ăn tiệc cưới đặc sắc."
                     });
-                }
-            } catch (err) {
-                console.error("Lỗi:", err);
-            } finally {
-                generateRandomImagesForSamples();
-                renderTopCategoryBar();
-                renderDishes();
-                renderMenu();
+                });
             }
+        } catch (err) {
+            console.error("Lỗi Supabase:", err);
+            const loader = document.getElementById('loadingIndicator');
+            if (loader) loader.innerText = "Lỗi kết nối máy chủ!";
+        } finally {
+            // Dù lỗi hay thành công vẫn render để tránh treo
+            renderTopCategoryBar();
+            renderDishes();
+            renderMenu();
         }
+    }
 
-        // --- CÁC HÀM RENDER GIỮ NGUYÊN NHƯ CŨ ---
-        // (Đảm bảo các hàm renderDishes(), renderMenu(), ... giữ nguyên)
-
-        // CHẠY KHI TRANG TẢI XONG
-        document.addEventListener('DOMContentLoaded', initApp);
-    </script>
+    // Đợi thư viện tải xong rồi mới chạy
+    window.onload = initApp;
+</script>
 
     <!-- <!-- <script> --> -->
 	
