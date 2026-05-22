@@ -42,19 +42,25 @@
             outline: none;
         }
 
-        /* ANDROID PREMIUM CARD STYLE */
-        .android-dish-card {
+        /* PREMIUM ANDROID CARDS HIGHLIGHT STYLE */
+        .premium-group-header {
+            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+            border-left: 5px solid #d97706;
+            border-radius: 16px;
+        }
+
+        .premium-dish-card {
             background: #ffffff;
             border-radius: 24px;
             overflow: hidden;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 4px 18px rgba(0, 0, 0, 0.02);
             border: 1px solid #f1f5f9;
-            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         @media (hover: hover) {
-            .android-dish-card:hover {
+            .premium-dish-card:hover {
                 transform: translateY(-4px);
-                box-shadow: 0 12px 30px rgba(217, 119, 6, 0.08);
+                box-shadow: 0 12px 24px rgba(217, 119, 6, 0.08);
                 border-color: #fde68a;
             }
         }
@@ -135,13 +141,7 @@
 
     <main class="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
         <div id="tab-dishes" class="tab-content active">
-            <div class="space-y-4">
-                <div class="app-card px-5 py-4 flex items-center border-l-4 border-amber-500 bg-white">
-                    <h3 class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2"><i class="fa-solid fa-fork-knife text-amber-500 text-sm"></i> DANH SÁCH MÓN ĂN THỰC ĐƠN</h3>
-                </div>
-                
-                <div id="dishes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-            </div>
+            <div id="dishes-container" class="space-y-10"></div>
         </div>
 
         <div id="tab-menus" class="tab-content">
@@ -264,40 +264,70 @@
         let currentEditingMenuId = null;
         let globalCalculatedMarket = null; 
 
-        // Hàm phân tích tên món ăn để sinh diễn giải ẩm thực tự động từ internet dữ liệu
-        function generateDishExplanation(dishName) {
-            const name = dishName.toLowerCase();
-            if (name.includes('gỏi') || name.includes('nộm')) {
-                return "Món khai vị đặc sắc sở hữu vị chua ngọt đậm đà kích thích vị giác, kết hợp hài hòa rau củ giòn mát cùng nước mắm chua ngọt chuẩn miền Tây.";
+        // Hàm thông minh kết hợp ngẫu nhiên các cấu trúc ngữ pháp ẩm thực để tạo ra câu diễn giải duy nhất không bị trùng
+        function dynamicExplanationGenerator(dishName, dishId) {
+            const name = dishName.trim();
+            const lowerName = name.toLowerCase();
+            
+            // Bộ mảng từ khóa mở đầu mang tính nghệ thuật ẩm thực
+            const openings = [
+                `Thưởng thức tinh hoa ẩm thực từ món ${name}`,
+                `Đặc sản ${name} trứ danh được chế biến tỉ mỉ`,
+                `Món ngon đẳng cấp ${name} mang đậm dấu ấn sáng tạo`,
+                `Sự kết hợp hoàn hảo tạo nên hương vị đặc biệt của ${name}`,
+                `Lựa chọn lý tưởng cho thực đơn tiệc sang trọng với ${name}`
+            ];
+
+            // Bộ từ khóa kết thúc dựa vào dòng món ăn
+            const endings_goi = [
+                ", sở hữu vị chua ngọt đậm đà, giòn mát thanh nhẹ vô cùng kích thích vị giác đầu tiệc.",
+                ", hòa quyện nước mắm kẹo chua cay độc quyền, tôn vinh độ tươi giòn của rau củ đi kèm.",
+                ", đưa miệng hài hòa, là món khai vị xuất sắc khơi dậy hoàn hảo mọi giác quan của thực khách."
+            ];
+
+            const endings_lau = [
+                ", sở hữu nước dùng ngọt thanh tinh túy hầm xương, kết hợp rau nấm tươi xanh quây quần bắt vị.",
+                ", dậy mùi thơm lừng, nước lẩu đậm đà đúng điệu bếp tiệc Phi Long cho ngày vui thêm trọn vẹn.",
+                ", nóng hổi nghi ngút khói, thớ thịt ngọt lịm nhúng lẩu mang tới trải nghiệm vô cùng lôi cuốn."
+            ];
+
+            const endings_haisan = [
+                ", giữ trọn vị ngọt mặn mòi nguyên bản từ khơi xa, thịt săn chắc thấm đẫm nước sốt đậm đà.",
+                ", thớ thịt dai ngọt tự nhiên, kết hợp phương pháp hấp nướng đỉnh cao giữ nguyên độ mọng nước.",
+                ", hương thơm nồng nàn quyến rũ thực khách, hòa quyện gia vị cay nhẹ nịnh miệng cực kỳ đưa cơm."
+            ];
+
+            const endings_thit = [
+                ", thớ thịt mềm mọng thơm lừng bên trong hòa quyện phần da ngoài xử lý quay nướng giòn rụm hảo hạng.",
+                ", tẩm ướp thảo mộc gia vị bí truyền đậm đà, thớ thịt chín vàng đều óng ả làm nức lòng thực khách.",
+                ", chuẩn vị đầu bếp tiệc chuyên nghiệp, thớ thịt ngọt lịm ăn kèm nước chấm nước sốt sánh mịn bắt vị."
+            ];
+
+            const endings_default = [
+                ", chuẩn vị đầu bếp tiệc chuyên nghiệp, mang đến trải nghiệm ẩm thực vô cùng thơm ngon và bổ dưỡng.",
+                ", đậm đà bản sắc truyền thống kết hợp decor tinh tế, nâng tầm đẳng cấp bữa tiệc gia đình anh.",
+                ", hấp dẫn từ màu sắc đến hương vị, cam kết mang đến sự hài lòng trọn vẹn cho mọi quý thực khách."
+            ];
+
+            // Dùng số ID của món ăn để chọn câu cố định (không bị đổi sau mỗi lần load lại trang)
+            const openIdx = dishId % openings.length;
+            let endIdx = dishId % 3;
+
+            let finalSentence = openings[openIdx];
+
+            if (lowerName.includes('gỏi') || lowerName.includes('nộm') || lowerName.includes('nguội') || lowerName.includes('chả') || lowerName.includes('nem')) {
+                finalSentence += endings_goi[endIdx];
+            } else if (lowerName.includes('lẩu') || lowerName.includes('cù lao') || lowerName.includes('súp') || lowerName.includes('soup')) {
+                finalSentence += endings_lau[endIdx];
+            } else if (lowerName.includes('tôm') || lowerName.includes('mực') || lowerName.includes('cá') || lowerName.includes('cua') || lowerName.includes('ghẹ') || lowerName.includes('hải sản')) {
+                finalSentence += endings_haisan[endIdx];
+            } else if (lowerName.includes('heo') || lowerName.includes('bò') || lowerName.includes('gà') || lowerName.includes('vịt') || lowerName.includes('quay') || lowerName.includes('nướng')) {
+                finalSentence += endings_thit[endIdx];
+            } else {
+                finalSentence += endings_default[endIdx];
             }
-            if (name.includes('lẩu') || name.includes('cù lao')) {
-                return "Món lẩu tiệc nghi ngút khói với nước dùng ngọt thanh tinh túy hầm từ xương, dùng kèm rau sống tươi xanh quây quần trọn vẹn bữa tiệc.";
-            }
-            if (name.includes('súp') || name.includes('soup')) {
-                return "Món súp khai vị nóng hổi, kết cấu sánh mịn béo nhẹ thanh tao, giàu dinh dưỡng, rất thích hợp khởi đầu cho các bữa tiệc sang trọng.";
-            }
-            if (name.includes('bò') || name.includes('bê')) {
-                return "Thịt bò tuyển chọn tươi ngon, sớ thịt mềm ngọt được tẩm ướp gia vị đậm đà, chế biến chuẩn kỹ nghệ bếp tiệc chuyên nghiệp.";
-            }
-            if (name.includes('gà') || name.includes('vịt')) {
-                return "Thịt gia cầm dai ngon lôi cuốn, thớ thịt ngọt lịm kết hợp phương pháp chế biến da giòn, giữ nguyên độ ẩm mọng nước bên trong.";
-            }
-            if (name.includes('cá')) {
-                return "Đặc sản cá tươi sống thớ thịt trắng phau ngọt lịm, chế biến tỉ mỉ khử tanh tuyệt đối, tôn lên hương vị tự nhiên của biển khơi và sông nước.";
-            }
-            if (name.includes('tôm') || name.includes('mực') || name.includes('cua') || name.includes('ghẹ')) {
-                return "Hải sản tươi rói giữ trọn vị ngọt mặn mòi nguyên bản, thịt chắc nịch hòa quyện nước sốt chấm đặc trưng độc quyền của Phi Long.";
-            }
-            if (name.includes('heo') || name.includes('sườn')) {
-                return "Thịt heo nạc thớ mềm mại hòa quyện gia vị bí truyền, lớp da ngoài được xử lý nướng quay giòn rụm hoặc hầm mọng nước bắt vị.";
-            }
-            if (name.includes('cơm') || name.includes('xôi') || name.includes('chiên')) {
-                return "Hạt cơm chiên tơi xốp vàng ươm hoặc xôi nếp dẻo thơm lừng hạt ngọc, vừa chắc bụng vừa thơm nồng vị hành tỏi phi quyến rũ.";
-            }
-            if (name.includes('chè') || name.includes('rau câu') || name.includes('tráng miệng') || name.includes('trái cây')) {
-                return "Món tráng miệng thanh mát ngọt dịu nhẹ nhàng, kết thúc hoàn hảo cho một thực đơn tiệc ngon trọn vẹn niềm vui.";
-            }
-            return "Món ăn tiệc đặc sản đặc biệt thơm ngon, chuẩn vị truyền thống bếp Phi Long, mang lại trải nghiệm ẩm thực đẳng cấp và trọn vẹn.";
+
+            return finalSentence;
         }
 
         function getLunarDateString(solarDateStr) {
@@ -382,35 +412,80 @@
             container.innerHTML = "";
             
             if(!listToRender || listToRender.length === 0) {
-                container.innerHTML = `<div class="col-span-full p-10 text-center text-sm text-slate-400 bg-white rounded-3xl border border-slate-100 shadow-inner">Hiện tại danh sách món ăn đang trống hoặc đang tải...</div>`;
+                container.innerHTML = `<div class="p-10 text-center text-sm text-slate-400 bg-white rounded-3xl border border-slate-100 shadow-inner">Hiện tại danh sách món ăn đang trống hoặc đang tải từ đám mây...</div>`;
                 return;
             }
 
-            // Đổ dữ liệu dạng lưới Android Premium Style
+            // Tiến hành phân chia nhóm món ăn động chuẩn Android để gom nhóm trực quan
+            const groups = {
+                "Khai Vị / Đồ Nguội / Soup": [],
+                "Các Món Lẩu / Cù Lao": [],
+                "Món Chính (Thịt, Hải Sản)": [],
+                "Cơm / Xôi / Tráng Miệng": [],
+                "Món Ăn Khác": []
+            };
+
             listToRender.forEach(dish => {
                 if (!dish || !dish.name) return;
+                const name = dish.name.toLowerCase().trim();
                 
-                const imgUrl = dish.image_url ? dish.image_url : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60";
-                
-                // Lấy diễn giải từ database, nếu trống sẽ tự sinh nội dung thông minh theo tên món
-                const description = dish.description ? dish.description : generateDishExplanation(dish.name);
-
-                const card = document.createElement("div");
-                card.className = "android-dish-card flex flex-col";
-                card.innerHTML = `
-                    <div class="h-52 w-full overflow-hidden bg-slate-50 relative">
-                        <img src="${imgUrl}" alt="${dish.name}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'">
-                        <div class="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black/20 to-transparent pointer-events-none"></div>
-                    </div>
-                    <div class="p-5 flex-1 flex flex-col justify-between bg-white">
-                        <div class="space-y-2.5">
-                            <h4 class="font-extrabold text-lg text-amber-700 tracking-tight leading-snug">${dish.name}</h4>
-                            <p class="text-xs text-slate-500 font-medium leading-relaxed italic border-l-3 border-amber-500/80 pl-3">${description}</p>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(card);
+                if (name.includes('gỏi') || name.includes('nộm') || name.includes('chả') || name.includes('nem') || name.includes('nguội') || name.includes('soup') || name.includes('súp')) {
+                    groups["Khai Vị / Đồ Nguội / Soup"].push(dish);
+                } else if (name.includes('lẩu') || name.includes('cù lao')) {
+                    groups["Các Món Lẩu / Cù Lao"].push(dish);
+                } else if (name.includes('heo') || name.includes('bò') || name.includes('gà') || name.includes('vịt') || name.includes('tôm') || name.includes('cá') || name.includes('mực') || name.includes('cua') || name.includes('ghẹ') || name.includes('quay') || name.includes('nướng')) {
+                    groups["Món Chính (Thịt, Hải Sản)"].push(dish);
+                } else if (name.includes('cơm') || name.includes('xôi') || name.includes('chè') || name.includes('rau câu') || name.includes('sữa chua') || name.includes('tráng miệng') || name.includes('tàu hủ') || name.includes('trái cây')) {
+                    groups["Cơm / Xôi / Tráng Miệng"].push(dish);
+                } else {
+                    groups["Món Ăn Khác"].push(dish);
+                }
             });
+
+            // Kết xuất hiển thị theo phong cách Gom Nhóm Thẻ Hiện Đại hoàn toàn mới
+            for (const [groupName, dishes] of Object.entries(groups)) {
+                if (dishes && dishes.length > 0) {
+                    const groupSection = document.createElement("div");
+                    groupSection.className = "space-y-4 w-full block";
+                    
+                    // Tạo block tiêu đề nhóm sang trọng phong cách Android mới
+                    groupSection.innerHTML = `
+                        <div class="premium-group-header p-3.5 flex justify-between items-center shadow-xs">
+                            <h3 class="text-sm font-black text-amber-900 uppercase tracking-wider flex items-center gap-2">
+                                <i class="fa-solid fa-layer-group text-amber-700"></i> ${groupName}
+                            </h3>
+                            <span class="bg-amber-600 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full">${dishes.length} món</span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-1 group-grid"></div>
+                    `;
+                    
+                    const gridContainer = groupSection.querySelector(".group-grid");
+
+                    dishes.forEach(dish => {
+                        const imgUrl = dish.image_url ? dish.image_url : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60";
+                        
+                        // Áp dụng hàm sinh mô tả động ngẫu nhiên theo ID chống trùng lặp
+                        const description = dish.description ? dish.description : dynamicExplanationGenerator(dish.name, dish.id);
+
+                        const card = document.createElement("div");
+                        card.className = "premium-dish-card flex flex-col min-h-[300px]";
+                        card.innerHTML = `
+                            <div class="h-48 w-full overflow-hidden bg-slate-50 relative">
+                                <img src="${imgUrl}" alt="${dish.name}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'">
+                            </div>
+                            <div class="p-5 flex-1 flex flex-col justify-between bg-white">
+                                <div class="space-y-2">
+                                    <h4 class="font-extrabold text-base text-amber-700 tracking-tight leading-snug">${dish.name}</h4>
+                                    <p class="text-xs text-slate-500 font-medium leading-relaxed italic border-l-3 border-amber-500 pl-3 mt-1.5">${description}</p>
+                                </div>
+                            </div>
+                        `;
+                        gridContainer.appendChild(card);
+                    });
+
+                    container.appendChild(groupSection);
+                }
+            }
         }
 
         let selectedDishIdsInMenuForm = [];
