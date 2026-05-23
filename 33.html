@@ -20,13 +20,16 @@
         
         .tab-content { display: none; }
         .tab-content.active { display: block; }
+        
+        /* Thanh cuộn dọc chung */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* Ẩn thanh cuộn cho danh mục ngang */
-        .hide-scrollbar::-webkit-scrollbar { display: none; }
-        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        /* Thanh cuộn ngang hiển thị cho danh mục */
+        .category-scrollbar::-webkit-scrollbar { height: 4px; }
+        .category-scrollbar::-webkit-scrollbar-track { background: #f8fafc; border-radius: 10px; }
+        .category-scrollbar::-webkit-scrollbar-thumb { background: #d97706; border-radius: 10px; }
 
         .app-card {
             background: rgba(255,255,255,0.95);
@@ -46,13 +49,6 @@
             outline: none;
         }
 
-        /* PREMIUM ANDROID CARDS HIGHLIGHT STYLE */
-        .premium-group-header {
-            background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
-            border-left: 5px solid #d97706;
-            border-radius: 16px;
-        }
-
         .premium-dish-card {
             background: #ffffff;
             border-radius: 24px;
@@ -61,6 +57,31 @@
             border: 1px solid #f1f5f9;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
+
+        /* --- MODAL PHÓNG TO ẢNH --- */
+        #image-modal { 
+            display: none; 
+            position: fixed; 
+            inset: 0; 
+            z-index: 999999; 
+            background: rgba(15, 23, 42, 0.85); 
+            backdrop-filter: blur(6px); 
+            justify-content: center; 
+            align-items: center; 
+            padding: 1rem; 
+            opacity: 0; 
+            transition: opacity 0.3s ease; 
+        }
+        #image-modal.show { display: flex; opacity: 1; }
+        #image-modal img { 
+            max-width: 100%; 
+            max-height: 75vh; 
+            border-radius: 16px; 
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5); 
+            transform: scale(0.9); 
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
+        }
+        #image-modal.show img { transform: scale(1); }
 
         /* --- MENU ANDROID BOTTOM NAV --- */
         #mobile-bottom-nav {
@@ -91,20 +112,11 @@
             flex: 1;
             transition: all 0.2s ease;
         }
-        #mobile-bottom-nav button.active-nav {
-            color: #d97706;
-        }
-        #mobile-bottom-nav button i {
-            font-size: 22px;
-            transition: transform 0.2s ease;
-        }
-        #mobile-bottom-nav button.active-nav i {
-            transform: scale(1.15);
-        }
+        #mobile-bottom-nav button.active-nav { color: #d97706; }
+        #mobile-bottom-nav button i { font-size: 22px; transition: transform 0.2s ease; }
+        #mobile-bottom-nav button.active-nav i { transform: scale(1.15); }
 
-        @media (min-width: 768px) {
-            #mobile-bottom-nav { display: none !important; }
-        }
+        @media (min-width: 768px) { #mobile-bottom-nav { display: none !important; } }
         @media (max-width: 767px) {
             #desktop-top-nav { display: none !important; }
             body { padding-bottom: 95px !important; }
@@ -112,9 +124,7 @@
             header h1 { font-size: 22px !important; }
             .grid { gap: 16px !important; }
         }
-		#menus-container {
-            padding-bottom: 120px !important;
-        }
+		#menus-container { padding-bottom: 120px !important; }
     </style>
 </head>
 <body class="bg-gradient-to-br from-amber-50 via-white to-orange-50 font-sans min-h-screen antialiased text-slate-900">
@@ -125,7 +135,7 @@
                 <img src="logo.png" alt="Logo Phi Long" class="w-14 h-14 object-cover rounded-2xl border border-amber-100 shadow-sm" onerror="this.style.display='none'">
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 bg-clip-text text-transparent drop-shadow-sm">DVNA PHI LONG</h1>
-                    <p class="text-xs font-bold text-amber-600 tracking-wide mt-0.5">Tiệc ngon, trọn niềm vui — ĐT: 0909.05.06.17</p>
+                    <p class="text-[11px] font-bold text-amber-600 tracking-wide mt-0.5">Tiệc ngon, trọn niềm vui — ĐT: 0909.05.06.17</p>
                 </div>
             </div>
         </div>
@@ -141,9 +151,9 @@
 
     <main class="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
         <div id="tab-dishes" class="tab-content active">
-            <div id="dish-category-filters" class="flex overflow-x-auto gap-3 pb-2 mb-4 snap-x hide-scrollbar"></div>
+            <div id="dish-category-filters" class="flex overflow-x-auto gap-2.5 pb-3 mb-4 snap-x category-scrollbar"></div>
             
-            <div id="dishes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+            <div id="dishes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
         </div>
 
         <div id="tab-menus" class="tab-content">
@@ -241,6 +251,16 @@
         <p>© 2026 <b>Dịch Vụ Nấu Ăn Phi Long</b> - Toàn bộ dữ liệu được bảo mật đám mây Supabase.</p>
     </footer>
 
+    <div id="image-modal" onclick="closeImageModal()">
+        <div class="flex flex-col items-center justify-center h-full w-full max-w-3xl mx-auto p-4" onclick="event.stopPropagation()">
+            <div class="relative w-full text-center mt-8">
+                <button onclick="closeImageModal()" class="absolute -top-12 right-0 text-white text-3xl opacity-80 hover:opacity-100 cursor-pointer"><i class="fa-solid fa-circle-xmark"></i></button>
+                <img id="modal-img" src="" alt="Zoomed Dish" class="w-full object-contain max-h-[70vh] rounded-2xl shadow-2xl bg-black/50 mx-auto border border-white/20">
+                <h3 id="modal-title" class="text-white font-bold mt-4 text-base tracking-wide uppercase"></h3>
+            </div>
+        </div>
+    </div>
+
     <div id="mobile-bottom-nav">
         <button class="active-nav" onclick="switchTab('tab-dishes')">
             <i class="fa-solid fa-burger"></i>
@@ -266,10 +286,20 @@
         let currentEditingMenuId = null;
         let globalCalculatedMarket = null; 
         
-        // Trạng thái bộ lọc danh mục đang được chọn
         let activeDishCategory = "Tất cả";
 
-        // Hàm thông minh sinh chuỗi diễn giải ngẫu nhiên theo ID chống trùng lặp nội dung hoàn toàn
+        // Logic Modal phóng to ảnh
+        function openImageModal(url, name) {
+            const modal = document.getElementById('image-modal');
+            document.getElementById('modal-img').src = url;
+            document.getElementById('modal-title').innerText = name;
+            modal.classList.add('show');
+        }
+
+        function closeImageModal() {
+            document.getElementById('image-modal').classList.remove('show');
+        }
+
         function dynamicExplanationGenerator(dishName, dishId) {
             const name = dishName.trim();
             const lowerName = name.toLowerCase();
@@ -349,7 +379,6 @@
                 
                 return `${dd}/${mm}${leapStr}`;
             } catch (error) {
-                console.error("Lỗi tính lịch âm:", error);
                 return '---';
             }
         }
@@ -362,7 +391,6 @@
                 dateInput.addEventListener('change', function(e) {
                     const lunarInput = document.getElementById('menu-lunar-date');
                     lunarInput.value = getLunarDateString(e.target.value) + " Âm";
-                    
                     lunarInput.classList.remove('bg-slate-100');
                     lunarInput.classList.add('bg-amber-100', 'text-amber-800');
                     setTimeout(() => {
@@ -420,18 +448,16 @@
                 if (!categories.includes(cat)) categories.push(cat);
             });
 
-            // Nếu danh mục đang chọn bị xóa mất khỏi DB, reset về Tất cả
             if (!categories.includes(activeDishCategory)) activeDishCategory = "Tất cả";
 
-            // 2. Kết xuất thanh thẻ ngang (Filter Chips)
+            // 2. Kết xuất thanh thẻ ngang (Filter Chips) - Kích thước chữ được tinh chỉnh nhỏ hơn
             if (filterContainer) {
                 filterContainer.innerHTML = "";
                 categories.forEach(cat => {
                     const btn = document.createElement("button");
                     const isActive = cat === activeDishCategory;
                     
-                    // Style cho thẻ đang được chọn (active) và không được chọn
-                    btn.className = `shrink-0 px-5 py-2.5 rounded-2xl font-black text-[13px] transition-all duration-300 shadow-sm border ${
+                    btn.className = `shrink-0 px-4 py-2 rounded-2xl font-bold text-xs transition-all duration-300 shadow-sm border ${
                         isActive 
                         ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white border-transparent transform scale-105' 
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
@@ -440,19 +466,19 @@
                     
                     btn.onclick = () => {
                         activeDishCategory = cat;
-                        renderDishes(listToRender); // Cập nhật lại giao diện khi bấm
+                        renderDishes(listToRender); 
                     };
                     
                     filterContainer.appendChild(btn);
                 });
             }
 
-            // 3. Lọc danh sách món ăn theo thẻ đang chọn
+            // 3. Lọc danh sách món ăn
             const filteredDishes = activeDishCategory === "Tất cả" 
                 ? listToRender 
                 : listToRender.filter(d => (d.category ? d.category.trim() : "Món Khác") === activeDishCategory);
 
-            container.innerHTML = ""; // Xóa dữ liệu cũ
+            container.innerHTML = ""; 
             
             if(filteredDishes.length === 0) {
                 container.innerHTML = `<div class="col-span-full p-10 text-center text-sm text-slate-400 bg-white rounded-3xl border border-slate-100 shadow-inner">Không tìm thấy món ăn nào trong mục này...</div>`;
@@ -467,17 +493,40 @@
                 const categoryBadge = dish.category ? dish.category.trim() : "Món Khác";
                 const description = dish.description ? dish.description : dynamicExplanationGenerator(dish.name, dish.id);
 
+                // --- LOGIC XÁC ĐỊNH MÓN MỚI ---
+                // Xét nếu có cờ is_new HOẶC timestamp trong vòng 14 ngày (14 * 24 * 60 * 60 * 1000 ms)
+                let isNew = false;
+                if (dish.is_new) {
+                    isNew = true;
+                } else if (dish.timestamp) {
+                    const dishDate = new Date(dish.timestamp);
+                    const daysAgo14 = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
+                    if (dishDate > daysAgo14) isNew = true;
+                }
+                
+                // Nhãn MỚI chớp đỏ nhẹ nếu là món mới
+                const newBadgeHtml = isNew 
+                    ? `<span class="absolute top-3 left-3 bg-red-600/95 backdrop-blur-sm text-white text-[9px] font-black px-2 py-1 rounded-md shadow-md animate-pulse uppercase tracking-wider flex items-center gap-1 z-10"><i class="fa-solid fa-sparkles text-[8px]"></i> MỚI</span>` 
+                    : '';
+
+                // Escape dấu nháy đơn để truyền vào hàm JS
+                const safeDishName = dish.name.replace(/'/g, "\\'");
+
                 const card = document.createElement("div");
-                card.className = "premium-dish-card flex flex-col min-h-[300px]";
+                card.className = "premium-dish-card flex flex-col h-[280px]";
                 card.innerHTML = `
-                    <div class="h-48 w-full overflow-hidden bg-slate-50 relative">
-                        <img src="${imgUrl}" alt="${dish.name}" class="w-full h-full object-cover transition-transform duration-500 hover:scale-105" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'">
-                        <span class="absolute top-3 right-3 text-[10px] bg-amber-600/90 backdrop-blur-sm text-white font-black px-2.5 py-1 rounded-md uppercase tracking-wider">${categoryBadge}</span>
+                    <div class="h-40 w-full overflow-hidden bg-slate-50 relative cursor-pointer group" onclick="openImageModal('${imgUrl}', '${safeDishName}')">
+                        ${newBadgeHtml}
+                        <img src="${imgUrl}" alt="${dish.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'">
+                        <span class="absolute top-3 right-3 text-[9px] bg-amber-600/90 backdrop-blur-sm text-white font-black px-2.5 py-1 rounded-md uppercase tracking-wider">${categoryBadge}</span>
+                        <div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
+                            <i class="fa-solid fa-magnifying-glass-plus text-white text-3xl drop-shadow-md"></i>
+                        </div>
                     </div>
-                    <div class="p-5 flex-1 flex flex-col justify-between bg-white">
-                        <div class="space-y-2">
-                            <h4 class="font-extrabold text-base text-amber-700 tracking-tight leading-snug">${dish.name}</h4>
-                            <p class="text-xs text-slate-500 font-medium leading-relaxed italic border-l-3 border-amber-500 pl-3 mt-1.5">${description}</p>
+                    <div class="p-4 flex-1 flex flex-col justify-between bg-white">
+                        <div class="space-y-1.5">
+                            <h4 class="font-extrabold text-sm text-amber-700 tracking-tight leading-snug line-clamp-2">${dish.name}</h4>
+                            <p class="text-[11px] text-slate-500 font-medium leading-relaxed italic border-l-2 border-amber-400 pl-2 mt-1 line-clamp-2">${description}</p>
                         </div>
                     </div>
                 `;
@@ -490,246 +539,107 @@
         function renderMenuDishSelector() {
             const container = document.getElementById("menu-dish-selector");
             container.innerHTML = "";
-            
             window.openDishGroups = window.openDishGroups || ["Khai Vị / Đồ Nguội / Soup"]; 
             
-            const groups = {
-                "Khai Vị / Đồ Nguội / Soup": [],
-                "Món Lẩu": [],
-                "Món Chính (Thịt, Hải Sản)": [],
-                "Cơm / Tráng Miệng": [],
-                "Khác": []
-            };
-
+            const groups = { "Khai Vị / Đồ Nguội / Soup": [], "Món Lẩu": [], "Món Chính (Thịt, Hải Sản)": [], "Cơm / Tráng Miệng": [], "Khác": [] };
             dishesList.forEach(dish => {
                 const name = dish.name.toLowerCase();
-                if (name.includes('gỏi') || name.includes('nộm') || name.includes('chả') || name.includes('nem') || name.includes('nguội') || name.includes('soup') || name.includes('súp')) {
-                    groups["Khai Vị / Đồ Nguội / Soup"].push(dish);
-                } else if (name.includes('lẩu') || name.includes('cù lao')) {
-                    groups["Món Lẩu"].push(dish);
-                } else if (name.includes('heo') || name.includes('bò') || name.includes('gà') || name.includes('vịt') || name.includes('tôm') || name.includes('cá') || name.includes('mực') || name.includes('cua') || name.includes('ghẹ')) {
-                    groups["Món Chính (Thịt, Hải Sản)"].push(dish);
-                } else if (name.includes('cơm') || name.includes('xôi') || name.includes('chè') || name.includes('rau câu') || name.includes('sữa chua') || name.includes('tráng miệng') || name.includes('tàu hủ')) {
-                    groups["Cơm / Tráng Miệng"].push(dish);
-                } else {
-                    groups["Khác"].push(dish);
-                }
+                if (name.includes('gỏi') || name.includes('nộm') || name.includes('chả') || name.includes('nem') || name.includes('nguội') || name.includes('soup') || name.includes('súp')) { groups["Khai Vị / Đồ Nguội / Soup"].push(dish); }
+                else if (name.includes('lẩu') || name.includes('cù lao')) { groups["Món Lẩu"].push(dish); }
+                else if (name.includes('heo') || name.includes('bò') || name.includes('gà') || name.includes('vịt') || name.includes('tôm') || name.includes('cá') || name.includes('mực') || name.includes('cua') || name.includes('ghẹ')) { groups["Món Chính (Thịt, Hải Sản)"].push(dish); }
+                else if (name.includes('cơm') || name.includes('xôi') || name.includes('chè') || name.includes('rau câu') || name.includes('sữa chua') || name.includes('tráng miệng') || name.includes('tàu hủ')) { groups["Cơm / Tráng Miệng"].push(dish); }
+                else { groups["Khác"].push(dish); }
             });
 
             for (const [groupName, dishes] of Object.entries(groups)) {
                 if (dishes.length > 0) {
-                    const groupDiv = document.createElement("div");
-                    groupDiv.className = "bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm shrink-0";
-
-                    const header = document.createElement("button");
-                    header.type = "button";
-                    header.className = "w-full flex justify-between items-center p-3 bg-amber-50/50 text-amber-800 font-bold text-[11px] uppercase tracking-wide focus:outline-none";
-                    
+                    const groupDiv = document.createElement("div"); groupDiv.className = "bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm shrink-0";
+                    const header = document.createElement("button"); header.type = "button"; header.className = "w-full flex justify-between items-center p-3 bg-amber-50/50 text-amber-800 font-bold text-[11px] uppercase tracking-wide focus:outline-none";
                     const isOpen = window.openDishGroups.includes(groupName);
                     header.innerHTML = `<span><i class="fa-solid fa-list mr-1.5 opacity-60"></i> ${groupName} (${dishes.length})</span> <i class="fa-solid fa-chevron-down transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}"></i>`;
                     
-                    const listContainer = document.createElement("div");
-                    listContainer.className = `divide-y divide-slate-100 ${isOpen ? '' : 'hidden'}`; 
-                    
+                    const listContainer = document.createElement("div"); listContainer.className = `divide-y divide-slate-100 ${isOpen ? '' : 'hidden'}`; 
                     header.onclick = (e) => {
                         e.preventDefault();
-                        const currentlyHidden = listContainer.classList.contains("hidden");
-                        if (currentlyHidden) {
-                            listContainer.classList.remove("hidden");
-                            header.querySelector(".fa-chevron-down").classList.add("rotate-180");
-                            if (!window.openDishGroups.includes(groupName)) window.openDishGroups.push(groupName);
-                        } else {
-                            listContainer.classList.add("hidden");
-                            header.querySelector(".fa-chevron-down").classList.remove("rotate-180");
-                            window.openDishGroups = window.openDishGroups.filter(g => g !== groupName);
-                        }
+                        if (listContainer.classList.contains("hidden")) { listContainer.classList.remove("hidden"); header.querySelector(".fa-chevron-down").classList.add("rotate-180"); if (!window.openDishGroups.includes(groupName)) window.openDishGroups.push(groupName); }
+                        else { listContainer.classList.add("hidden"); header.querySelector(".fa-chevron-down").classList.remove("rotate-180"); window.openDishGroups = window.openDishGroups.filter(g => g !== groupName); }
                     };
 
                     dishes.forEach(dish => {
                         const isSelected = selectedDishIdsInMenuForm.includes(dish.id);
-                        
-                        const dishRow = document.createElement("div");
-                        dishRow.className = "flex justify-between items-center p-3.5 hover:bg-slate-50 transition-colors cursor-pointer active:bg-slate-100";
-                        
-                        const nameSpan = document.createElement("span");
-                        nameSpan.className = `text-[12px] ${isSelected ? 'text-amber-600 font-black' : 'text-slate-700 font-semibold'}`;
-                        nameSpan.innerText = dish.name;
-                        
+                        const dishRow = document.createElement("div"); dishRow.className = "flex justify-between items-center p-3.5 hover:bg-slate-50 transition-colors cursor-pointer active:bg-slate-100";
+                        const nameSpan = document.createElement("span"); nameSpan.className = `text-[12px] ${isSelected ? 'text-amber-600 font-black' : 'text-slate-700 font-semibold'}`; nameSpan.innerText = dish.name;
                         const actionBtn = document.createElement("div");
-                        if (isSelected) {
-                            actionBtn.className = "shrink-0 bg-amber-500 text-white w-6 h-6 flex items-center justify-center rounded-md shadow-inner";
-                            actionBtn.innerHTML = `<i class="fa-solid fa-check text-[10px]"></i>`;
-                        } else {
-                            actionBtn.className = "shrink-0 bg-slate-50 text-slate-400 w-6 h-6 flex items-center justify-center rounded-md border border-slate-200";
-                            actionBtn.innerHTML = `<i class="fa-solid fa-plus text-[10px]"></i>`;
-                        }
-
-                        dishRow.onclick = () => {
-                            if (!isSelected) {
-                                selectDishToMenuForm(dish.id);
-                                renderMenuDishSelector(); 
-                            }
-                        };
-
-                        dishRow.appendChild(nameSpan);
-                        dishRow.appendChild(actionBtn);
-                        listContainer.appendChild(dishRow);
+                        if (isSelected) { actionBtn.className = "shrink-0 bg-amber-500 text-white w-6 h-6 flex items-center justify-center rounded-md shadow-inner"; actionBtn.innerHTML = `<i class="fa-solid fa-check text-[10px]"></i>`; }
+                        else { actionBtn.className = "shrink-0 bg-slate-50 text-slate-400 w-6 h-6 flex items-center justify-center rounded-md border border-slate-200"; actionBtn.innerHTML = `<i class="fa-solid fa-plus text-[10px]"></i>`; }
+                        dishRow.onclick = () => { if (!isSelected) { selectDishToMenuForm(dish.id); renderMenuDishSelector(); } };
+                        dishRow.appendChild(nameSpan); dishRow.appendChild(actionBtn); listContainer.appendChild(dishRow);
                     });
-
-                    groupDiv.appendChild(header);
-                    groupDiv.appendChild(listContainer);
-                    container.appendChild(groupDiv);
+                    groupDiv.appendChild(header); groupDiv.appendChild(listContainer); container.appendChild(groupDiv);
                 }
             }
         }
 
         function selectDishToMenuForm(id) { if (!selectedDishIdsInMenuForm.includes(id)) { selectedDishIdsInMenuForm.push(id); renderSelectedDishesBadges(); } }
-
         function renderSelectedDishesBadges() {
             const container = document.getElementById("menu-selected-dishes-badge"); container.innerHTML = "";
             selectedDishIdsInMenuForm.forEach((id, index) => {
                 const dish = dishesList.find(d => d.id === id); if (!dish) return;
-                const badge = document.createElement("div");
-                badge.className = "bg-slate-900 text-white text-xs font-semibold px-3 py-2 rounded-xl flex justify-between items-center";
+                const badge = document.createElement("div"); badge.className = "bg-slate-900 text-white text-xs font-semibold px-3 py-2 rounded-xl flex justify-between items-center";
                 badge.innerHTML = `<span>${index + 1}. ${dish.name}</span> <i class="fa-solid fa-circle-xmark cursor-pointer text-rose-400 text-sm" onclick="removeSelectedDishFromMenu(${id})"></i>`;
                 container.appendChild(badge);
             });
         }
-
-        function removeSelectedDishFromMenu(id) { 
-            selectedDishIdsInMenuForm = selectedDishIdsInMenuForm.filter(x => x !== id); 
-            renderSelectedDishesBadges(); 
-            renderMenuDishSelector(); 
-        }
+        function removeSelectedDishFromMenu(id) { selectedDishIdsInMenuForm = selectedDishIdsInMenuForm.filter(x => x !== id); renderSelectedDishesBadges(); renderMenuDishSelector(); }
 
         async function saveMenu() {
-            const customer = document.getElementById("menu-customer").value.trim();
-            const phone = document.getElementById("menu-phone").value.trim();
-            const date = document.getElementById("menu-date").value;
-            const type = document.getElementById("menu-type").value;
-            const note = document.getElementById("menu-note").value.trim();
-            
-            if (!customer || !phone || !date) { alert("Vui lòng nhập đầy đủ thông tin tiệc!"); return; }
-            if (selectedDishIdsInMenuForm.length === 0) { alert("Vui lòng chọn món ăn cho thực đơn!"); return; }
-            
+            const customer = document.getElementById("menu-customer").value.trim(); const phone = document.getElementById("menu-phone").value.trim(); const date = document.getElementById("menu-date").value; const type = document.getElementById("menu-type").value; const note = document.getElementById("menu-note").value.trim();
+            if (!customer || !phone || !date) { alert("Vui lòng nhập đầy đủ thông tin tiệc!"); return; } if (selectedDishIdsInMenuForm.length === 0) { alert("Vui lòng chọn món ăn cho thực đơn!"); return; }
             const menuData = { customer, phone, date, type, note, dishIds: selectedDishIdsInMenuForm };
-            
-            if (currentEditingMenuId) {
-                await _supabase.from('menus').update(menuData).eq('id', currentEditingMenuId);
-            } else {
-                await _supabase.from('menus').insert([menuData]);
-            }
-            resetMenuForm();
-            await loadAllCloudData();
+            if (currentEditingMenuId) { await _supabase.from('menus').update(menuData).eq('id', currentEditingMenuId); } else { await _supabase.from('menus').insert([menuData]); }
+            resetMenuForm(); await loadAllCloudData();
         }
 
         function renderMenus() {
-            const container = document.getElementById("menus-container"); 
-            container.innerHTML = "";
-            if(menusList.length === 0) {
-                container.innerHTML = `<div class="bg-white border border-slate-200 p-8 rounded-2xl text-center text-xs text-slate-400 italic">Chưa có lịch đặt tiệc nào trên đám mây.</div>`;
-                return;
-            }
+            const container = document.getElementById("menus-container"); container.innerHTML = "";
+            if(menusList.length === 0) { container.innerHTML = `<div class="bg-white border border-slate-200 p-8 rounded-2xl text-center text-xs text-slate-400 italic">Chưa có lịch đặt tiệc nào trên đám mây.</div>`; return; }
             menusList.forEach(menu => {
                 let dishListHtml = "";
-                menu.dishIds?.forEach(id => {
-                    const dish = dishesList.find(d => d.id === id);
-                    if (dish) dishListHtml += `<li class="text-xs text-slate-700 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-square-check text-amber-500"></i> ${dish.name}</li>`;
-                });
-                
+                menu.dishIds?.forEach(id => { const dish = dishesList.find(d => d.id === id); if (dish) dishListHtml += `<li class="text-xs text-slate-700 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-square-check text-amber-500"></i> ${dish.name}</li>`; });
                 const computedLunar = getLunarDateString(menu.date);
-
-                const block = document.createElement("div");
-                block.className = "border border-slate-200 bg-white hover:border-amber-300 rounded-2xl p-4.5 grid grid-cols-1 md:grid-cols-3 gap-4 transition-all";
+                const block = document.createElement("div"); block.className = "border border-slate-200 bg-white hover:border-amber-300 rounded-2xl p-4.5 grid grid-cols-1 md:grid-cols-3 gap-4 transition-all";
                 block.innerHTML = `
                     <div class="space-y-1.5 flex flex-col">
-                        <div class="flex items-center gap-1.5">
-                            <span class="text-[10px] bg-amber-600 text-white font-black px-2 py-0.5 rounded-md uppercase">${menu.type}</span>
-                            <h4 class="font-black text-sm text-slate-900">${menu.customer}</h4>
-                        </div>
+                        <div class="flex items-center gap-1.5"><span class="text-[10px] bg-amber-600 text-white font-black px-2 py-0.5 rounded-md uppercase">${menu.type}</span><h4 class="font-black text-sm text-slate-900">${menu.customer}</h4></div>
                         <p class="text-xs font-medium text-slate-600"><i class="fa-solid fa-phone mr-1"></i> ${menu.phone}</p>
-                        <div class="text-xs font-bold mt-1">
-                            <div class="text-orange-600"><i class="fa-solid fa-calendar-day mr-1"></i> ${menu.date}</div>
-                            <div class="text-[11px] text-purple-700 font-black mt-1"><i class="fa-solid fa-moon mr-1"></i> Âm: ${computedLunar}</div>
-                        </div>
+                        <div class="text-xs font-bold mt-1"><div class="text-orange-600"><i class="fa-solid fa-calendar-day mr-1"></i> ${menu.date}</div><div class="text-[11px] text-purple-700 font-black mt-1"><i class="fa-solid fa-moon mr-1"></i> Âm: ${computedLunar}</div></div>
                     </div>
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-100 h-fit">
-                        <ul class="space-y-1">${dishListHtml}</ul>
-                    </div>
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-100 h-fit"><ul class="space-y-1">${dishListHtml}</ul></div>
                     <div class="flex justify-end items-center gap-6 pt-3 border-t border-slate-100 md:border-t-0 md:pt-0 md:flex-col md:justify-center md:gap-3">
-                        <button onclick="editMenu(${menu.id})" class="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-100">
-                            <i class="fa-solid fa-user-pen"></i> Sửa
-                        </button>
-                        <button onclick="removeMenu(${menu.id})" class="flex items-center gap-2 text-sm font-bold text-rose-600 bg-rose-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-rose-100">
-                            <i class="fa-solid fa-trash"></i> Hủy
-                        </button>
+                        <button onclick="editMenu(${menu.id})" class="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-100"><i class="fa-solid fa-user-pen"></i> Sửa</button>
+                        <button onclick="removeMenu(${menu.id})" class="flex items-center gap-2 text-sm font-bold text-rose-600 bg-rose-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-rose-100"><i class="fa-solid fa-trash"></i> Hủy</button>
                     </div>
                 `;
                 container.appendChild(block);
             });
         }
 
-        function editMenu(id) {
-            const menu = menusList.find(m => m.id === id); if (!menu) return;
-            currentEditingMenuId = menu.id;
-            document.getElementById("menu-customer").value = menu.customer;
-            document.getElementById("menu-phone").value = menu.phone;
-            document.getElementById("menu-date").value = menu.date;
-            document.getElementById("menu-lunar-date").value = getLunarDateString(menu.date) + " Âm"; 
-            document.getElementById("menu-type").value = menu.type;
-            document.getElementById("menu-note").value = menu.note;
-            selectedDishIdsInMenuForm = [...menu.dishIds];
-            renderSelectedDishesBadges(); window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        async function removeMenu(id) {
-            if (confirm("Chắc chắn hủy lịch tiệc này?")) {
-                await _supabase.from('menus').delete().eq('id', id);
-                await loadAllCloudData();
-            }
-        }
-
-        function resetMenuForm() {
-            currentEditingMenuId = null; 
-            document.getElementById("menu-customer").value = "";
-            document.getElementById("menu-phone").value = ""; 
-            document.getElementById("menu-date").value = "";
-            document.getElementById("menu-lunar-date").value = ""; 
-            document.getElementById("menu-note").value = ""; 
-            selectedDishIdsInMenuForm = []; 
-            document.getElementById("menu-selected-dishes-badge").innerHTML = "";
-        }
+        function editMenu(id) { const menu = menusList.find(m => m.id === id); if (!menu) return; currentEditingMenuId = menu.id; document.getElementById("menu-customer").value = menu.customer; document.getElementById("menu-phone").value = menu.phone; document.getElementById("menu-date").value = menu.date; document.getElementById("menu-lunar-date").value = getLunarDateString(menu.date) + " Âm"; document.getElementById("menu-type").value = menu.type; document.getElementById("menu-note").value = menu.note; selectedDishIdsInMenuForm = [...menu.dishIds]; renderSelectedDishesBadges(); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+        async function removeMenu(id) { if (confirm("Chắc chắn hủy lịch tiệc này?")) { await _supabase.from('menus').delete().eq('id', id); await loadAllCloudData(); } }
+        function resetMenuForm() { currentEditingMenuId = null; document.getElementById("menu-customer").value = ""; document.getElementById("menu-phone").value = ""; document.getElementById("menu-date").value = ""; document.getElementById("menu-lunar-date").value = ""; document.getElementById("menu-note").value = ""; selectedDishIdsInMenuForm = []; document.getElementById("menu-selected-dishes-badge").innerHTML = ""; }
 
         function renderCalcPartiesTable() {
             const tbody = document.getElementById("calc-parties-table-body"); tbody.innerHTML = "";
-            if (menusList.length === 0) { 
-                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-400 italic">Không có dữ liệu thực đơn tiệc.</td></tr>`; 
-                return; 
-            }
-            
+            if (menusList.length === 0) { tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-400 italic">Không có dữ liệu thực đơn tiệc.</td></tr>`; return; }
             menusList.forEach(menu => {
-                const tr = document.createElement("tr");
-                const computedLunar = getLunarDateString(menu.date);
+                const tr = document.createElement("tr"); const computedLunar = getLunarDateString(menu.date);
                 tr.innerHTML = `
-                    <td class="p-3.5 text-center">
-                        <input type="checkbox" value="${menu.id}" class="calc-party-checkbox scale-125 accent-amber-600 cursor-pointer">
-                    </td>
-                    
+                    <td class="p-3.5 text-center"><input type="checkbox" value="${menu.id}" class="calc-party-checkbox scale-125 accent-amber-600 cursor-pointer"></td>
                     <td class="p-3.5 py-3 text-slate-950">
                         <div class="font-black text-sm text-slate-900">${menu.customer} <span class="text-[11px] font-normal text-slate-400 ml-1">(ĐT: ${menu.phone})</span></div>
-                        
-                        <div class="text-[11px] text-slate-600 font-bold mt-1 flex flex-wrap items-center gap-1.5">
-                            <span class="text-orange-600"><i class="fa-solid fa-calendar-day"></i> D: ${menu.date}</span>
-                            <span class="text-slate-300">|</span>
-                            <span class="text-[12px] text-purple-700 font-black"><i class="fa-solid fa-moon"></i> Â: ${computedLunar}</span>
-                            <span class="text-slate-300">|</span>
-                            <span class="bg-amber-50 border border-amber-200 text-amber-800 px-1.5 py-0.2 rounded font-bold uppercase text-[10px]">${menu.type}</span>
-                        </div>
+                        <div class="text-[11px] text-slate-600 font-bold mt-1 flex flex-wrap items-center gap-1.5"><span class="text-orange-600"><i class="fa-solid fa-calendar-day"></i> D: ${menu.date}</span><span class="text-slate-300">|</span><span class="text-[12px] text-purple-700 font-black"><i class="fa-solid fa-moon"></i> Â: ${computedLunar}</span><span class="text-slate-300">|</span><span class="bg-amber-50 border border-amber-200 text-amber-800 px-1.5 py-0.2 rounded font-bold uppercase text-[10px]">${menu.type}</span></div>
                     </td>
-                    
-                    <td class="p-3.5 text-center">
-                        <input type="number" min="1" value="10" id="tables-for-menu-${menu.id}" class="w-full max-w-24 bg-slate-50 border border-slate-200 rounded-lg text-center font-black focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                    </td>
+                    <td class="p-3.5 text-center"><input type="number" min="1" value="10" id="tables-for-menu-${menu.id}" class="w-full max-w-24 bg-slate-50 border border-slate-200 rounded-lg text-center font-black focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"></td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -740,89 +650,50 @@
             if (checkboxes.length === 0) { alert("Vui lòng tích chọn ít nhất một tiệc!"); return; }
             let masterIngredients = {};
             checkboxes.forEach(cb => {
-                const menuId = parseInt(cb.value); const menu = menusList.find(m => m.id === menuId);
-                const tablesCount = parseFloat(document.getElementById(`tables-for-menu-${menuId}`).value) || 0;
+                const menuId = parseInt(cb.value); const menu = menusList.find(m => m.id === menuId); const tablesCount = parseFloat(document.getElementById(`tables-for-menu-${menuId}`).value) || 0;
                 if (!menu || tablesCount <= 0) return;
                 menu.dishIds?.forEach(dId => {
                     const dish = dishesList.find(d => d.id === dId); if (!dish || !dish.ingredients) return;
                     dish.ingredients.forEach(ing => {
-                        const typeKey = ing.type?.toLowerCase()?.trim() || "khác"; 
-                        const ingKey = `${ing.name?.toLowerCase()?.trim()}_${ing.unit?.toLowerCase()?.trim()}`;
-                        if (!masterIngredients[typeKey]) masterIngredients[typeKey] = {};
-                        const computedWeight = ing.weight * tablesCount;
-                        if (!masterIngredients[typeKey][ingKey]) {
-                            masterIngredients[typeKey][ingKey] = { name: ing.name, totalWeight: computedWeight, unit: ing.unit, type: ing.type };
-                        } else { masterIngredients[typeKey][ingKey].totalWeight += computedWeight; }
+                        const typeKey = ing.type?.toLowerCase()?.trim() || "khác"; const ingKey = `${ing.name?.toLowerCase()?.trim()}_${ing.unit?.toLowerCase()?.trim()}`;
+                        if (!masterIngredients[typeKey]) masterIngredients[typeKey] = {}; const computedWeight = ing.weight * tablesCount;
+                        if (!masterIngredients[typeKey][ingKey]) { masterIngredients[typeKey][ingKey] = { name: ing.name, totalWeight: computedWeight, unit: ing.unit, type: ing.type }; } else { masterIngredients[typeKey][ingKey].totalWeight += computedWeight; }
                     });
                 });
             });
-            
-            globalCalculatedMarket = masterIngredients; 
-            renderCalculatedOutput(masterIngredients);
+            globalCalculatedMarket = masterIngredients; renderCalculatedOutput(masterIngredients);
         }
 
         function renderCalculatedOutput(masterData) {
-            const box = document.getElementById("calc-result-box"); const container = document.getElementById("calc-ingredients-output");
-            container.innerHTML = ""; box.classList.remove("hidden"); 
+            const box = document.getElementById("calc-result-box"); const container = document.getElementById("calc-ingredients-output"); container.innerHTML = ""; box.classList.remove("hidden"); 
             const categories = Object.keys(masterData);
-            if (categories.length === 0) {
-                 container.innerHTML = `<div class="col-span-full p-4 text-center text-slate-500 italic">Không có nguyên liệu nào để tính toán.</div>`;
-                 return;
-            }
+            if (categories.length === 0) { container.innerHTML = `<div class="col-span-full p-4 text-center text-slate-500 italic">Không có nguyên liệu nào để tính toán.</div>`; return; }
             categories.forEach(cat => {
                 const catData = masterData[cat];
                 if (catData && Object.keys(catData).length > 0) {
-                    const catBlock = document.createElement("div");
-                    catBlock.className = "bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-sm";
-                    let listItemsHtml = "";
+                    const catBlock = document.createElement("div"); catBlock.className = "bg-slate-50 border border-slate-200 rounded-2xl p-4 shadow-sm"; let listItemsHtml = "";
                     for (let k in catData) {
-                        let item = catData[k];
-                        let formattedWeight = Math.round(item.totalWeight * 100) / 100;
-                        let displayUnit = item.unit || "";
-                        if (item.unit && item.unit.toLowerCase() === "gam" && formattedWeight >= 1000) {
-                            formattedWeight = Math.round((formattedWeight / 1000) * 100) / 100;
-                            displayUnit = "kg";
-                        }
-                        listItemsHtml += `
-                            <div class="flex justify-between items-center py-2 border-b border-slate-200/50 last:border-0">
-                                <span class="font-bold text-slate-800 text-xs">${item.name}</span>
-                                <span class="bg-white border border-slate-200 px-2.5 py-0.5 rounded-lg font-black text-slate-900 text-xs">${formattedWeight} ${displayUnit}</span>
-                            </div>
-                        `;
+                        let item = catData[k]; let formattedWeight = Math.round(item.totalWeight * 100) / 100; let displayUnit = item.unit || "";
+                        if (item.unit && item.unit.toLowerCase() === "gam" && formattedWeight >= 1000) { formattedWeight = Math.round((formattedWeight / 1000) * 100) / 100; displayUnit = "kg"; }
+                        listItemsHtml += `<div class="flex justify-between items-center py-2 border-b border-slate-200/50 last:border-0"><span class="font-bold text-slate-800 text-xs">${item.name}</span><span class="bg-white border border-slate-200 px-2.5 py-0.5 rounded-lg font-black text-slate-900 text-xs">${formattedWeight} ${displayUnit}</span></div>`;
                     }
-                    catBlock.innerHTML = `<div><h4 class="text-xs font-black uppercase tracking-wider text-slate-900 mb-3 border-b pb-2">Nhóm/Quầy: <span class="capitalize">${cat}</span></h4><div class="divide-y divide-slate-100">${listItemsHtml}</div></div>`;
-                    container.appendChild(catBlock);
+                    catBlock.innerHTML = `<div><h4 class="text-xs font-black uppercase tracking-wider text-slate-900 mb-3 border-b pb-2">Nhóm/Quầy: <span class="capitalize">${cat}</span></h4><div class="divide-y divide-slate-100">${listItemsHtml}</div></div>`; container.appendChild(catBlock);
                 }
             });
             box.scrollIntoView({ behavior: 'smooth' });
         }
         
         function exportMarketToExcel() {
-            if (!globalCalculatedMarket || Object.keys(globalCalculatedMarket).length === 0) {
-                alert("Bạn chưa bấm GỘP VẬT TƯ CHỢ, chưa có dữ liệu để xuất Excel!");
-                return;
-            }
-            
+            if (!globalCalculatedMarket || Object.keys(globalCalculatedMarket).length === 0) { alert("Bạn chưa bấm GỘP VẬT TƯ CHỢ, chưa có dữ liệu để xuất Excel!"); return; }
             const data = [["PHÂN LOẠI / QUẦY", "TÊN NGUYÊN LIỆU", "TỔNG SỐ LƯỢNG", "ĐƠN VỊ TÍNH"]];
-            
             for (let cat in globalCalculatedMarket) {
                 for (let key in globalCalculatedMarket[cat]) {
-                    let item = globalCalculatedMarket[cat][key];
-                    let formattedWeight = Math.round(item.totalWeight * 100) / 100;
-                    let displayUnit = item.unit || "";
-                    if (item.unit && item.unit.toLowerCase() === "gam" && formattedWeight >= 1000) {
-                        formattedWeight = Math.round((formattedWeight / 1000) * 100) / 100;
-                        displayUnit = "kg";
-                    }
+                    let item = globalCalculatedMarket[cat][key]; let formattedWeight = Math.round(item.totalWeight * 100) / 100; let displayUnit = item.unit || "";
+                    if (item.unit && item.unit.toLowerCase() === "gam" && formattedWeight >= 1000) { formattedWeight = Math.round((formattedWeight / 1000) * 100) / 100; displayUnit = "kg"; }
                     data.push([cat.toUpperCase(), item.name, formattedWeight, displayUnit]);
                 }
             }
-            
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            ws['!cols'] = [{wch: 20}, {wch: 35}, {wch: 15}, {wch: 15}];
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "PhieuDiCho");
-            XLSX.writeFile(wb, "Phieu_Di_Cho_PhiLong_Catering.xlsx");
+            const ws = XLSX.utils.aoa_to_sheet(data); ws['!cols'] = [{wch: 20}, {wch: 35}, {wch: 15}, {wch: 15}]; const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, ws, "PhieuDiCho"); XLSX.writeFile(wb, "Phieu_Di_Cho_PhiLong_Catering.xlsx");
         }
     </script>
 </body>
