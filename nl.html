@@ -145,6 +145,12 @@
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Tên Món Ăn *</label>
                             <input type="text" id="dish-name" placeholder="Ví dụ: Lẩu Cua Đồng, Vịt Quay..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-sm font-medium">
                         </div>
+                        
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Hình ảnh món ăn</label>
+                            <input type="file" id="dish-image" accept="image/*" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-medium">
+                        </div>
+
                         <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200/60 space-y-3">
                             <input type="text" id="ing-name" placeholder="Tên nguyên liệu..." class="w-full bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs">
                             <div class="grid grid-cols-2 gap-2">
@@ -174,14 +180,16 @@
                             <select id="ing-type" class="w-full bg-white border border-slate-200 rounded-lg text-xs">
                                 <option value="bò">Bò</option>
                                 <option value="gà">Gà</option>
+                                <option value="vịt">Vịt</option>
                                 <option value="heo">Heo</option>
-                                <option value="cá">Cá</option>
+                                <option value="dê">Dê</option> <option value="cá">Cá</option>
                                 <option value="tôm">Tôm</option>
                                 <option value="cua">Cua</option>
                                 <option value="ghẹ">Ghẹ</option>
-                                <option value="rau củ quả">Rau Củ Quả</option>
-                                <option value="nguyên liệu">Nguyên Liệu</option>
-                                <option value="gia vị">Gia vị</option>
+                                <option value="mực">Mực</option>
+                                <option value="ốc">Ốc</option> <option value="lươn">Lươn</option> <option value="ếch">Ếch</option> <option value="trứng">Trứng</option> <option value="đậu hũ">Đậu hũ / Đồ chay</option> <option value="nấm">Nấm</option> <option value="rau củ quả">Rau Củ Quả</option>
+                                <option value="trái cây">Trái cây</option> <option value="gạo nếp">Gạo / Nếp</option> <option value="bún mì">Bún / Mì / Miến</option> <option value="đồ khô">Đồ khô (Nấm mèo, tôm khô...)</option> <option value="nguyên liệu">Nguyên Liệu (Bột, bơ...)</option>
+                                <option value="gia vị">Gia vị (Hành, tỏi, đường...)</option>
                                 <option value="nước chấm">Nước chấm</option>
                                 <option value="khác">Khác...</option>
                             </select>
@@ -191,17 +199,7 @@
                     </div>
                     <div class="flex gap-2 pt-2">
                         <button onclick="resetDishForm()" class="bg-slate-100 text-slate-600 font-bold text-xs px-3 py-3 rounded-xl cursor-pointer hover:bg-slate-200"><i class="fa-solid fa-rotate-left"></i></button>
-                        <button onclick="addDish()" class="flex-1 bg-amber-600 text-white font-bold text-sm py-3 rounded-xl shadow-sm cursor-pointer hover:bg-amber-700"><i class="fa-solid fa-circle-check"></i> Lưu Cấu Trúc Món</button>
-                    </div>
-                    <div class="bg-emerald-50/50 border border-emerald-100 rounded-xl p-3.5 space-y-2.5">
-                        <span class="block text-[11px] font-black text-emerald-800 uppercase"><i class="fa-solid fa-file-excel"></i> Đồng bộ từ Excel</span>
-                        <div class="grid grid-cols-2 gap-2">
-                            <button onclick="downloadExcelTemplate()" class="bg-white text-slate-700 border border-slate-200 font-bold text-xs py-2 rounded-lg text-center cursor-pointer hover:bg-slate-50">Tải File Mẫu</button>
-                            <label class="bg-emerald-700 text-white font-bold text-xs py-2 rounded-lg text-center cursor-pointer hover:bg-emerald-800">
-                                Nạp File Trực
-                                <input type="file" id="excel-file" accept=".xlsx, .xls" class="hidden" onchange="importExcel(this)">
-                            </label>
-                        </div>
+                        <button id="btn-save-dish" onclick="addDish()" class="flex-1 bg-amber-600 text-white font-bold text-sm py-3 rounded-xl shadow-sm cursor-pointer hover:bg-amber-700"><i class="fa-solid fa-circle-check"></i> Lưu Cấu Trúc Món</button>
                     </div>
                 </div>
 
@@ -352,10 +350,8 @@
         let menusList = [];
         let temporaryIngredients = [];
         let currentEditingDishId = null;
-        let currentEditingMenuId = null;
-        let globalCalculatedMarket = null; // Biến lưu dữ liệu đi chợ để xuất Excel
+        let globalCalculatedMarket = null; 
 
-        // HÀM TÍNH LỊCH ÂM ĐỘNG TRÊN TRÌNH DUYỆT (Dùng chung cho mọi nơi)
         function getLunarDateString(solarDateStr) {
             if (!solarDateStr || typeof Solar === 'undefined') return '---';
             try {
@@ -371,9 +367,8 @@
                 let mm = lMonth < 10 ? '0' + lMonth : lMonth;
                 let leapStr = isLeap ? " (Nhuận)" : "";
                 
-                return `${dd}/${mm}${leapStr}`; // Bỏ chữ Âm mặc định ở đây để tuỳ chỉnh bên ngoài
+                return `${dd}/${mm}${leapStr}`; 
             } catch (error) {
-                console.error("Lỗi tính lịch âm:", error);
                 return '---';
             }
         }
@@ -382,14 +377,12 @@
             await loadAllCloudData();
             checkNearPartyAlerts();
             
-            // Lắng nghe sự thay đổi của ô chọn ngày Dương để cập nhật ô Preview Âm
             const dateInput = document.getElementById('menu-date');
             if (dateInput) {
                 dateInput.addEventListener('change', function(e) {
                     const lunarInput = document.getElementById('menu-lunar-date');
                     lunarInput.value = getLunarDateString(e.target.value) + " Âm";
                     
-                    // Hiệu ứng chớp nhẹ
                     lunarInput.classList.remove('bg-slate-100');
                     lunarInput.classList.add('bg-amber-100', 'text-amber-800');
                     setTimeout(() => {
@@ -441,15 +434,28 @@
             const styles = {
                 "bò": "bg-rose-100 text-rose-800 border-rose-200",
                 "gà": "bg-yellow-100 text-yellow-800 border-yellow-200",
+                "vịt": "bg-lime-100 text-lime-800 border-lime-200",
                 "heo": "bg-pink-100 text-pink-800 border-pink-200",
+                "dê": "bg-stone-100 text-stone-800 border-stone-200",
                 "cá": "bg-cyan-50 text-cyan-700 border-cyan-100",
                 "tôm": "bg-orange-100 text-orange-800 border-orange-200",
                 "cua": "bg-red-100 text-red-800 border-red-200",
                 "ghẹ": "bg-red-50 text-red-700 border-red-100",
+                "mực": "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-100",
+                "ốc": "bg-teal-50 text-teal-700 border-teal-100",
+                "lươn": "bg-amber-100 text-amber-800 border-amber-200",
+                "ếch": "bg-green-100 text-green-800 border-green-200",
+                "trứng": "bg-yellow-50 text-yellow-700 border-yellow-100",
+                "nấm": "bg-zinc-100 text-zinc-700 border-zinc-200",
+                "đậu hũ": "bg-orange-50 text-orange-700 border-orange-100",
                 "rau củ quả": "bg-emerald-50 text-emerald-700 border-emerald-100",
+                "trái cây": "bg-violet-50 text-violet-700 border-violet-100",
+                "gạo nếp": "bg-gray-100 text-gray-800 border-gray-200",
+                "bún mì": "bg-yellow-50 text-yellow-800 border-yellow-200",
+                "đồ khô": "bg-stone-50 text-stone-700 border-stone-100",
                 "nguyên liệu": "bg-purple-50 text-purple-700 border-purple-100",
-                "gia vị": "bg-amber-50 text-amber-800 border-amber-200",
-                "nước chấm": "bg-orange-50 text-orange-700 border-orange-100",
+                "gia vị": "bg-slate-100 text-slate-700 border-slate-200",
+                "nước chấm": "bg-indigo-50 text-indigo-700 border-indigo-100",
                 "khác": "bg-slate-100 text-slate-700 border-slate-200"
             };
             return styles[type?.toLowerCase()?.trim()] || styles["khác"];
@@ -499,10 +505,19 @@
                 } else {
                     ingHtml = `<span class="text-xs text-slate-400 italic">Chưa có định lượng.</span>`;
                 }
+
+                let imageHtml = "";
+                if (dish.image_url) {
+                    imageHtml = `<img src="${dish.image_url}" alt="${dish.name}" class="w-full h-32 object-cover rounded-xl border border-slate-100">`;
+                } else {
+                    imageHtml = `<div class="w-full h-32 bg-slate-50 flex items-center justify-center rounded-xl border border-slate-100 text-slate-300"><i class="fa-solid fa-image text-2xl"></i></div>`;
+                }
+
                 const card = document.createElement("div");
                 card.className = "bg-white rounded-2xl border border-slate-200 p-4.5 flex flex-col justify-between hover:border-amber-400 transition-all";
                 card.innerHTML = `
                     <div class="space-y-3">
+                        ${imageHtml}
                         <div class="flex justify-between items-start gap-2">
                             <h4 class="font-black text-sm text-slate-900">${dish.name}</h4>
                             <span class="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-0.5 rounded-md shrink-0">Mẫu 10 người</span>
@@ -546,21 +561,83 @@
 
         async function addDish() {
             const name = document.getElementById("dish-name").value.trim();
+            const fileInput = document.getElementById("dish-image");
+            const file = fileInput.files[0];
+
             if (!name) { alert("Bạn phải điền tên món ăn!"); return; }
-            const dishData = { name: name, ingredients: temporaryIngredients, timestamp: Date.now() };
-            if (currentEditingDishId) {
-                await _supabase.from('dishes').update(dishData).eq('id', currentEditingDishId);
-            } else {
-                await _supabase.from('dishes').insert([dishData]);
+
+            const saveBtn = document.getElementById("btn-save-dish");
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...';
+            saveBtn.disabled = true;
+
+            try {
+                let finalImageUrl = null;
+
+                if (currentEditingDishId && !file) {
+                    const existingDish = dishesList.find(d => d.id === currentEditingDishId);
+                    if (existingDish) finalImageUrl = existingDish.image_url;
+                }
+
+                if (file) {
+                    const fileExt = file.name.split('.').pop();
+                    const fileName = `mon_an_${Date.now()}.${fileExt}`;
+
+                    const { data: uploadData, error: uploadError } = await _supabase
+                        .storage
+                        .from('dish_images')
+                        .upload(fileName, file);
+
+                    if (uploadError) throw new Error('Lỗi tải ảnh lên: ' + uploadError.message);
+
+                    const { data: publicUrlData } = _supabase
+                        .storage
+                        .from('dish_images')
+                        .getPublicUrl(fileName);
+
+                    finalImageUrl = publicUrlData.publicUrl;
+                }
+
+                const dishData = { 
+                    name: name, 
+                    ingredients: temporaryIngredients, 
+                    image_url: finalImageUrl, 
+                    timestamp: Date.now() 
+                };
+
+                if (currentEditingDishId) {
+                    const { error } = await _supabase.from('dishes').update(dishData).eq('id', currentEditingDishId);
+                    if (error) throw error;
+                } else {
+                    const { error } = await _supabase.from('dishes').insert([dishData]);
+                    if (error) throw error;
+                }
+
+                resetDishForm();
+                await loadAllCloudData();
+                alert(currentEditingDishId ? "Cập nhật thành công!" : "Thêm món ăn thành công!");
+
+            } catch (error) {
+                alert(error.message);
+            } finally {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
             }
-            resetDishForm();
-            await loadAllCloudData();
+        }
+
+        function resetDishForm() {
+            currentEditingDishId = null; 
+            document.getElementById("dish-name").value = "";
+            document.getElementById("dish-image").value = ""; 
+            temporaryIngredients = []; 
+            document.getElementById("temp-ing-list").innerHTML = "";
         }
 
         function editDish(id) {
             const dish = dishesList.find(d => d.id === id); if (!dish) return;
             currentEditingDishId = dish.id;
             document.getElementById("dish-name").value = dish.name;
+            document.getElementById("dish-image").value = ""; 
             temporaryIngredients = [...dish.ingredients];
             renderTempIngredients(); document.getElementById("dish-name").focus();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -573,56 +650,12 @@
             }
         }
 
-        function resetDishForm() {
-            currentEditingDishId = null; document.getElementById("dish-name").value = "";
-            temporaryIngredients = []; document.getElementById("temp-ing-list").innerHTML = "";
-        }
-
-        function downloadExcelTemplate() {
-            const headers = ["Tên món ăn", "Tên nguyên liệu", "Số lượng (Định lượng)", "Đơn vị tính", "Phân loại nguyên liệu"];
-            const data = [headers, ["Lẩu Thái Hải Sản", "Tôm sú", 10, "con", "tôm"]];
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "DanhSachMonAn");
-            XLSX.writeFile(wb, "Mau_Danh_Muc_Mon_An_PhiLong.xlsx");
-        }
-
-        function importExcel(input) {
-            const file = input.files[0]; if (!file) return;
-            const reader = new FileReader();
-            reader.onload = async function(e) {
-                const data = new Uint8Array(e.target.result);
-                const workbook = XLSX.read(data, { type: 'array' });
-                const json = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
-                let tempDishesMap = {};
-                json.forEach(row => {
-                    const dishName = row["Tên món ăn"]?.toString().trim();
-                    const ingName = row["Tên nguyên liệu"]?.toString().trim();
-                    const weight = parseFloat(row["Số lượng (Định lượng)"]);
-                    const unit = row["Đơn vị tính"]?.toString().trim() || "gam";
-                    const type = row["Phân loại nguyên liệu"]?.toString().trim() || "khác";
-                    if (dishName) {
-                        if (!tempDishesMap[dishName]) tempDishesMap[dishName] = [];
-                        if (ingName && !isNaN(weight)) tempDishesMap[dishName].push({ name: ingName, weight, unit, type: type.toLowerCase() });
-                    }
-                });
-                for (let dishName in tempDishesMap) { 
-                    await _supabase.from('dishes').insert([{ name: dishName, ingredients: tempDishesMap[dishName], timestamp: Date.now() }]); 
-                }
-                alert("Đã nhập dữ liệu từ Excel lên đám mây!");
-                await loadAllCloudData();
-                input.value = "";
-            };
-            reader.readAsArrayBuffer(file);
-        }
-
         let selectedDishIdsInMenuForm = [];
 
         function renderMenuDishSelector() {
             const container = document.getElementById("menu-dish-selector");
             container.innerHTML = "";
             
-            // Khởi tạo bộ nhớ để giữ các nhóm đang mở khi cập nhật giao diện
             window.openDishGroups = window.openDishGroups || ["Khai Vị / Đồ Nguội / Soup"]; 
             
             const groups = {
@@ -648,16 +681,13 @@
                 }
             });
 
-            // Điều chỉnh lại khung chứa bên ngoài cho đẹp hơn
             container.className = "flex flex-col max-h-64 overflow-y-auto rounded-xl gap-2";
 
             for (const [groupName, dishes] of Object.entries(groups)) {
                 if (dishes.length > 0) {
-                    // Khung của 1 nhóm
                     const groupDiv = document.createElement("div");
                     groupDiv.className = "bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm shrink-0";
 
-                    // Nút nhấn để mở/Đóng nhóm
                     const header = document.createElement("button");
                     header.type = "button";
                     header.className = "w-full flex justify-between items-center p-3 bg-amber-50/50 text-amber-800 font-bold text-[11px] uppercase tracking-wide focus:outline-none";
@@ -665,11 +695,9 @@
                     const isOpen = window.openDishGroups.includes(groupName);
                     header.innerHTML = `<span><i class="fa-solid fa-list mr-1.5 opacity-60"></i> ${groupName} (${dishes.length})</span> <i class="fa-solid fa-chevron-down transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}"></i>`;
                     
-                    // Danh sách món ăn bên trong
                     const listContainer = document.createElement("div");
                     listContainer.className = `divide-y divide-slate-100 ${isOpen ? '' : 'hidden'}`; 
                     
-                    // Xử lý sự kiện đóng/mở nhóm
                     header.onclick = (e) => {
                         e.preventDefault();
                         const currentlyHidden = listContainer.classList.contains("hidden");
@@ -684,7 +712,6 @@
                         }
                     };
 
-                    // Hiển thị từng món ăn thành 1 dòng lớn
                     dishes.forEach(dish => {
                         const isSelected = selectedDishIdsInMenuForm.includes(dish.id);
                         
@@ -704,7 +731,6 @@
                             actionBtn.innerHTML = `<i class="fa-solid fa-plus text-[10px]"></i>`;
                         }
 
-                        // Nhấn vào dòng là chọn món
                         dishRow.onclick = () => {
                             if (!isSelected) {
                                 selectDishToMenuForm(dish.id);
@@ -740,7 +766,7 @@
         function removeSelectedDishFromMenu(id) { 
             selectedDishIdsInMenuForm = selectedDishIdsInMenuForm.filter(x => x !== id); 
             renderSelectedDishesBadges(); 
-            renderMenuDishSelector(); // Thêm dòng này để cập nhật lại giao diện chọn món
+            renderMenuDishSelector();
         }
 
         async function saveMenu() {
@@ -753,7 +779,6 @@
             if (!customer || !phone || !date) { alert("Vui lòng nhập đầy đủ thông tin tiệc!"); return; }
             if (selectedDishIdsInMenuForm.length === 0) { alert("Vui lòng chọn món ăn cho thực đơn!"); return; }
             
-            // XÓA THUỘC TÍNH lunarDate ĐỂ TRÁNH LỖI KHI LƯU SUPABASE
             const menuData = { customer, phone, date, type, note, dishIds: selectedDishIdsInMenuForm };
             
             if (currentEditingMenuId) {
@@ -820,13 +845,13 @@
             });
         }
 
+        let currentEditingMenuId = null;
         function editMenu(id) {
             const menu = menusList.find(m => m.id === id); if (!menu) return;
             currentEditingMenuId = menu.id;
             document.getElementById("menu-customer").value = menu.customer;
             document.getElementById("menu-phone").value = menu.phone;
             document.getElementById("menu-date").value = menu.date;
-            // Tự động dịch luôn để anh nhìn thấy ở ô preview khi bấm sửa
             document.getElementById("menu-lunar-date").value = getLunarDateString(menu.date) + " Âm"; 
             document.getElementById("menu-type").value = menu.type;
             document.getElementById("menu-note").value = menu.note;
@@ -979,11 +1004,9 @@
                 return;
             }
             
-            // Khởi tạo mảng dữ liệu với cấu trúc chia nhóm
             const data = [];
             
             for (let cat in globalCalculatedMarket) {
-                // Thêm một dòng tiêu đề nhóm (được bôi đậm/làm nổi bật bằng cách viết hoa)
                 data.push(["NHÓM: " + cat.toUpperCase(), "", "", ""]);
                 data.push(["TÊN NGUYÊN LIỆU", "TỔNG SỐ LƯỢNG", "ĐƠN VỊ", ""]);
                 
@@ -992,7 +1015,6 @@
                     let formattedWeight = Math.round(item.totalWeight * 100) / 100;
                     let displayUnit = item.unit || "";
                     
-                    // Quy đổi sang kg nếu là gam và >= 1000
                     if (item.unit && item.unit.toLowerCase() === "gam" && formattedWeight >= 1000) {
                         formattedWeight = Math.round((formattedWeight / 1000) * 100) / 100;
                         displayUnit = "kg";
@@ -1000,17 +1022,12 @@
                     
                     data.push([item.name, formattedWeight, displayUnit, ""]);
                 }
-                // Thêm dòng trống giữa các nhóm cho đẹp
                 data.push(["", "", "", ""]);
             }
             
-            // Tạo Worksheet
             const ws = XLSX.utils.aoa_to_sheet(data);
-            
-            // Thiết lập độ rộng cột
             ws['!cols'] = [{wch: 35}, {wch: 15}, {wch: 15}, {wch: 10}];
             
-            // Tạo Workbook và xuất file
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "PhieuDiCho");
             XLSX.writeFile(wb, "Phieu_Di_Cho_PhiLong_Catering.xlsx");
