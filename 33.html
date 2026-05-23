@@ -12,8 +12,8 @@
     
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    
     <script src="https://cdn.jsdelivr.net/npm/lunar-javascript/lunar.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     
     <style>
         body { background-color: #f8fafc !important; color: #0f172a !important; }
@@ -21,12 +21,10 @@
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
-        /* Thanh cuộn dọc chung */
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
         
-        /* Thanh cuộn ngang hiển thị cho danh mục */
         .category-scrollbar::-webkit-scrollbar { height: 4px; }
         .category-scrollbar::-webkit-scrollbar-track { background: #f8fafc; border-radius: 10px; }
         .category-scrollbar::-webkit-scrollbar-thumb { background: #d97706; border-radius: 10px; }
@@ -58,8 +56,8 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* --- MODAL PHÓNG TO ẢNH --- */
-        #image-modal { 
+        /* --- CÁC MODAL --- */
+        .custom-modal { 
             display: none; 
             position: fixed; 
             inset: 0; 
@@ -72,7 +70,8 @@
             opacity: 0; 
             transition: opacity 0.3s ease; 
         }
-        #image-modal.show { display: flex; opacity: 1; }
+        .custom-modal.show { display: flex; opacity: 1; }
+        
         #image-modal img { 
             max-width: 100%; 
             max-height: 75vh; 
@@ -82,6 +81,14 @@
             transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); 
         }
         #image-modal.show img { transform: scale(1); }
+
+        /* --- THIẾT KẾ BILLBOARD MENU TẢI VỀ --- */
+        #menu-print-area {
+            background: url('https://www.transparenttextures.com/patterns/cream-paper.png'), linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+            border: 8px solid #d97706;
+            outline: 2px solid #b45309;
+            outline-offset: -12px;
+        }
 
         /* --- MENU ANDROID BOTTOM NAV --- */
         #mobile-bottom-nav {
@@ -104,7 +111,7 @@
             align-items: center;
             justify-content: center;
             gap: 6px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 700;
             color: #94a3b8;
             background: transparent;
@@ -113,7 +120,7 @@
             transition: all 0.2s ease;
         }
         #mobile-bottom-nav button.active-nav { color: #d97706; }
-        #mobile-bottom-nav button i { font-size: 22px; transition: transform 0.2s ease; }
+        #mobile-bottom-nav button i { font-size: 20px; transition: transform 0.2s ease; }
         #mobile-bottom-nav button.active-nav i { transform: scale(1.15); }
 
         @media (min-width: 768px) { #mobile-bottom-nav { display: none !important; } }
@@ -144,16 +151,27 @@
     <nav id="desktop-top-nav" class="bg-white border-b border-slate-200 sticky top-[81px] z-40 shadow-sm">
         <div class="max-w-7xl mx-auto flex overflow-x-auto px-2">
             <button onclick="switchTab('tab-dishes')" id="btn-tab-dishes" class="tab-btn active px-6 py-4 font-bold text-sm border-b-2 border-amber-600 text-amber-600 flex items-center gap-2.5 transition-all"><i class="fa-solid fa-burger text-base"></i> Chọn Món</button>
+            <button onclick="switchTab('tab-sample-menus')" id="btn-tab-sample-menus" class="tab-btn px-6 py-4 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-amber-600 flex items-center gap-2.5 transition-all"><i class="fa-solid fa-star text-base"></i> Thực Đơn Mẫu</button>
             <button onclick="switchTab('tab-menus')" id="btn-tab-menus" class="tab-btn px-6 py-4 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-amber-600 flex items-center gap-2.5 transition-all"><i class="fa-solid fa-calendar-check text-base"></i> Đặt Thực Đơn Tiệc</button>
             <button onclick="switchTab('tab-calc')" id="btn-tab-calc" class="tab-btn px-6 py-4 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-amber-600 flex items-center gap-2.5 transition-all"><i class="fa-solid fa-basket-shopping text-base"></i> Tính Vật Tư Đi Chợ</button>
         </div>
     </nav>
 
     <main class="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
+        
         <div id="tab-dishes" class="tab-content active">
             <div id="dish-category-filters" class="flex overflow-x-auto gap-2.5 pb-3 mb-4 snap-x category-scrollbar"></div>
-            
             <div id="dishes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
+        </div>
+
+        <div id="tab-sample-menus" class="tab-content space-y-6">
+            <div class="app-card p-5 space-y-4">
+                <div class="border-b border-slate-100 pb-2">
+                    <h3 class="text-base font-black text-slate-900 uppercase">Thực Đơn Mẫu Đề Xuất</h3>
+                    <p class="text-xs text-slate-500 mt-1 italic">Các bộ thực đơn tối ưu được phối hợp hài hòa, ưu tiên tiêu chuẩn khai vị 5 món miền Tây.</p>
+                </div>
+                <div id="sample-menus-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+            </div>
         </div>
 
         <div id="tab-menus" class="tab-content">
@@ -251,28 +269,59 @@
         <p>© 2026 <b>Dịch Vụ Nấu Ăn Phi Long</b> - Toàn bộ dữ liệu được bảo mật đám mây Supabase.</p>
     </footer>
 
-    <div id="image-modal" onclick="closeImageModal()">
+    <div id="image-modal" class="custom-modal" onclick="closeModal('image-modal')">
         <div class="flex flex-col items-center justify-center h-full w-full max-w-3xl mx-auto p-4" onclick="event.stopPropagation()">
             <div class="relative w-full text-center mt-8">
-                <button onclick="closeImageModal()" class="absolute -top-12 right-0 text-white text-3xl opacity-80 hover:opacity-100 cursor-pointer"><i class="fa-solid fa-circle-xmark"></i></button>
+                <button onclick="closeModal('image-modal')" class="absolute -top-12 right-0 text-white text-3xl opacity-80 hover:opacity-100 cursor-pointer"><i class="fa-solid fa-circle-xmark"></i></button>
                 <img id="modal-img" src="" alt="Zoomed Dish" class="w-full object-contain max-h-[70vh] rounded-2xl shadow-2xl bg-black/50 mx-auto border border-white/20">
                 <h3 id="modal-title" class="text-white font-bold mt-4 text-base tracking-wide uppercase"></h3>
             </div>
         </div>
     </div>
 
+    <div id="sample-detail-modal" class="custom-modal" onclick="closeModal('sample-detail-modal')">
+        <div class="bg-white rounded-3xl w-full max-w-md p-6 relative" onclick="event.stopPropagation()">
+            <button onclick="closeModal('sample-detail-modal')" class="absolute top-4 right-4 text-slate-400 text-2xl hover:text-rose-500"><i class="fa-solid fa-circle-xmark"></i></button>
+            <h2 id="sd-modal-title" class="text-lg font-black text-amber-700 uppercase mb-4 pr-6 border-b border-slate-100 pb-3"></h2>
+            <ul id="sd-modal-list" class="space-y-3 mb-6"></ul>
+            <button onclick="openDownloadModalFromDetail()" class="w-full bg-amber-600 text-white font-bold py-3.5 rounded-xl shadow-md"><i class="fa-solid fa-image"></i> Tạo Ảnh Thực Đơn Tải Về</button>
+        </div>
+    </div>
+
+    <div id="download-modal" class="custom-modal" onclick="closeModal('download-modal')">
+        <div class="flex flex-col items-center justify-center h-full w-full max-w-lg mx-auto p-4" onclick="event.stopPropagation()">
+            <button onclick="closeModal('download-modal')" class="absolute top-6 right-6 text-white text-3xl opacity-80 hover:opacity-100 cursor-pointer z-50"><i class="fa-solid fa-circle-xmark"></i></button>
+            
+            <div id="menu-print-area" class="w-full p-8 rounded-xl shadow-2xl relative bg-white">
+                <div class="text-center mb-6 border-b-2 border-amber-600/30 pb-4">
+                    <h1 class="text-2xl font-black text-amber-700 uppercase tracking-widest">DVNA Phi Long</h1>
+                    <p class="text-xs font-bold text-amber-600 tracking-wider mt-1">Tiệc ngon, trọn niềm vui — ĐT: 0909.05.06.17</p>
+                </div>
+                <h2 id="print-menu-title" class="text-center text-xl font-black text-slate-800 uppercase mb-6 bg-amber-100 py-2 rounded-lg text-amber-900 border border-amber-200"></h2>
+                <div class="px-2">
+                    <ul id="print-menu-list" class="space-y-4 text-sm font-bold text-slate-800"></ul>
+                </div>
+                <div class="mt-8 text-center text-[10px] text-slate-400 italic">
+                    Cảm ơn quý khách đã tin tưởng dịch vụ của chúng tôi!
+                </div>
+            </div>
+
+            <button onclick="downloadMenuImage()" class="mt-6 w-full max-w-xs bg-emerald-600 text-white font-black text-sm py-4 rounded-full shadow-lg hover:bg-emerald-500 transition-all flex items-center justify-center gap-2"><i class="fa-solid fa-download"></i> TẢI ẢNH VỀ MÁY</button>
+        </div>
+    </div>
+
     <div id="mobile-bottom-nav">
         <button class="active-nav" onclick="switchTab('tab-dishes')">
-            <i class="fa-solid fa-burger"></i>
-            <span>Chọn Món</span>
+            <i class="fa-solid fa-burger"></i><span>Món</span>
+        </button>
+        <button onclick="switchTab('tab-sample-menus')">
+            <i class="fa-solid fa-star"></i><span>Mẫu</span>
         </button>
         <button onclick="switchTab('tab-menus')">
-            <i class="fa-solid fa-calendar-check"></i>
-            <span>Tiệc</span>
+            <i class="fa-solid fa-calendar-check"></i><span>Tiệc</span>
         </button>
         <button onclick="switchTab('tab-calc')">
-            <i class="fa-solid fa-basket-shopping"></i>
-            <span>Đi chợ</span>
+            <i class="fa-solid fa-basket-shopping"></i><span>Đi chợ</span>
         </button>
     </div>
 
@@ -283,146 +332,79 @@
 
         let dishesList = [];
         let menusList = [];
+        let generatedSampleMenus = [];
         let currentEditingMenuId = null;
         let globalCalculatedMarket = null; 
-        
         let activeDishCategory = "Tất cả";
+        let currentSelectedSampleMenuId = null;
 
-        // Logic Modal phóng to ảnh
+        // Modal Logic
         function openImageModal(url, name) {
-            const modal = document.getElementById('image-modal');
             document.getElementById('modal-img').src = url;
             document.getElementById('modal-title').innerText = name;
-            modal.classList.add('show');
+            document.getElementById('image-modal').classList.add('show');
         }
-
-        function closeImageModal() {
-            document.getElementById('image-modal').classList.remove('show');
-        }
+        function closeModal(id) { document.getElementById(id).classList.remove('show'); }
 
         function dynamicExplanationGenerator(dishName, dishId) {
-            const name = dishName.trim();
-            const lowerName = name.toLowerCase();
-            
-            const openings = [
-                `Thưởng thức tinh hoa ẩm thực từ món ${name}`,
-                `Đặc sản ${name} trứ danh được chế biến tỉ mỉ`,
-                `Món ngon đẳng cấp ${name} mang đậm dấu ấn sáng tạo`,
-                `Sự kết hợp hoàn hảo tạo nên hương vị đặc biệt của ${name}`,
-                `Lựa chọn lý tưởng cho thực đơn tiệc sang trọng với ${name}`
-            ];
+            const name = dishName.trim(); const lowerName = name.toLowerCase();
+            const openings = [`Thưởng thức tinh hoa ẩm thực từ món ${name}`, `Đặc sản ${name} trứ danh được chế biến tỉ mỉ`, `Món ngon đẳng cấp ${name} mang đậm dấu ấn sáng tạo`, `Sự kết hợp hoàn hảo tạo nên hương vị đặc biệt của ${name}`];
+            const endings_goi = [", sở hữu vị chua ngọt đậm đà, giòn mát thanh nhẹ vô cùng kích thích vị giác đầu tiệc.", ", đưa miệng hài hòa, là món khai vị xuất sắc khơi dậy hoàn hảo mọi giác quan của thực khách."];
+            const endings_lau = [", dậy mùi thơm lừng, nước lẩu đậm đà đúng điệu bếp tiệc Phi Long cho ngày vui thêm trọn vẹn.", ", nóng hổi nghi ngút khói, thớ thịt ngọt lịm nhúng lẩu mang tới trải nghiệm vô cùng lôi cuốn."];
+            const endings_thit = [", thớ thịt mềm mọng thơm lừng bên trong hòa quyện phần da ngoài xử lý quay nướng giòn rụm hảo hạng.", ", chuẩn vị đầu bếp tiệc chuyên nghiệp, thớ thịt ngọt lịm ăn kèm nước chấm nước sốt sánh mịn bắt vị."];
+            const endings_default = [", chuẩn vị đầu bếp tiệc chuyên nghiệp, mang đến trải nghiệm ẩm thực vô cùng thơm ngon và bổ dưỡng.", ", hấp dẫn từ màu sắc đến hương vị, cam kết mang đến sự hài lòng trọn vẹn cho mọi quý thực khách."];
 
-            const endings_goi = [
-                ", sở hữu vị chua ngọt đậm đà, giòn mát thanh nhẹ vô cùng kích thích vị giác đầu tiệc.",
-                ", hòa quyện nước mắm kẹo chua cay độc quyền, tôn vinh độ tươi giòn của rau củ đi kèm.",
-                ", đưa miệng hài hòa, là món khai vị xuất sắc khơi dậy hoàn hảo mọi giác quan của thực khách."
-            ];
+            const openIdx = dishId % openings.length; let endIdx = dishId % 2; let finalSentence = openings[openIdx];
 
-            const endings_lau = [
-                ", sở hữu nước dùng ngọt thanh tinh túy hầm xương, kết hợp rau nấm tươi xanh quây quần bắt vị.",
-                ", dậy mùi thơm lừng, nước lẩu đậm đà đúng điệu bếp tiệc Phi Long cho ngày vui thêm trọn vẹn.",
-                ", nóng hổi nghi ngút khói, thớ thịt ngọt lịm nhúng lẩu mang tới trải nghiệm vô cùng lôi cuốn."
-            ];
-
-            const endings_haisan = [
-                ", giữ trọn vị ngọt mặn mòi nguyên bản từ khơi xa, thịt săn chắc thấm đẫm nước sốt đậm đà.",
-                ", thớ thịt dai ngọt tự nhiên, kết hợp phương pháp hấp nướng đỉnh cao giữ nguyên độ mọng nước.",
-                ", hương thơm nồng nàn quyến rũ thực khách, hòa quyện gia vị cay nhẹ nịnh miệng cực kỳ đưa cơm."
-            ];
-
-            const endings_thit = [
-                ", thớ thịt mềm mọng thơm lừng bên trong hòa quyện phần da ngoài xử lý quay nướng giòn rụm hảo hạng.",
-                ", tẩm ướp thảo mộc gia vị bí truyền đậm đà, thớ thịt chín vàng đều óng ả làm nức lòng thực khách.",
-                ", chuẩn vị đầu bếp tiệc chuyên nghiệp, thớ thịt ngọt lịm ăn kèm nước chấm nước sốt sánh mịn bắt vị."
-            ];
-
-            const endings_default = [
-                ", chuẩn vị đầu bếp tiệc chuyên nghiệp, mang đến trải nghiệm ẩm thực vô cùng thơm ngon và bổ dưỡng.",
-                ", đậm đà bản sắc truyền thống kết hợp decor tinh tế, nâng tầm đẳng cấp bữa tiệc quý khách.",
-                ", hấp dẫn từ màu sắc đến hương vị, cam kết mang đến sự hài lòng trọn vẹn cho mọi quý thực khách."
-            ];
-
-            const openIdx = dishId % openings.length;
-            let endIdx = dishId % 3;
-
-            let finalSentence = openings[openIdx];
-
-            if (lowerName.includes('gỏi') || lowerName.includes('nộm') || lowerName.includes('nguội') || lowerName.includes('chả') || lowerName.includes('nem')) {
-                finalSentence += endings_goi[endIdx];
-            } else if (lowerName.includes('lẩu') || lowerName.includes('cù lao') || lowerName.includes('súp') || lowerName.includes('soup')) {
-                finalSentence += endings_lau[endIdx];
-            } else if (lowerName.includes('tôm') || lowerName.includes('mực') || lowerName.includes('cá') || lowerName.includes('cua') || lowerName.includes('ghẹ') || lowerName.includes('hải sản')) {
-                finalSentence += endings_haisan[endIdx];
-            } else if (lowerName.includes('heo') || lowerName.includes('bò') || lowerName.includes('gà') || lowerName.includes('vịt') || lowerName.includes('quay') || lowerName.includes('nướng')) {
-                finalSentence += endings_thit[endIdx];
-            } else {
-                finalSentence += endings_default[endIdx];
-            }
-
+            if (lowerName.includes('gỏi') || lowerName.includes('nộm') || lowerName.includes('nguội') || lowerName.includes('chả') || lowerName.includes('nem')) { finalSentence += endings_goi[endIdx]; } 
+            else if (lowerName.includes('lẩu') || lowerName.includes('cù lao') || lowerName.includes('súp') || lowerName.includes('soup')) { finalSentence += endings_lau[endIdx]; } 
+            else if (lowerName.includes('heo') || lowerName.includes('bò') || lowerName.includes('gà') || lowerName.includes('vịt') || lowerName.includes('quay') || lowerName.includes('nướng')) { finalSentence += endings_thit[endIdx]; } 
+            else { finalSentence += endings_default[endIdx]; }
             return finalSentence;
         }
 
         function getLunarDateString(solarDateStr) {
             if (!solarDateStr || typeof Solar === 'undefined') return '---';
             try {
-                const parts = solarDateStr.split('-');
-                const solar = Solar.fromYmd(parseInt(parts[0], 10), parseInt(parts[1], 10), parseInt(parts[2], 10));
-                const lunar = solar.getLunar();
-                
-                let lDay = lunar.getDay();
-                let lMonth = Math.abs(lunar.getMonth());
-                let isLeap = lunar.getMonth() < 0; 
-                
-                let dd = lDay < 10 ? '0' + lDay : lDay;
-                let mm = lMonth < 10 ? '0' + lMonth : lMonth;
-                let leapStr = isLeap ? " (Nhuận)" : "";
-                
+                const parts = solarDateStr.split('-'); const solar = Solar.fromYmd(parseInt(parts[0], 10), parseInt(parts[1], 10), parseInt(parts[2], 10)); const lunar = solar.getLunar();
+                let lDay = lunar.getDay(); let lMonth = Math.abs(lunar.getMonth()); let isLeap = lunar.getMonth() < 0; 
+                let dd = lDay < 10 ? '0' + lDay : lDay; let mm = lMonth < 10 ? '0' + lMonth : lMonth; let leapStr = isLeap ? " (Nhuận)" : "";
                 return `${dd}/${mm}${leapStr}`;
-            } catch (error) {
-                return '---';
-            }
+            } catch (error) { return '---'; }
         }
 
         window.addEventListener("DOMContentLoaded", async () => {
             await loadAllCloudData();
-            
             const dateInput = document.getElementById('menu-date');
             if (dateInput) {
                 dateInput.addEventListener('change', function(e) {
                     const lunarInput = document.getElementById('menu-lunar-date');
                     lunarInput.value = getLunarDateString(e.target.value) + " Âm";
-                    lunarInput.classList.remove('bg-slate-100');
-                    lunarInput.classList.add('bg-amber-100', 'text-amber-800');
-                    setTimeout(() => {
-                        lunarInput.classList.remove('bg-amber-100', 'text-amber-800');
-                        lunarInput.classList.add('bg-slate-100');
-                    }, 800);
+                    lunarInput.classList.remove('bg-slate-100'); lunarInput.classList.add('bg-amber-100', 'text-amber-800');
+                    setTimeout(() => { lunarInput.classList.remove('bg-amber-100', 'text-amber-800'); lunarInput.classList.add('bg-slate-100'); }, 800);
                 });
             }
         });
 
         async function loadAllCloudData() {
             try {
-                let { data: dishes, error: e1 } = await _supabase.from('dishes').select('*').order('timestamp', { ascending: false });
-                if (!e1) dishesList = dishes || [];
-                
-                let { data: menus, error: e2 } = await _supabase.from('menus').select('*');
-                if (!e2) menusList = menus || [];
+                let { data: dishes } = await _supabase.from('dishes').select('*').order('timestamp', { ascending: false });
+                dishesList = dishes || [];
+                let { data: menus } = await _supabase.from('menus').select('*');
+                menusList = menus || [];
 
                 renderDishes(dishesList);
+                generateSampleMenus();
                 renderMenuDishSelector();
                 renderMenus();
                 renderCalcPartiesTable();
-            } catch (err) {
-                console.error("Lỗi đồng bộ Supabase Cloud:", err);
-            }
+            } catch (err) { console.error("Lỗi đồng bộ Supabase Cloud:", err); }
         }
 
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('active', 'text-amber-600', 'border-amber-600');
-                el.classList.add('text-slate-500', 'border-transparent');
+                el.classList.remove('active', 'text-amber-600', 'border-amber-600'); el.classList.add('text-slate-500', 'border-transparent');
             });
             document.getElementById(tabId).classList.add('active');
             const activeBtn = document.getElementById(`btn-${tabId}`);
@@ -431,17 +413,142 @@
             const mobileBtns = document.querySelectorAll('#mobile-bottom-nav button');
             mobileBtns.forEach(b => b.classList.remove('active-nav'));
             if(tabId === 'tab-dishes') mobileBtns[0].classList.add('active-nav');
-            if(tabId === 'tab-menus') mobileBtns[1].classList.add('active-nav');
-            if(tabId === 'tab-calc') mobileBtns[2].classList.add('active-nav');
+            if(tabId === 'tab-sample-menus') mobileBtns[1].classList.add('active-nav');
+            if(tabId === 'tab-menus') mobileBtns[2].classList.add('active-nav');
+            if(tabId === 'tab-calc') mobileBtns[3].classList.add('active-nav');
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // TẠO THỰC ĐƠN MẪU TỰ ĐỘNG
+        function generateSampleMenus() {
+            if (!dishesList || dishesList.length === 0) return;
+
+            // Thuật toán gạt bỏ các món không phù hợp đãi tiệc (Dữ liệu cá nhân hóa)
+            const safeDishes = dishesList.filter(d => {
+                const n = d.name.toLowerCase();
+                if (n.includes("cá lóc hấp bầu")) return false;
+                if (n.includes("cá tai tượng")) return false;
+                return true;
+            });
+
+            // Phân nhóm nội bộ
+            const starters = safeDishes.filter(d => { const n = d.name.toLowerCase(); const c = (d.category || "").toLowerCase(); return n.includes("khai vị") || n.includes("gỏi") || n.includes("soup") || c.includes("khai vị"); });
+            const preferredStarters = starters.filter(d => d.name.toLowerCase().includes("5 món") || d.name.toLowerCase().includes("khai vị 5 món"));
+            
+            const mains = safeDishes.filter(d => { const n = d.name.toLowerCase(); const c = (d.category || "").toLowerCase(); return c.includes("chính") || n.includes("heo") || n.includes("gà") || n.includes("bò") || n.includes("tôm") || n.includes("mực"); });
+            const hotpots = safeDishes.filter(d => { const n = d.name.toLowerCase(); const c = (d.category || "").toLowerCase(); return c.includes("lẩu") || n.includes("lẩu") || n.includes("cù lao"); });
+            const desserts = safeDishes.filter(d => { const n = d.name.toLowerCase(); const c = (d.category || "").toLowerCase(); return c.includes("tráng miệng") || n.includes("rau câu") || n.includes("chè") || n.includes("trái cây"); });
+
+            const getRandom = (arr, count) => [...arr].sort(() => 0.5 - Math.random()).slice(0, count);
+
+            generatedSampleMenus = [
+                { id: 1, name: "Thực Đơn Tiệc Cưới Miền Tây", price: "Thực đơn Vu Quy chuẩn 6 món" },
+                { id: 2, name: "Thực Đơn Tân Hôn Cao Cấp", price: "Đẳng cấp, sang trọng với 7 món" },
+                { id: 3, name: "Thực Đơn Tân Gia / Báo Hỷ", price: "Thực đơn 5 món gọn gàng, tinh tế" }
+            ];
+
+            generatedSampleMenus.forEach(menu => {
+                let menuDishes = [];
+                // Khai vị: Luôn ưu tiên 5 món
+                if (preferredStarters.length > 0) menuDishes.push(getRandom(preferredStarters, 1)[0]);
+                else if (starters.length > 0) menuDishes.push(getRandom(starters, 1)[0]);
+
+                // Món chính
+                const mainCount = menu.id === 2 ? 3 : 2;
+                if (mains.length >= mainCount) menuDishes = menuDishes.concat(getRandom(mains, mainCount));
+
+                // Lẩu
+                if (hotpots.length > 0) menuDishes.push(getRandom(hotpots, 1)[0]);
+
+                // Tráng miệng
+                if (desserts.length > 0) menuDishes.push(getRandom(desserts, 1)[0]);
+
+                // Bù random nếu thiếu
+                while(menuDishes.length < (menu.id === 2 ? 7 : 6)) {
+                    const fallback = getRandom(safeDishes, 1)[0];
+                    if (!menuDishes.find(d => d.id === fallback.id)) menuDishes.push(fallback);
+                }
+
+                menu.dishes = menuDishes;
+                // Lấy ảnh ngẫu nhiên từ 1 món trong chính thực đơn này
+                const rImgDish = getRandom(menuDishes, 1)[0];
+                menu.image_url = rImgDish?.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c";
+            });
+
+            renderSampleMenus();
+        }
+
+        function renderSampleMenus() {
+            const container = document.getElementById("sample-menus-container");
+            container.innerHTML = "";
+            generatedSampleMenus.forEach(menu => {
+                const card = document.createElement("div");
+                card.className = "premium-dish-card flex flex-col hover:-translate-y-1 transition-transform shadow-md";
+                card.innerHTML = `
+                    <div class="h-44 w-full overflow-hidden relative">
+                        <img src="${menu.image_url}" class="w-full h-full object-cover">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-900/80 to-transparent flex items-end p-4">
+                            <h4 class="font-black text-white text-base tracking-wide">${menu.name}</h4>
+                        </div>
+                    </div>
+                    <div class="p-4 bg-white flex flex-col justify-between flex-1">
+                        <p class="text-xs text-amber-700 font-bold mb-4 italic">${menu.price}</p>
+                        <div class="flex gap-2 mt-auto">
+                            <button onclick="viewSampleMenu(${menu.id})" class="flex-1 bg-slate-100 text-slate-700 font-bold py-2.5 rounded-xl text-xs hover:bg-slate-200"><i class="fa-solid fa-list-ul"></i> Xem Chi Tiết</button>
+                            <button onclick="selectAndDownloadSample(${menu.id})" class="flex-1 bg-amber-600 text-white font-bold py-2.5 rounded-xl text-xs shadow-md hover:bg-amber-700"><i class="fa-solid fa-check"></i> Chọn & Tải Về</button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        function viewSampleMenu(id) {
+            const menu = generatedSampleMenus.find(m => m.id === id); if(!menu) return;
+            currentSelectedSampleMenuId = id;
+            document.getElementById('sd-modal-title').innerText = menu.name;
+            const listContainer = document.getElementById('sd-modal-list');
+            listContainer.innerHTML = "";
+            menu.dishes.forEach((dish, idx) => {
+                listContainer.innerHTML += `<li class="flex gap-3 text-sm font-semibold text-slate-700 border-b border-slate-50 pb-2"><span class="text-amber-600 font-black">${idx + 1}.</span> ${dish.name}</li>`;
+            });
+            document.getElementById('sample-detail-modal').classList.add('show');
+        }
+
+        function openDownloadModalFromDetail() {
+            closeModal('sample-detail-modal');
+            if(currentSelectedSampleMenuId) selectAndDownloadSample(currentSelectedSampleMenuId);
+        }
+
+        function selectAndDownloadSample(id) {
+            const menu = generatedSampleMenus.find(m => m.id === id); if(!menu) return;
+            
+            document.getElementById('print-menu-title').innerText = menu.name;
+            const printList = document.getElementById('print-menu-list');
+            printList.innerHTML = "";
+            menu.dishes.forEach((dish, idx) => {
+                printList.innerHTML += `<li class="flex items-start gap-3"><span class="bg-amber-600 text-white w-6 h-6 rounded-full flex items-center justify-center shrink-0 shadow-sm">${idx + 1}</span> <span>${dish.name}</span></li>`;
+            });
+
+            document.getElementById('download-modal').classList.add('show');
+        }
+
+        function downloadMenuImage() {
+            const printArea = document.getElementById('menu-print-area');
+            html2canvas(printArea, { scale: 2, backgroundColor: "#ffffff" }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `Thuc-Don-${Date.now()}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
         }
 
         function renderDishes(listToRender = dishesList) {
             const container = document.getElementById("dishes-container");
             const filterContainer = document.getElementById("dish-category-filters");
             
-            // 1. Tạo danh sách các danh mục (Thêm "Tất cả" vào đầu)
+            // 1. Nhận diện các Category đang có thực tế trong Database để tạo thanh lọc
             const categories = ["Tất cả"];
             listToRender.forEach(dish => {
                 const cat = dish.category ? dish.category.trim() : "Món Khác";
@@ -450,7 +557,7 @@
 
             if (!categories.includes(activeDishCategory)) activeDishCategory = "Tất cả";
 
-            // 2. Kết xuất thanh thẻ ngang (Filter Chips) - Kích thước chữ được tinh chỉnh nhỏ hơn
+            // 2. Kết xuất thanh bộ lọc
             if (filterContainer) {
                 filterContainer.innerHTML = "";
                 categories.forEach(cat => {
@@ -464,52 +571,38 @@
                     }`;
                     btn.innerText = cat;
                     
-                    btn.onclick = () => {
-                        activeDishCategory = cat;
-                        renderDishes(listToRender); 
-                    };
-                    
+                    btn.onclick = () => { activeDishCategory = cat; renderDishes(listToRender); };
                     filterContainer.appendChild(btn);
                 });
             }
 
-            // 3. Lọc danh sách món ăn
+            // 3. Lọc danh sách theo Tab đã chọn
             const filteredDishes = activeDishCategory === "Tất cả" 
                 ? listToRender 
                 : listToRender.filter(d => (d.category ? d.category.trim() : "Món Khác") === activeDishCategory);
 
             container.innerHTML = ""; 
-            
             if(filteredDishes.length === 0) {
-                container.innerHTML = `<div class="col-span-full p-10 text-center text-sm text-slate-400 bg-white rounded-3xl border border-slate-100 shadow-inner">Không tìm thấy món ăn nào trong mục này...</div>`;
+                container.innerHTML = `<div class="col-span-full p-10 text-center text-sm text-slate-400 bg-white rounded-3xl border border-slate-100 shadow-inner">Không tìm thấy món ăn nào...</div>`;
                 return;
             }
 
-            // 4. Kết xuất các món ăn sau khi lọc
+            // 4. Kết xuất thẻ hình ảnh, BỎ chữ Category trên ảnh, GIỮ zoom và chức năng MỚI
             filteredDishes.forEach(dish => {
                 if (!dish || !dish.name) return;
                 
                 const imgUrl = dish.image_url ? dish.image_url : "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60";
-                const categoryBadge = dish.category ? dish.category.trim() : "Món Khác";
                 const description = dish.description ? dish.description : dynamicExplanationGenerator(dish.name, dish.id);
 
-                // --- LOGIC XÁC ĐỊNH MÓN MỚI ---
-                // Xét nếu có cờ is_new HOẶC timestamp trong vòng 14 ngày (14 * 24 * 60 * 60 * 1000 ms)
                 let isNew = false;
-                if (dish.is_new) {
-                    isNew = true;
-                } else if (dish.timestamp) {
+                if (dish.is_new) isNew = true;
+                else if (dish.timestamp) {
                     const dishDate = new Date(dish.timestamp);
                     const daysAgo14 = new Date(Date.now() - 14 * 24 * 60 * 60 * 1000);
                     if (dishDate > daysAgo14) isNew = true;
                 }
                 
-                // Nhãn MỚI chớp đỏ nhẹ nếu là món mới
-                const newBadgeHtml = isNew 
-                    ? `<span class="absolute top-3 left-3 bg-red-600/95 backdrop-blur-sm text-white text-[9px] font-black px-2 py-1 rounded-md shadow-md animate-pulse uppercase tracking-wider flex items-center gap-1 z-10"><i class="fa-solid fa-sparkles text-[8px]"></i> MỚI</span>` 
-                    : '';
-
-                // Escape dấu nháy đơn để truyền vào hàm JS
+                const newBadgeHtml = isNew ? `<span class="absolute top-3 left-3 bg-red-600/95 backdrop-blur-sm text-white text-[9px] font-black px-2 py-1 rounded-md shadow-md animate-pulse uppercase tracking-wider flex items-center gap-1 z-10"><i class="fa-solid fa-sparkles text-[8px]"></i> MỚI</span>` : '';
                 const safeDishName = dish.name.replace(/'/g, "\\'");
 
                 const card = document.createElement("div");
@@ -518,7 +611,6 @@
                     <div class="h-40 w-full overflow-hidden bg-slate-50 relative cursor-pointer group" onclick="openImageModal('${imgUrl}', '${safeDishName}')">
                         ${newBadgeHtml}
                         <img src="${imgUrl}" alt="${dish.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=60'">
-                        <span class="absolute top-3 right-3 text-[9px] bg-amber-600/90 backdrop-blur-sm text-white font-black px-2.5 py-1 rounded-md uppercase tracking-wider">${categoryBadge}</span>
                         <div class="absolute inset-0 bg-black/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center pointer-events-none">
                             <i class="fa-solid fa-magnifying-glass-plus text-white text-3xl drop-shadow-md"></i>
                         </div>
@@ -535,12 +627,9 @@
         }
 
         let selectedDishIdsInMenuForm = [];
-
         function renderMenuDishSelector() {
-            const container = document.getElementById("menu-dish-selector");
-            container.innerHTML = "";
+            const container = document.getElementById("menu-dish-selector"); container.innerHTML = "";
             window.openDishGroups = window.openDishGroups || ["Khai Vị / Đồ Nguội / Soup"]; 
-            
             const groups = { "Khai Vị / Đồ Nguội / Soup": [], "Món Lẩu": [], "Món Chính (Thịt, Hải Sản)": [], "Cơm / Tráng Miệng": [], "Khác": [] };
             dishesList.forEach(dish => {
                 const name = dish.name.toLowerCase();
