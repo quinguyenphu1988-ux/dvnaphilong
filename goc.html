@@ -47,6 +47,7 @@
                 
                 <div id="final-price-box"></div>
             </div>
+			<div id="final-price-box"></div>
         </div>
     </div>
 
@@ -55,37 +56,55 @@
         // Thêm duy nhất hàm này vào cuối file:
 
         async function calculateTablePriceAutomatic() {
-            const priceBox = document.getElementById('final-price-box');
-            if (!priceBox) return; // Nếu khung giá chưa được tạo, không chạy hàm
-            
-            if (cartDishes.length === 0) { alert("Anh chưa chọn món!"); return; }
-            priceBox.innerHTML = `<p class="text-center text-amber-600 font-bold p-2 text-xs italic">Đang tính...</p>`;
+    const priceBox = document.getElementById('final-price-box');
+    
+    // Nếu chưa thấy cái khung, code sẽ dừng lại thay vì làm trắng trang
+    if (!priceBox) {
+        alert("Lỗi: Không tìm thấy khung hiển thị giá trong giỏ hàng. Anh đã dán dòng <div id='final-price-box'></div> vào Modal chưa?");
+        return;
+    }
 
-            try {
-                const { data: danhMucGia } = await _supabase.from('danh_muc_gia').select('*');
-                let totalFoodCost = 0;
-                let missing = [];
+    if (cartDishes.length === 0) { 
+        alert("Anh chưa chọn món!"); 
+        return; 
+    }
+    
+    priceBox.innerHTML = `<p class="text-xs text-amber-600 text-center italic">Đang tính...</p>`;
 
-                cartDishes.forEach(id => {
-                    const dish = dishesList.find(d => d.id == id);
-                    const p = danhMucGia.find(s => s.key.toLowerCase().trim() === dish.name.toLowerCase().trim());
-                    if(p) totalFoodCost += parseFloat(p.value);
-                    else missing.push(dish.name);
-                });
+    try {
+        const { data: danhMucGia } = await _supabase.from('danh_muc_gia').select('*');
+        let totalFoodCost = 0;
+        let missing = [];
 
-                if(missing.length > 0) { alert("Chưa nhập giá cho: " + missing.join(', ')); priceBox.innerHTML = ""; return; }
+        cartDishes.forEach(id => {
+            const dish = dishesList.find(d => d.id == id);
+            if(dish) {
+                const p = danhMucGia.find(s => s.key.toLowerCase().trim() === dish.name.toLowerCase().trim());
+                if(p) totalFoodCost += parseFloat(p.value);
+                else missing.push(dish.name);
+            }
+        });
 
-                const fixed = ["Rạp/Bàn Ghế/Chén Bát", "Chi phí đãi tiệc", "Chi phí vận chuyển", "Nước ngọt", "Suối", "Khăn/ống hút/tăm", "Gas"];
-                let totalFixed = 0;
-                fixed.forEach(name => {
-                    const item = danhMucGia.find(s => s.key.toLowerCase().trim() === name.toLowerCase().trim());
-                    if(item) totalFixed += parseFloat(item.value);
-                });
-                
-                const final = Math.round(((totalFoodCost + totalFixed) * 1.2) / 1000) * 1000;
-                priceBox.innerHTML = `<div class="mt-4 p-3 bg-amber-50 rounded-lg text-center font-bold text-amber-900 border border-amber-200">${final.toLocaleString('vi-VN')} đ/bàn</div>`;
-            } catch(e) { alert("Lỗi: " + e.message); priceBox.innerHTML = ""; }
+        if(missing.length > 0) { 
+            alert("Chưa nhập giá cho món: " + missing.join(', ') + "\nAnh vào trang Giá Nguyên Liệu để nhập nhé!"); 
+            priceBox.innerHTML = ""; 
+            return; 
         }
+
+        const fixed = ["Rạp/Bàn Ghế/Chén Bát", "Chi phí đãi tiệc", "Chi phí vận chuyển", "Nước ngọt", "Suối", "Khăn/ống hút/tăm", "Gas"];
+        let totalFixed = 0;
+        fixed.forEach(name => {
+            const item = danhMucGia.find(s => s.key.toLowerCase().trim() === name.toLowerCase().trim());
+            if(item) totalFixed += parseFloat(item.value);
+        });
+        
+        const final = Math.round(((totalFoodCost + totalFixed) * 1.2) / 1000) * 1000;
+        priceBox.innerHTML = `<div class="mt-4 p-3 bg-amber-50 rounded-lg text-center font-bold text-amber-900 border border-amber-200">${final.toLocaleString('vi-VN')} đ/bàn</div>`;
+    } catch(e) { 
+        alert("Lỗi: " + e.message); 
+        priceBox.innerHTML = ""; 
+    }
+}
     </script>
 </body>
 </html>
