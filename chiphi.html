@@ -128,8 +128,17 @@
             <div id="dish-category-filters" class="flex overflow-x-auto gap-2.5 pb-3 mb-4 snap-x category-scrollbar"></div>
             <div id="dishes-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5"></div>
         </div>
-        </main>
 
+        <div id="tab-sample-menus" class="tab-content space-y-6">
+            <div class="bg-white/95 backdrop-blur-md p-5 space-y-4 rounded-3xl border border-slate-100 shadow-sm">
+                <div class="border-b border-slate-100 pb-2">
+                    <h3 class="text-base font-black text-slate-900 uppercase">Thực Đơn Mẫu</h3>
+                    <p class="text-xs text-slate-500 mt-1 italic">Các bộ thực đơn ưu tiên tiêu chuẩn miền Tây với những tên gọi chúc phúc sang trọng.</p>
+                </div>
+                <div id="sample-menus-container" class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5"></div>
+            </div>
+        </div>
+    </main>
     <div id="cart-modal" class="custom-modal" onclick="closeModal('cart-modal')">
         <div class="bg-white rounded-3xl w-full max-w-md p-6 relative shadow-2xl" onclick="event.stopPropagation()">
             <button onclick="closeModal('cart-modal')" class="absolute top-4 right-4 text-slate-400 text-2xl hover:text-rose-500"><i class="fa-solid fa-circle-xmark"></i></button>
@@ -149,11 +158,12 @@
     </div>
 
     <script>
-        // ... [GIỮ NGUYÊN CÁC HÀM CŨ CỦA ANH] ...
-        
-        // HÀM TÍNH GIÁ BÀN (TÍCH HỢP MỚI)
+        // [CÁC HÀM CŨ CỦA ANH GIỮ NGUYÊN...]
+        // CHỈ THÊM HÀM NÀY VÀO CUỐI:
         async function calculateTablePriceAutomatic() {
             const priceBox = document.getElementById('final-price-box');
+            if (!priceBox) return; // Bảo vệ code khỏi lỗi
+            
             if (cartDishes.length === 0) { alert("Anh chưa chọn món!"); return; }
             priceBox.innerHTML = `<p class="text-center text-amber-600 font-bold p-2 text-xs italic">Đang tính...</p>`;
 
@@ -169,10 +179,7 @@
                     else missing.push(dish.name);
                 });
 
-                if (missing.length > 0) {
-                    alert("Chưa nhập giá cho:\n" + missing.join(', ') + "\nAnh qua trang Giá Nguyên Liệu nhập nhé!");
-                    priceBox.innerHTML = ""; return;
-                }
+                if(missing.length > 0) { alert("Chưa nhập giá cho: " + missing.join(', ') + "\nAnh vào trang Giá Nguyên Liệu nhập nhé!"); priceBox.innerHTML = ""; return; }
 
                 const fixed = ["Rạp/Bàn Ghế/Chén Bát", "Chi phí đãi tiệc", "Chi phí vận chuyển", "Nước ngọt", "Suối", "Khăn/ống hút/tăm", "Gas"];
                 let totalFixed = 0;
@@ -183,14 +190,12 @@
                 
                 const final = Math.round(((totalFoodCost + totalFixed) * 1.2) / 1000) * 1000;
                 priceBox.innerHTML = `
-                    <div class="mt-4 p-3 bg-amber-50 border border-amber-200 rounded-lg text-center">
+                    <div class="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-200 text-center shadow-inner">
                         <p class="text-[10px] font-bold text-amber-800 uppercase">GIÁ BÁO KHÁCH (TRỌN GÓI)</p>
                         <h3 class="text-xl font-black text-amber-700">${final.toLocaleString('vi-VN')} đ/bàn</h3>
                     </div>`;
             } catch(e) { alert("Lỗi: " + e.message); priceBox.innerHTML = ""; }
         }
-        
-        // [CÁC HÀM KHÁC GIỮ NGUYÊN Ở ĐÂY...]
     </script>
 </body>
 </html>
