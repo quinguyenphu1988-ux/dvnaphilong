@@ -267,137 +267,38 @@
         }
 
         async function calculateTablePriceAutomatic() {
-    if (cartDishes.length === 0) {
-        alert("Bạn cần chọn ít nhất 1 món vào thực đơn!");
-        return;
-    }
-
-    const cartListContainer = document.getElementById('cart-list-container');
-    const oldPriceBox = document.getElementById('final-price-box');
-    if(oldPriceBox) oldPriceBox.remove();
-
-    const loadingBox = document.createElement('div');
-    loadingBox.id = "pricing-loading-box";
-    loadingBox.className = "mt-4 p-3 text-center text-amber-600 font-bold text-xs";
-    loadingBox.innerHTML = `<i class="fa-solid fa-spinner fa-spin mr-2"></i> Đang tính toán...`;
-    cartListContainer.appendChild(loadingBox);
-
-    try {
-        const { data: danhMucGia, error } = await _supabase.from('danh_muc_gia').select('*');
-        if (error) throw error;
-
-        // Hàm hỗ trợ tìm giá theo từ khóa gần đúng (tránh lỗi sai tên nhỏ)
-        const findPrice = (name) => {
-            const found = danhMucGia.find(s => 
-                name.toLowerCase().includes(s.key.toLowerCase()) || 
-                s.key.toLowerCase().includes(name.toLowerCase())
-            );
-            return found ? parseFloat(found.value) : 0;
-        };
-
-        const selectedDishes = dishesList.filter(d => cartDishes.includes(d.id));
-        let totalFoodCost = 0;
-
-        selectedDishes.forEach(dish => {
-            if (dish.ingredients) {
-                const recipe = typeof dish.ingredients === 'string' ? JSON.parse(dish.ingredients) : dish.ingredients;
-                recipe.forEach(item => {
-                    const pricePerUnit = findPrice(item.name);
-                    // Giả định công thức: (trọng lượng * giá đơn vị)
-                    // Nếu là đơn vị kg/lít thì không chia, nếu là gam/ml thì chia 1000
-                    let multiplier = (item.unit === 'gam' || item.unit === 'ml') ? 1000 : 1;
-                    totalFoodCost += (item.weight * (pricePerUnit / multiplier));
-                });
-            }
-        });
-
-        // Tính các chi phí cố định (cộng dồn)
-        const fixedCosts = danhMucGia
-            .filter(s => ["Gas", "Nhân công", "Rạp", "Khăn lạnh", "Nước ngọt", "Đá", "Tăm", "Di chuyển"].includes(s.key))
-            .reduce((sum, item) => sum + parseFloat(item.value), 0);
-        
-        const finalPrice = Math.round(((totalFoodCost * 1.2) + fixedCosts) / 1000) * 1000;
-
-        document.getElementById('pricing-loading-box').remove();
-        
-        const priceBox = document.createElement('div');
-        priceBox.id = "final-price-box";
-        priceBox.className = "mt-5 p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-2xl border-2 border-amber-300 text-center shadow-inner";
-        priceBox.innerHTML = `
-            <p class="text-[11px] font-bold text-amber-700 uppercase mb-1">Đơn Giá Tham Khảo</p>
-            <h3 class="text-3xl font-black text-amber-600 my-2">${finalPrice.toLocaleString('vi-VN')} đ/bàn</h3>
-            <p class="text-[10px] text-slate-500 italic">* Đã bao gồm chi phí vận hành & lợi nhuận dự kiến.</p>
-        `;
-        cartListContainer.appendChild(priceBox);
-
-    } catch (err) {
-        document.getElementById('pricing-loading-box').innerHTML = `<span class="text-rose-500">Lỗi hệ thống: ${err.message}</span>`;
-    }
-}
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('active', 'text-amber-600', 'border-amber-600'); el.classList.add('text-slate-500', 'border-transparent');
-            });
-            document.getElementById(tabId).classList.add('active');
-            const activeBtn = document.getElementById(`btn-${tabId}`);
-            if(activeBtn) activeBtn.classList.add('active', 'text-amber-600', 'border-amber-600');
-
-            const mobileBtns = document.querySelectorAll('#mobile-bottom-nav button');
-            mobileBtns.forEach(b => b.classList.remove('active-nav'));
-            if(tabId === 'tab-dishes') mobileBtns[0].classList.add('active-nav');
-            if(tabId === 'tab-sample-menus') mobileBtns[1].classList.add('active-nav');
-
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        function dynamicExplanationGenerator(dishName, dishId) {
-            const name = dishName.trim();
-            const lowerName = name.toLowerCase();
+            const priceBox = document.getElementById('final-price-box');
+            if (!priceBox) { alert("Lỗi khung hiển thị giá!"); return; }
             
-            const openings = [
-                `Thưởng thức tinh hoa ẩm thực từ món ${name}`,
-                `Đặc sản ${name} trứ danh được chế biến tỉ mỉ`,
-                `Món ngon đẳng cấp ${name} mang đậm dấu ấn sáng tạo`,
-                `Sự kết hợp hoàn hảo tạo nên hương vị đặc biệt của ${name}`
-            ];
+            if (cartDishes.length === 0) { alert("Anh chọn món đi đã!"); return; }
+            priceBox.innerHTML = `<p class="text-xs text-center text-amber-600 italic">Đang tính...</p>`;
 
-            const endings_goi = [
-                ", sở hữu vị chua ngọt đậm đà, giòn mát thanh nhẹ kích thích vị giác.",
-                ", hòa quyện nước mắm kẹo chua cay độc quyền, đưa miệng hài hòa."
-            ];
+            try {
+                const { data: danhMucGia } = await _supabase.from('danh_muc_gia').select('*');
+                let totalFood = 0;
+                let missing = [];
 
-            const endings_lau = [
-                ", sở hữu nước dùng ngọt thanh tinh túy hầm xương, kết hợp rau nấm tươi xanh.",
-                ", nóng hổi nghi ngút khói, thớ thịt ngọt lịm mang tới trải nghiệm lôi cuốn."
-            ];
+                cartDishes.forEach(id => {
+                    const dish = dishesList.find(d => d.id == id);
+                    if(dish) {
+                        const p = danhMucGia.find(s => s.key.toLowerCase().trim() === dish.name.toLowerCase().trim());
+                        if(p) totalFood += parseFloat(p.value);
+                        else missing.push(dish.name);
+                    }
+                });
 
-            const endings_thit = [
-                ", thớ thịt mềm mọng thơm lừng bên trong hòa quyện xử lý quay nướng hoàn hảo.",
-                ", tẩm ướp thảo mộc bí truyền đậm đà, óng ả làm nức lòng thực khách."
-            ];
+                if(missing.length > 0) { alert("Chưa nhập giá cho: " + missing.join(', ')); priceBox.innerHTML = ""; return; }
 
-            const endings_default = [
-                ", chuẩn vị đầu bếp tiệc chuyên nghiệp, thơm ngon và vô cùng bổ dưỡng.",
-                ", hấp dẫn từ màu sắc đến hương vị, cam kết mang đến sự hài lòng trọn vẹn."
-            ];
-
-            const openIdx = dishId % openings.length;
-            let endIdx = dishId % 2;
-            let finalSentence = openings[openIdx];
-
-            if (lowerName.includes('gỏi') || lowerName.includes('nộm') || lowerName.includes('nguội') || lowerName.includes('chả') || lowerName.includes('nem')) {
-                finalSentence += endings_goi[endIdx];
-            } else if (lowerName.includes('lẩu') || lowerName.includes('cù lao') || lowerName.includes('súp') || lowerName.includes('soup')) {
-                finalSentence += endings_lau[endIdx];
-            } else if (lowerName.includes('heo') || lowerName.includes('bò') || lowerName.includes('gà') || lowerName.includes('vịt') || lowerName.includes('quay') || lowerName.includes('nướng')) {
-                finalSentence += endings_thit[endIdx];
-            } else {
-                finalSentence += endings_default[endIdx];
-            }
-
-            return finalSentence;
+                const fixed = ["Rạp/Bàn Ghế/Chén Bát", "Chi phí đãi tiệc", "Chi phí vận chuyển", "Nước ngọt", "Suối", "Khăn/ống hút/tăm", "Gas"];
+                let totalFixed = 0;
+                fixed.forEach(name => {
+                    const item = danhMucGia.find(s => s.key.toLowerCase().trim() === name.toLowerCase().trim());
+                    if(item) totalFixed += parseFloat(item.value);
+                });
+                
+                const final = Math.round(((totalFood + totalFixed) * 1.2) / 1000) * 1000;
+                priceBox.innerHTML = `<div class="mt-4 p-3 bg-amber-50 rounded-lg text-center font-bold text-amber-900 border border-amber-200">${final.toLocaleString('vi-VN')} đ/bàn</div>`;
+            } catch(e) { alert("Lỗi: " + e.message); priceBox.innerHTML = ""; }
         }
 
         function generateSampleMenus() {
