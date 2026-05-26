@@ -792,58 +792,70 @@
         }
 
         function renderMenus() {
-            const container = document.getElementById("menus-container"); 
-            container.innerHTML = "";
-            if(menusList.length === 0) {
-                container.innerHTML = `<div class="bg-white border border-slate-200 p-8 rounded-2xl text-center text-xs text-slate-400 italic">Chưa có lịch đặt tiệc nào trên đám mây.</div>`;
-                return;
-            }
-            const today = new Date(); today.setHours(0,0,0,0);
-            menusList.forEach(menu => {
-                let dishListHtml = "";
-                menu.dishIds?.forEach(id => {
-                    const dish = dishesList.find(d => d.id === id);
-                    if (dish) dishListHtml += `<li class="text-xs text-slate-700 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-square-check text-amber-500"></i> ${dish.name}</li>`;
-                });
-                
-                const computedLunar = getLunarDateString(menu.date);
-                const partyDate = new Date(menu.date); partyDate.setHours(0,0,0,0);
-                const dayDiff = Math.ceil((partyDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
-                const isNear = (dayDiff >= 0 && dayDiff <= 5);
-                
-                let borderClass = isNear ? "border-rose-400 shadow-md shadow-rose-100 bg-rose-50/30" : "border-slate-200 bg-white hover:border-amber-300";
-                let alertBadge = isNear ? `<div class="inline-block bg-rose-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg mb-3 animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> SẮP DIỄN RA</div>` : "";
+			const container = document.getElementById("menus-container"); 
+			container.innerHTML = "";
+			
+			// Lấy mốc thời gian ngày hôm nay để so sánh
+			const today = new Date(); 
+			today.setHours(0,0,0,0);
 
-                const block = document.createElement("div");
-                block.className = `${borderClass} border rounded-2xl p-4.5 grid grid-cols-1 md:grid-cols-3 gap-4 transition-all`;
-                block.innerHTML = `
-                    <div class="space-y-1.5 flex flex-col">
-                        ${alertBadge}
-                        <div class="flex items-center gap-1.5">
-                            <span class="text-[10px] bg-amber-600 text-white font-black px-2 py-0.5 rounded-md uppercase">${menu.type}</span>
-                            <h4 class="font-black text-sm text-slate-900">${menu.customer}</h4>
-                        </div>
-                        <p class="text-xs font-medium text-slate-600"><i class="fa-solid fa-phone mr-1"></i> ${menu.phone}</p>
-                        <div class="text-xs font-bold mt-1">
-                            <div class="text-orange-600"><i class="fa-solid fa-calendar-day mr-1"></i> ${menu.date}</div>
-                            <div class="text-[11px] text-purple-700 font-black mt-1"><i class="fa-solid fa-moon mr-1"></i> Âm: ${computedLunar}</div>
-                        </div>
-                    </div>
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-100 h-fit">
-                        <ul class="space-y-1">${dishListHtml}</ul>
-                    </div>
-                    <div class="flex justify-end items-center gap-6 pt-3 border-t border-slate-100 md:border-t-0 md:pt-0 md:flex-col md:justify-center md:gap-3">
-                        <button onclick="editMenu(${menu.id})" class="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-100">
-                            <i class="fa-solid fa-user-pen"></i> Sửa
-                        </button>
-                        <button onclick="removeMenu(${menu.id})" class="flex items-center gap-2 text-sm font-bold text-rose-600 bg-rose-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-rose-100">
-                            <i class="fa-solid fa-trash"></i> Hủy
-                        </button>
-                    </div>
-                `;
-                container.appendChild(block);
-            });
-        }
+			// Lọc ra danh sách các tiệc từ hôm nay trở về sau (bỏ tiệc cũ)
+			const upcomingMenus = menusList.filter(menu => {
+				const partyDate = new Date(menu.date); 
+				partyDate.setHours(0,0,0,0);
+				return partyDate.getTime() >= today.getTime();
+			});
+
+			if(upcomingMenus.length === 0) {
+				container.innerHTML = `<div class="bg-white border border-slate-200 p-8 rounded-2xl text-center text-xs text-slate-400 italic">Chưa có lịch đặt tiệc nào sắp tới trên đám mây.</div>`;
+				return;
+			}
+			
+			upcomingMenus.forEach(menu => {
+				let dishListHtml = "";
+				menu.dishIds?.forEach(id => {
+					const dish = dishesList.find(d => d.id === id);
+					if (dish) dishListHtml += `<li class="text-xs text-slate-700 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-square-check text-amber-500"></i> ${dish.name}</li>`;
+				});
+				
+				const computedLunar = getLunarDateString(menu.date);
+				const partyDate = new Date(menu.date); partyDate.setHours(0,0,0,0);
+				const dayDiff = Math.ceil((partyDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+				const isNear = (dayDiff >= 0 && dayDiff <= 5);
+				
+				let borderClass = isNear ? "border-rose-400 shadow-md shadow-rose-100 bg-rose-50/30" : "border-slate-200 bg-white hover:border-amber-300";
+				let alertBadge = isNear ? `<div class="inline-block bg-rose-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg mb-3 animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> SẮP DIỄN RA</div>` : "";
+
+				const block = document.createElement("div");
+				block.className = `${borderClass} border rounded-2xl p-4.5 grid grid-cols-1 md:grid-cols-3 gap-4 transition-all`;
+				block.innerHTML = `
+					<div class="space-y-1.5 flex flex-col">
+						${alertBadge}
+						<div class="flex items-center gap-1.5">
+							<span class="text-[10px] bg-amber-600 text-white font-black px-2 py-0.5 rounded-md uppercase">${menu.type}</span>
+							<h4 class="font-black text-sm text-slate-900">${menu.customer}</h4>
+						</div>
+						<p class="text-xs font-medium text-slate-600"><i class="fa-solid fa-phone mr-1"></i> ${menu.phone}</p>
+						<div class="text-xs font-bold mt-1">
+							<div class="text-orange-600"><i class="fa-solid fa-calendar-day mr-1"></i> ${menu.date}</div>
+							<div class="text-[11px] text-purple-700 font-black mt-1"><i class="fa-solid fa-moon mr-1"></i> Âm: ${computedLunar}</div>
+						</div>
+					</div>
+					<div class="bg-white p-3.5 rounded-xl border border-slate-100 h-fit">
+						<ul class="space-y-1">${dishListHtml}</ul>
+					</div>
+					<div class="flex justify-end items-center gap-6 pt-3 border-t border-slate-100 md:border-t-0 md:pt-0 md:flex-col md:justify-center md:gap-3">
+						<button onclick="editMenu(${menu.id})" class="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-100">
+							<i class="fa-solid fa-user-pen"></i> Sửa
+						</button>
+						<button onclick="removeMenu(${menu.id})" class="flex items-center gap-2 text-sm font-bold text-rose-600 bg-rose-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-rose-100">
+							<i class="fa-solid fa-trash"></i> Hủy
+						</button>
+					</div>
+				`;
+				container.appendChild(block);
+			});
+		}
 
         let currentEditingMenuId = null;
         function editMenu(id) {
@@ -902,39 +914,51 @@
         }
 
         function renderCalcPartiesTable() {
-            const tbody = document.getElementById("calc-parties-table-body"); tbody.innerHTML = "";
-            if (menusList.length === 0) { 
-                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-400 italic">Không có dữ liệu thực đơn tiệc.</td></tr>`; 
-                return; 
-            }
-            
-            menusList.forEach(menu => {
-                const tr = document.createElement("tr");
-                const computedLunar = getLunarDateString(menu.date);
-                tr.innerHTML = `
-                    <td class="p-3.5 text-center">
-                        <input type="checkbox" value="${menu.id}" class="calc-party-checkbox scale-125 accent-amber-600 cursor-pointer">
-                    </td>
-                    
-                    <td class="p-3.5 py-3 text-slate-950">
-                        <div class="font-black text-sm text-slate-900">${menu.customer} <span class="text-[11px] font-normal text-slate-400 ml-1">(ĐT: ${menu.phone})</span></div>
-                        
-                        <div class="text-[11px] text-slate-600 font-bold mt-1 flex flex-wrap items-center gap-1.5">
-                            <span class="text-orange-600"><i class="fa-solid fa-calendar-day"></i> D: ${menu.date}</span>
-                            <span class="text-slate-300">|</span>
-                            <span class="text-[12px] text-purple-700 font-black"><i class="fa-solid fa-moon"></i> Â: ${computedLunar}</span>
-                            <span class="text-slate-300">|</span>
-                            <span class="bg-amber-50 border border-amber-200 text-amber-800 px-1.5 py-0.2 rounded font-bold uppercase text-[10px]">${menu.type}</span>
-                        </div>
-                    </td>
-                    
-                    <td class="p-3.5 text-center">
-                        <input type="number" min="1" value="10" id="tables-for-menu-${menu.id}" class="w-full max-w-24 bg-slate-50 border border-slate-200 rounded-lg text-center font-black focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-        }
+			const tbody = document.getElementById("calc-parties-table-body"); tbody.innerHTML = "";
+			
+			// Lấy mốc thời gian ngày hôm nay để so sánh
+			const today = new Date(); 
+			today.setHours(0,0,0,0);
+
+			// Lọc ra danh sách các tiệc từ hôm nay trở về sau (bỏ tiệc cũ)
+			const upcomingMenus = menusList.filter(menu => {
+				const partyDate = new Date(menu.date); 
+				partyDate.setHours(0,0,0,0);
+				return partyDate.getTime() >= today.getTime();
+			});
+
+			if (upcomingMenus.length === 0) { 
+				tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-400 italic">Không có dữ liệu thực đơn tiệc sắp tới.</td></tr>`; 
+				return; 
+			}
+			
+			upcomingMenus.forEach(menu => {
+				const tr = document.createElement("tr");
+				const computedLunar = getLunarDateString(menu.date);
+				tr.innerHTML = `
+					<td class="p-3.5 text-center">
+						<input type="checkbox" value="${menu.id}" class="calc-party-checkbox scale-125 accent-amber-600 cursor-pointer">
+					</td>
+					
+					<td class="p-3.5 py-3 text-slate-950">
+						<div class="font-black text-sm text-slate-900">${menu.customer} <span class="text-[11px] font-normal text-slate-400 ml-1">(ĐT: ${menu.phone})</span></div>
+						
+						<div class="text-[11px] text-slate-600 font-bold mt-1 flex flex-wrap items-center gap-1.5">
+							<span class="text-orange-600"><i class="fa-solid fa-calendar-day"></i> D: ${menu.date}</span>
+							<span class="text-slate-300">|</span>
+							<span class="text-[12px] text-purple-700 font-black"><i class="fa-solid fa-moon"></i> Â: ${computedLunar}</span>
+							<span class="text-slate-300">|</span>
+							<span class="bg-amber-50 border border-amber-200 text-amber-800 px-1.5 py-0.2 rounded font-bold uppercase text-[10px]">${menu.type}</span>
+						</div>
+					</td>
+					
+					<td class="p-3.5 text-center">
+						<input type="number" min="1" value="10" id="tables-for-menu-${menu.id}" class="w-full max-w-24 bg-slate-50 border border-slate-200 rounded-lg text-center font-black focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+					</td>
+				`;
+				tbody.appendChild(tr);
+			});
+		}
 
         function calculateIngredients() {
             const checkboxes = document.querySelectorAll(".calc-party-checkbox:checked");
