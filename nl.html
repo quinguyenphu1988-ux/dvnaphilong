@@ -107,6 +107,7 @@
     <header class="glass-header border-b border-white/40 p-4 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3.5">
+                <img src="https://kslsewlljxkwcgceqxcf.supabase.co/storage/v1/object/public/dish_images/logo.png" alt="Logo" class="h-12 w-auto rounded-full object-cover border-2 border-amber-200 shadow-sm">
                 <div>
                     <h1 class="text-2xl font-black tracking-tight bg-gradient-to-r from-amber-600 to-orange-600 bg-clip-text text-transparent">DVNA PHI LONG</h1>
                     <p class="text-xs font-semibold text-slate-500 tracking-wide uppercase">Hệ Thống Quản Lý Thực Đơn (Đám Mây Supabase)</p>
@@ -201,6 +202,27 @@
                         <button onclick="resetDishForm()" class="bg-slate-100 text-slate-600 font-bold text-xs px-3 py-3 rounded-xl cursor-pointer hover:bg-slate-200"><i class="fa-solid fa-rotate-left"></i></button>
                         <button id="btn-save-dish" onclick="addDish()" class="flex-1 bg-amber-600 text-white font-bold text-sm py-3 rounded-xl shadow-sm cursor-pointer hover:bg-amber-700"><i class="fa-solid fa-circle-check"></i> Lưu Cấu Trúc Món</button>
                     </div>
+
+                    <div class="mt-4 border-t border-slate-200 pt-4 space-y-2.5">
+                        <div class="flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-excel text-emerald-600 text-sm"></i>
+                            <h3 class="text-xs font-black text-slate-900 uppercase tracking-wide">Nhập từ file Excel</h3>
+                        </div>
+                        <div class="bg-emerald-50/70 rounded-xl p-3 border border-emerald-100/80">
+                            <p class="text-[10px] text-emerald-800 font-medium mb-2 leading-relaxed">
+                                * Định dạng cột bắt buộc: <span class="font-bold text-emerald-700">TenMon, TenNguyenLieu, SoLuong, DonVi, Loai</span>
+                            </p>
+                            <input type="file" id="excel-import-file" accept=".xlsx, .xls" class="w-full text-[11px] mb-2 file:mr-2 file:py-1 file:px-2.5 file:rounded-lg file:border-0 file:text-[11px] file:font-bold file:bg-emerald-600 file:text-white hover:file:bg-emerald-700 cursor-pointer">
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="importDishesFromExcel('update')" class="bg-white text-emerald-700 border border-emerald-200 font-bold text-[11px] py-1.5 rounded-lg cursor-pointer hover:bg-emerald-100/50 shadow-sm transition-colors">
+                                    Thêm NL món cũ
+                                </button>
+                                <button onclick="importDishesFromExcel('new')" class="bg-emerald-600 text-white font-bold text-[11px] py-1.5 rounded-lg cursor-pointer hover:bg-emerald-700 shadow-sm transition-colors">
+                                    Thêm món mới
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="lg:col-span-2 space-y-4">
@@ -241,10 +263,13 @@
                             <input type="text" id="menu-customer" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-medium">
                         </div>
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Số điện thoại *</label>
-                            <input type="text" id="menu-phone" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-medium">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Số điện thoại</label>
+                            <input type="text" id="menu-phone" placeholder="Có thể để trống..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-medium">
                         </div>
-                        
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Địa chỉ tiệc</label>
+                            <input type="text" id="menu-address" placeholder="Ví dụ: Vĩnh Nhuận..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-medium">
+                        </div>
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-500 mb-1">Loại tiệc</label>
@@ -255,10 +280,6 @@
                                     <option value="Tân gia">Tân gia</option>
                                     <option value="Thôi nôi">Thôi nôi</option>
                                     <option value="Đầy tháng">Đầy tháng</option>
-                                    <option value="Sinh nhật">Sinh nhật</option>
-                                    <option value="Đám giỗ">Đám giỗ</option>
-                                    <option value="Liên hoan">Liên hoan</option>
-                                    <option value="Mừng thọ">Mừng thọ</option>
                                     <option value="Hội thảo">Hội thảo</option>
                                     <option value="Tất niên">Tất niên</option>
                                     <option value="Tổng kết">Tổng kết</option>
@@ -266,27 +287,21 @@
                                 </select>
                             </div>
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-500 mb-1">Số bàn *</label>
-                                <input type="number" id="menu-tables" min="1" value="10" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-600">
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1">Ngày Dương Lịch *</label>
+                                <input type="date" id="menu-date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-600">
                             </div>
-                        </div>
-
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Địa chỉ tổ chức *</label>
-                            <input type="text" id="menu-address" placeholder="Ví dụ: Thanh Bình, Đồng Tháp..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-medium">
                         </div>
 
                         <div class="grid grid-cols-2 gap-3">
                             <div>
-                                <label class="block text-[11px] font-bold text-slate-500 mb-1">Ngày Dương Lịch *</label>
-                                <input type="date" id="menu-date" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-600">
-                            </div>
-                            <div>
-                                <label class="block text-[11px] font-bold text-slate-500 mb-1">Ngày Âm Lịch (Preview)</label>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1">Ngày Âm Lịch</label>
                                 <input type="text" id="menu-lunar-date" placeholder="Tự động tính..." disabled class="w-full bg-slate-100 border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-500 transition-colors duration-300">
                             </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1">Số bàn (Mặc định: 0)</label>
+                                <input type="number" id="menu-tables" value="0" min="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-600">
+                            </div>
                         </div>
-
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 mb-1">Ghi chú phòng tiệc</label>
                             <input type="text" id="menu-note" placeholder="Ví dụ: Ít cay..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-600">
@@ -495,7 +510,7 @@
                     else if (groupVal === 'cá') matchGroup = name.includes('cá');
                     else if (groupVal === 'lẩu') matchGroup = name.includes('lẩu');
                     else if (groupVal === 'cơm') matchGroup = name.includes('cơm') || name.includes('chiên') || name.includes('xôi');
-                    else if (groupVal === 'tráng miệng') matchGroup = name.includes('tráng miệng') || name.includes('chè') || name.includes('rau câu') || name.includes('sữa chua') || name.includes('tráng miệng') || name.includes('tàu hủ');
+                    else if (groupVal === 'tráng miệng') matchGroup = name.includes('tráng miệng') || name.includes('chè') || name.includes('rau câu') || name.includes('trái cây');
                     else matchGroup = name.includes(groupVal);
                 }
                 return matchSearch && matchGroup;
@@ -784,60 +799,45 @@
             renderMenuDishSelector();
         }
 
-        let currentEditingMenuId = null;
-
         async function saveMenu() {
-			const customer = document.getElementById("menu-customer").value.trim();
-			const phone = document.getElementById("menu-phone").value.trim();
-			const date = document.getElementById("menu-date").value;
-			const type = document.getElementById("menu-type").value;
-			const note = document.getElementById("menu-note").value.trim();
-			const tables = parseInt(document.getElementById("menu-tables").value) || 10;
-			const address = document.getElementById("menu-address").value.trim();
-			
-			if (!customer || !phone || !date || !address) { alert("Vui lòng nhập đầy đủ thông tin tiệc và địa chỉ!"); return; }
-			if (selectedDishIdsInMenuForm.length === 0) { alert("Vui lòng chọn món ăn cho thực đơn!"); return; }
-			
-			const menuData = { customer, phone, date, type, note, dishIds: selectedDishIdsInMenuForm, tables, address };
-			
-			try {
-				if (currentEditingMenuId) {
-					const { error } = await _supabase.from('menus').update(menuData).eq('id', currentEditingMenuId);
-					if (error) throw error;
-				} else {
-					const { error } = await _supabase.from('menus').insert([menuData]);
-					if (error) throw error;
-				}
-				
-				resetMenuForm();
-				await loadAllCloudData();
-				checkNearPartyAlerts();
-				alert("Lưu lịch đặt tiệc thành công!");
-			} catch (err) {
-				console.error("Lỗi Supabase:", err);
-				alert("Lỗi khi lưu vào CSDL: " + err.message);
-			}
-		}
+            const customer = document.getElementById("menu-customer").value.trim();
+            const phone = document.getElementById("menu-phone").value.trim();
+            const address = document.getElementById("menu-address").value.trim();
+            const date = document.getElementById("menu-date").value;
+            const type = document.getElementById("menu-type").value;
+            const note = document.getElementById("menu-note").value.trim();
+            const tables = parseInt(document.getElementById("menu-tables").value) || 0;
+            
+            if (!customer || !date) { alert("Vui lòng nhập Tên khách hàng và Ngày tiệc!"); return; }
+            if (selectedDishIdsInMenuForm.length === 0) { alert("Vui lòng chọn món ăn cho thực đơn!"); return; }
+            
+            const menuData = { customer, phone, address, date, type, note, dishIds: selectedDishIdsInMenuForm, tables };
+            
+            if (currentEditingMenuId) {
+                const existingMenu = menusList.find(m => m.id === currentEditingMenuId);
+                menuData.status = existingMenu ? existingMenu.status : 'pending';
+                await _supabase.from('menus').update(menuData).eq('id', currentEditingMenuId);
+            } else {
+                menuData.status = 'pending';
+                await _supabase.from('menus').insert([menuData]);
+            }
+            resetMenuForm();
+            await loadAllCloudData();
+            checkNearPartyAlerts();
+        }
 
         function renderMenus() {
             const container = document.getElementById("menus-container"); 
             container.innerHTML = "";
             
-            const today = new Date(); 
-            today.setHours(0,0,0,0);
-
-            const upcomingMenus = menusList.filter(menu => {
-                const partyDate = new Date(menu.date); 
-                partyDate.setHours(0,0,0,0);
-                return partyDate.getTime() >= today.getTime();
-            });
-
-            if(upcomingMenus.length === 0) {
-                container.innerHTML = `<div class="bg-white border border-slate-200 p-8 rounded-2xl text-center text-xs text-slate-400 italic">Chưa có lịch đặt tiệc nào sắp tới trên đám mây.</div>`;
+            const activeMenus = menusList.filter(m => m.status !== 'completed');
+            
+            if(activeMenus.length === 0) {
+                container.innerHTML = `<div class="bg-white border border-slate-200 p-8 rounded-2xl text-center text-xs text-slate-400 italic">Chưa có lịch đặt tiệc nào đang chờ.</div>`;
                 return;
             }
-            
-            upcomingMenus.forEach(menu => {
+            const today = new Date(); today.setHours(0,0,0,0);
+            activeMenus.forEach(menu => {
                 let dishListHtml = "";
                 menu.dishIds?.forEach(id => {
                     const dish = dishesList.find(d => d.id === id);
@@ -861,42 +861,48 @@
                             <span class="text-[10px] bg-amber-600 text-white font-black px-2 py-0.5 rounded-md uppercase">${menu.type}</span>
                             <h4 class="font-black text-sm text-slate-900">${menu.customer}</h4>
                         </div>
-                        <p class="text-xs font-medium text-slate-600"><i class="fa-solid fa-phone mr-1"></i> ${menu.phone}</p>
-                        <p class="text-xs font-medium text-slate-600"><i class="fa-solid fa-layer-group mr-1"></i> Quy mô: <b class="text-amber-700">${menu.tables || 10} bàn</b></p>
-                        <p class="text-xs font-medium text-slate-600"><i class="fa-solid fa-location-dot mr-1"></i> ĐC: ${menu.address || "Chưa cập nhật"}</p>
-                        <div class="text-xs font-bold mt-1">
-                            <div class="text-orange-600"><i class="fa-solid fa-calendar-day mr-1"></i> ${menu.date}</div>
-                            <div class="text-[11px] text-purple-700 font-black mt-1"><i class="fa-solid fa-moon mr-1"></i> Âm: ${computedLunar}</div>
+                        <p class="text-[11px] font-semibold text-slate-600 mt-1"><i class="fa-solid fa-phone w-3 text-center mr-1 opacity-70"></i> ${menu.phone || 'Trống'}</p>
+                        <p class="text-[11px] font-semibold text-slate-600 mt-0.5"><i class="fa-solid fa-users w-3 text-center mr-1 opacity-70"></i> Quy mô: ${menu.tables || 0} bàn</p>
+                        <p class="text-[11px] font-semibold text-slate-600 mt-0.5"><i class="fa-solid fa-location-dot w-3 text-center mr-1 opacity-70"></i> ĐC: ${menu.address || 'Chưa cập nhật'}</p>
+                        <div class="text-xs font-bold mt-2 space-y-1">
+                            <div class="text-orange-600"><i class="fa-solid fa-calendar-day w-3 text-center mr-1"></i> ${menu.date}</div>
+                            <div class="text-[11px] text-purple-700 font-black"><i class="fa-solid fa-moon w-3 text-center mr-1"></i> Âm: ${computedLunar}</div>
                         </div>
                     </div>
-                    <div class="bg-white p-3.5 rounded-xl border border-slate-100 h-fit">
-                        <ul class="space-y-1">${dishListHtml}</ul>
-                        ${menu.note ? `<div class="mt-2 pt-2 border-t border-slate-100 text-[11px] text-slate-500 italic">Lưu ý: ${menu.note}</div>` : ''}
+                    <div class="bg-white p-3.5 rounded-xl border border-slate-100 h-fit flex flex-col">
+                        <ul class="space-y-1 mb-auto">${dishListHtml}</ul>
+                        ${menu.note ? `<div class="mt-3 pt-2 border-t border-slate-100 text-[10px] italic text-slate-500"><span class="font-semibold text-slate-600">Lưu ý:</span> ${menu.note}</div>` : ''}
                     </div>
-                    <div class="flex justify-end items-center gap-6 pt-3 border-t border-slate-100 md:border-t-0 md:pt-0 md:flex-col md:justify-center md:gap-3">
-                        <button onclick="editMenu(${menu.id})" class="flex items-center gap-2 text-sm font-bold text-blue-600 bg-blue-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-blue-100">
-                            <i class="fa-solid fa-user-pen"></i> Sửa
+                    <div class="flex justify-end items-center gap-6 pt-3 border-t border-slate-100 md:border-t-0 md:pt-0 md:flex-col md:justify-center md:gap-2">
+                        <button onclick="markMenuCompleted(${menu.id})" class="w-full flex items-center justify-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-emerald-100 border border-emerald-200">
+                            <i class="fa-solid fa-check-double"></i> Đã Xong
                         </button>
-                        <button onclick="removeMenu(${menu.id})" class="flex items-center gap-2 text-sm font-bold text-rose-600 bg-rose-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-rose-100">
-                            <i class="fa-solid fa-trash"></i> Hủy
-                        </button>
+                        <div class="flex gap-2 w-full">
+                            <button onclick="editMenu(${menu.id})" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold text-blue-600 bg-blue-50 px-2 py-2 rounded-lg cursor-pointer hover:bg-blue-100">
+                                <i class="fa-solid fa-pen"></i> Sửa
+                            </button>
+                            <button onclick="removeMenu(${menu.id})" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold text-rose-600 bg-rose-50 px-2 py-2 rounded-lg cursor-pointer hover:bg-rose-100">
+                                <i class="fa-solid fa-trash"></i> Hủy
+                            </button>
+                        </div>
                     </div>
                 `;
                 container.appendChild(block);
             });
         }
 
+        let currentEditingMenuId = null;
         function editMenu(id) {
             const menu = menusList.find(m => m.id === id); if (!menu) return;
             currentEditingMenuId = menu.id;
             document.getElementById("menu-customer").value = menu.customer;
-            document.getElementById("menu-phone").value = menu.phone;
+            document.getElementById("menu-phone").value = menu.phone || "";
+            document.getElementById("menu-address").value = menu.address || "";
             document.getElementById("menu-date").value = menu.date;
             document.getElementById("menu-lunar-date").value = getLunarDateString(menu.date) + " Âm"; 
             document.getElementById("menu-type").value = menu.type;
             document.getElementById("menu-note").value = menu.note;
-            document.getElementById("menu-tables").value = menu.tables || 10;
-            document.getElementById("menu-address").value = menu.address || "";
+            document.getElementById("menu-tables").value = menu.tables !== undefined ? menu.tables : 0;
             selectedDishIdsInMenuForm = [...menu.dishIds];
             renderSelectedDishesBadges(); window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -908,16 +914,24 @@
                 checkNearPartyAlerts();
             }
         }
+        
+        async function markMenuCompleted(id) {
+            if (confirm("Đánh dấu tiệc này đã hoàn thành? (Tiệc sẽ được ẩn khỏi danh sách chờ)")) {
+                await _supabase.from('menus').update({ status: 'completed' }).eq('id', id);
+                await loadAllCloudData();
+                checkNearPartyAlerts();
+            }
+        }
 
         function resetMenuForm() {
             currentEditingMenuId = null; 
             document.getElementById("menu-customer").value = "";
             document.getElementById("menu-phone").value = ""; 
+            document.getElementById("menu-address").value = ""; 
             document.getElementById("menu-date").value = "";
             document.getElementById("menu-lunar-date").value = ""; 
             document.getElementById("menu-note").value = ""; 
-            document.getElementById("menu-tables").value = "10";
-            document.getElementById("menu-address").value = "";
+            document.getElementById("menu-tables").value = "0"; 
             selectedDishIdsInMenuForm = []; 
             document.getElementById("menu-selected-dishes-badge").innerHTML = "";
         }
@@ -928,7 +942,9 @@
             const today = new Date(); today.setHours(0,0,0,0); 
             let countNearParties = 0;
             
-            menusList.forEach(m => {
+            const activeMenus = menusList.filter(m => m.status !== 'completed');
+            
+            activeMenus.forEach(m => {
                 const partyDate = new Date(m.date); partyDate.setHours(0,0,0,0);
                 const dayDiff = Math.ceil((partyDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
                 
@@ -948,21 +964,14 @@
         function renderCalcPartiesTable() {
             const tbody = document.getElementById("calc-parties-table-body"); tbody.innerHTML = "";
             
-            const today = new Date(); 
-            today.setHours(0,0,0,0);
-
-            const upcomingMenus = menusList.filter(menu => {
-                const partyDate = new Date(menu.date); 
-                partyDate.setHours(0,0,0,0);
-                return partyDate.getTime() >= today.getTime();
-            });
-
-            if (upcomingMenus.length === 0) { 
-                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-400 italic">Không có dữ liệu thực đơn tiệc sắp tới.</td></tr>`; 
+            const activeMenus = menusList.filter(m => m.status !== 'completed');
+            
+            if (activeMenus.length === 0) { 
+                tbody.innerHTML = `<tr><td colspan="3" class="p-6 text-center text-slate-400 italic">Không có dữ liệu thực đơn tiệc chờ.</td></tr>`; 
                 return; 
             }
             
-            upcomingMenus.forEach(menu => {
+            activeMenus.forEach(menu => {
                 const tr = document.createElement("tr");
                 const computedLunar = getLunarDateString(menu.date);
                 tr.innerHTML = `
@@ -971,8 +980,8 @@
                     </td>
                     
                     <td class="p-3.5 py-3 text-slate-950">
-                        <div class="font-black text-sm text-slate-900">${menu.customer} <span class="text-[11px] font-normal text-slate-400 ml-1">(ĐT: ${menu.phone})</span></div>
-                        <div class="text-[11px] text-slate-500 font-medium mb-1"><i class="fa-solid fa-location-dot"></i> ĐC: ${menu.address || "Chưa cập nhật"}</div>
+                        <div class="font-black text-sm text-slate-900">${menu.customer} <span class="text-[11px] font-normal text-slate-400 ml-1">(ĐT: ${menu.phone || 'Trống'})</span></div>
+                        
                         <div class="text-[11px] text-slate-600 font-bold mt-1 flex flex-wrap items-center gap-1.5">
                             <span class="text-orange-600"><i class="fa-solid fa-calendar-day"></i> D: ${menu.date}</span>
                             <span class="text-slate-300">|</span>
@@ -983,7 +992,7 @@
                     </td>
                     
                     <td class="p-3.5 text-center">
-                        <input type="number" min="1" value="${menu.tables || 10}" id="tables-for-menu-${menu.id}" class="w-full max-w-24 bg-slate-50 border border-slate-200 rounded-lg text-center font-black focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+                        <input type="number" min="0" value="${menu.tables !== undefined ? menu.tables : 0}" id="tables-for-menu-${menu.id}" class="w-full max-w-24 bg-slate-50 border border-slate-200 rounded-lg text-center font-black focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
                     </td>
                 `;
                 tbody.appendChild(tr);
