@@ -95,7 +95,7 @@
     <header class="glass-header border-b border-slate-100 p-4 sticky top-0 z-50 shadow-sm">
         <div class="max-w-7xl mx-auto flex flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3.5">
-                <div class="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center text-white font-black text-xl shadow-md border border-amber-400">PL</div>
+                <img src="logo.png" alt="Logo DVNA Phi Long" class="w-12 h-12 object-contain rounded-xl shadow-md">
                 <div>
                     <h1 class="text-2xl sm:text-3xl font-extrabold tracking-tight bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 bg-clip-text text-transparent drop-shadow-sm">DVNA PHI LONG</h1>
                     <p class="text-[11px] font-bold text-amber-600 tracking-wide mt-0.5">Tiệc ngon, trọn niềm vui — ĐT: 0909.05.06.17</p>
@@ -162,8 +162,12 @@
             
             <div class="space-y-4 mb-4">
                 <div>
-                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">MỨC GIÁ BÁO KHÁCH TRỌN GÓI / BÀN</label>
-                    <input type="text" id="ai-target-price" placeholder="VD: 1.500.000" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-black text-rose-600 focus:outline-none focus:border-emerald-500" oninput="formatCurrencyInput(this)">
+                    <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">MỨC GIÁ BÁO KHÁCH / BÀN</label>
+                    <input type="number" id="ai-target-price" placeholder="VD: 1500000" inputmode="numeric" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-black text-rose-600 focus:outline-none focus:border-emerald-500" oninput="updatePricePreview()">
+                    <div id="price-preview" class="hidden mt-2 text-center bg-rose-50 border border-rose-100 rounded-xl py-2 px-3">
+                        <span class="text-[11px] font-bold text-slate-500 uppercase">Số tiền: </span>
+                        <span id="price-preview-text" class="text-base font-black text-rose-600"></span>
+                    </div>
                 </div>
                 <button onclick="runAISuggestion()" class="w-full bg-emerald-600 text-white font-bold py-3.5 rounded-xl shadow-md hover:bg-emerald-700 transition-colors cursor-pointer text-sm uppercase tracking-wide"><i class="fa-solid fa-bolt"></i> Tìm Mâm Tiệc Phù Hợp</button>
             </div>
@@ -188,7 +192,7 @@
             <div id="cart-list-container" class="space-y-1 mb-6 max-h-[40vh] overflow-y-auto pr-2"></div>
             
             <div class="bg-amber-50 p-3 rounded-xl mb-4 flex flex-col items-center border border-amber-100">
-                <span class="text-xs font-bold text-amber-800 uppercase mb-1">TỔNG BÁO GIÁ / BÀN (+20%):</span>
+                <span class="text-xs font-bold text-amber-800 uppercase mb-1">TỔNG BÁO GIÁ / BÀN:</span>
                 <span id="cart-total-price" class="text-xl font-black text-rose-600">0 đ</span>
                 <span class="text-[9px] text-slate-500 italic mt-1 text-center"><i class="fa-solid fa-circle-check text-emerald-500"></i> đã bao gồm rạp, bàn ghế, chén đũa, nước ngọt, suối, khăn lạnh, gas, phục vụ, vận chuyển...</span>
             </div>
@@ -279,12 +283,16 @@
         let globalFixedCostsList = [];
 
         // HÀM FORMAT TIỀN TỆ XÓA LỖI GÕ NHẦM
-        function formatCurrencyInput(input) {
-            let value = input.value.replace(/\D/g, ''); 
-            if (value) {
-                input.value = parseInt(value, 10).toLocaleString('vi-VN');
+        function updatePricePreview() {
+            const input = document.getElementById('ai-target-price');
+            const preview = document.getElementById('price-preview');
+            const previewText = document.getElementById('price-preview-text');
+            const val = parseFloat(input.value) || 0;
+            if (val > 0) {
+                previewText.innerText = val.toLocaleString('vi-VN') + ' đ';
+                preview.classList.remove('hidden');
             } else {
-                input.value = '';
+                preview.classList.add('hidden');
             }
         }
 
@@ -408,7 +416,35 @@
             return selected;
         }
 
-        // TẠO 20 THỰC ĐƠN MẪU (CHỐNG TRÙNG CƠM & TRÁNG MIỆNG)
+        // PHÂN LOẠI MÓN ĂN — dựa vào trường category từ Supabase là chính
+        function classifyDishes(dishArray) {
+            let starters = [], hotpots = [], rices = [], desserts = [], mains = [];
+            dishArray.forEach(d => {
+                const n = d.name.toLowerCase();
+                const c = (d.category || "").toLowerCase().trim();
+
+                // ƯU TIÊN category từ DB trước
+                if (c.includes('tráng miệng')) {
+                    desserts.push(d);
+                } else if (c.includes('lẩu')) {
+                    hotpots.push(d);
+                } else if (c.includes('cơm')) {
+                    rices.push(d);
+                } else if (c.includes('gỏi') || c.includes('súp') || c.includes('đồ nguội') || c.includes('khai vị')) {
+                    starters.push(d);
+                } else {
+                    // Fallback: nhận diện theo tên nếu category không rõ
+                    if (n.includes('rau câu') || n.includes('chè') || n.includes('trái cây') || n.includes('sữa chua') || n.includes('sâm bổ lượng') || n.includes('nhãn nhục')) desserts.push(d);
+                    else if (n.includes('lẩu') || n.includes('cù lao')) hotpots.push(d);
+                    else if (n.includes('cơm') || n.includes('xôi') || n.includes('mì') || n.includes('bún') || n.includes('miến') || n.includes('cháo')) rices.push(d);
+                    else if (n.includes('gỏi') || n.includes('nộm') || n.includes('chả') || n.includes('nem') || n.includes('nguội') || n.includes('khai vị') || n.includes('súp') || n.includes('soup')) starters.push(d);
+                    else mains.push(d);
+                }
+            });
+            return { starters, hotpots, rices, desserts, mains };
+        }
+
+        // TẠO 20 THỰC ĐƠN MẪU — thuật toán riêng, đảm bảo LUÔN có tráng miệng
         function generateSampleMenus() {
             if (!dishesList || dishesList.length === 0) return;
 
@@ -417,19 +453,7 @@
                 return !n.includes("cá lóc hấp bầu") && !n.includes("cá tai tượng") && d.price > 0;
             });
 
-            let starters = [], hotpots = [], rices = [], desserts = [], mains = [];
-            
-            safeDishes.forEach(d => {
-                const n = d.name.toLowerCase();
-                const c = (d.category || "").toLowerCase();
-                // Bắt dính toàn bộ món tráng miệng / tinh bột để tránh lọt vào Món Chính
-                if (n.includes('tráng miệng') || n.includes('rau câu') || n.includes('chè') || n.includes('trái cây') || n.includes('sữa chua') || n.includes('bánh') || n.includes('kem') || n.includes('sâm bổ lượng') || n.includes('nhãn nhục')) desserts.push(d);
-                else if (n.includes('lẩu') || n.includes('cù lao') || c.includes('lẩu')) hotpots.push(d);
-                else if (n.includes('cơm') || n.includes('xôi') || n.includes('mì') || n.includes('bún') || n.includes('miến') || n.includes('cháo') || c.includes('cơm')) rices.push(d);
-                else if (n.includes('gỏi') || n.includes('nộm') || n.includes('chả') || n.includes('nem') || n.includes('nguội') || n.includes('khai vị') || n.includes('súp') || n.includes('soup')) starters.push(d);
-                else mains.push(d); 
-            });
-
+            const { starters, hotpots, rices, desserts, mains } = classifyDishes(safeDishes);
             const preferredStarters = starters.filter(d => d.name.toLowerCase().includes("5 món"));
             const getRandom = (arr, count) => [...arr].sort(() => 0.5 - Math.random()).slice(0, count);
 
@@ -441,31 +465,35 @@
                 let menuDishes = [];
                 let name = prefixes[i % prefixes.length] + " " + suffixes[i % suffixes.length];
 
-                // 1 Khai vị
+                // 1 Khai vị (bắt buộc)
                 if (preferredStarters.length > 0 && i % 2 === 0) menuDishes.push(getRandom(preferredStarters, 1)[0]);
                 else if (starters.length > 0) menuDishes.push(getRandom(starters, 1)[0]);
 
-                // 1 Lẩu
+                // 1 Lẩu (bắt buộc)
                 if (hotpots.length > 0) menuDishes.push(getRandom(hotpots, 1)[0]);
 
-                // 1 Tráng miệng
+                // 1 Tráng miệng (BẮT BUỘC — luôn có)
                 if (desserts.length > 0) menuDishes.push(getRandom(desserts, 1)[0]);
 
-                // Thêm 1 Cơm (Xác suất 50%)
-                let addRice = (rices.length > 0 && i % 2 !== 0); 
+                // 1 Cơm (xác suất 50%)
+                let addRice = (rices.length > 0 && i % 2 !== 0);
                 if (addRice) menuDishes.push(getRandom(rices, 1)[0]);
 
-                // Thêm món chính (Tuyệt đối không trùng loại thịt)
-                let mainCount = addRice ? 2 : 3; 
+                // Món chính (không trùng loại thịt)
+                let mainCount = addRice ? 2 : 3;
                 if (mains.length >= mainCount) {
                     menuDishes = menuDishes.concat(getUniqueDishes(mains, mainCount, menuDishes));
                 }
 
-                // AI TÍNH GIÁ ĐỂ GẮN HẠNG
+                // Kiểm tra lại — nếu vì lý do nào đó tráng miệng bị thiếu thì bổ sung
+                const hasDessert = menuDishes.some(d => (d.category || "").toLowerCase().trim().includes('tráng miệng') || d.name.toLowerCase().includes('rau câu') || d.name.toLowerCase().includes('chè') || d.name.toLowerCase().includes('trái cây') || d.name.toLowerCase().includes('sâm bổ lượng'));
+                if (!hasDessert && desserts.length > 0) menuDishes.push(getRandom(desserts, 1)[0]);
+
+                // Tính giá & gắn hạng
                 let currentFoodPrice = menuDishes.reduce((sum, dish) => sum + (dish.price || 0), 0);
                 let totalPrice = Math.round((currentFoodPrice + globalFixedCostPerTable) * 1.2);
 
-                let tier = "Thực Đơn Tiêu Chuẩn"; // Mặc định dưới 1.900.000
+                let tier = "Thực Đơn Tiêu Chuẩn";
                 if (totalPrice >= 2500000) tier = "Thực Đơn VIP";
                 else if (totalPrice >= 1900000) tier = "Thực Đơn Cao Cấp";
 
@@ -548,10 +576,9 @@
             document.getElementById('ai-result-area').classList.add('hidden');
         }
 
-        // THUẬT TOÁN AI GỢI Ý (ĐẢO NGƯỢC CÔNG THỨC & LIỆU CƠM GẮP MẮM)
+        // THUẬT TOÁN AI GỢI Ý THEO GIÁ (TÁCH RIÊNG — đảo ngược công thức, liệu cơm gắp mắm)
         function runAISuggestion() {
-            const rawTargetVal = document.getElementById('ai-target-price').value.replace(/\D/g, '');
-            const targetPrice = parseFloat(rawTargetVal) || 0;
+            const targetPrice = parseFloat(document.getElementById('ai-target-price').value) || 0;
 
             if (targetPrice <= 0) {
                 alert("Vui lòng nhập Tổng ngân sách mong muốn cho 1 bàn tiệc!");
@@ -559,7 +586,7 @@
             }
 
             // TÌM CHI PHÍ RẠP ĐỂ TRỪ NẾU NGÂN SÁCH QUÁ THẤP
-            let rapCost = 150000; 
+            let rapCost = 150000;
             let rapItem = globalFixedCostsList.find(p => {
                 let n = (p.key || p.name || p.ten_mon || "").toLowerCase();
                 return n.includes('rạp') || n.includes('bàn ghế') || n.includes('chén');
@@ -569,14 +596,12 @@
             let fullFixedCost = globalFixedCostPerTable;
             let reducedFixedCost = fullFixedCost - rapCost;
 
-            // Tính ngân sách CÒN LẠI dùng đi chợ: Food = (Target / 1.2) - Fixed
             let budgetForFood = (targetPrice / 1.2) - fullFixedCost;
             let isRapIncluded = true;
 
             if (budgetForFood < 400000) {
                 isRapIncluded = false;
                 budgetForFood = (targetPrice / 1.2) - reducedFixedCost;
-                
                 if (budgetForFood <= 0) {
                     alert("Ngân sách quá thấp, không đủ để lên bất kỳ món ăn nào dù đã trừ chi phí rạp/bàn ghế!");
                     return;
@@ -588,53 +613,51 @@
                 return !n.includes("cá lóc hấp bầu") && !n.includes("cá tai tượng") && (d.price > 0);
             });
 
-            let starters = [], hotpots = [], rices = [], desserts = [], mains = [];
-            availableDishes.forEach(d => {
-                const n = d.name.toLowerCase();
-                const c = (d.category || "").toLowerCase();
-                if (n.includes('tráng miệng') || n.includes('rau câu') || n.includes('chè') || n.includes('trái cây') || n.includes('sữa chua') || n.includes('bánh') || n.includes('kem') || n.includes('sâm bổ lượng') || n.includes('nhãn nhục')) desserts.push(d);
-                else if (n.includes('lẩu') || n.includes('cù lao') || c.includes('lẩu')) hotpots.push(d);
-                else if (n.includes('cơm') || n.includes('xôi') || n.includes('mì') || n.includes('bún') || n.includes('miến') || n.includes('cháo') || c.includes('cơm')) rices.push(d);
-                else if (n.includes('gỏi') || n.includes('nộm') || n.includes('chả') || n.includes('nem') || n.includes('nguội') || n.includes('khai vị') || n.includes('súp') || n.includes('soup')) starters.push(d);
-                else mains.push(d); 
-            });
+            // Dùng hàm classifyDishes riêng — KHÔNG dùng chung với generateSampleMenus
+            const aiCategories = classifyDishes(availableDishes);
+            const aiStarters = aiCategories.starters;
+            const aiHotpots = aiCategories.hotpots;
+            const aiRices = aiCategories.rices;
+            const aiDesserts = aiCategories.desserts;
+            const aiMains = aiCategories.mains;
 
-            let preferredStarters = starters.filter(d => d.name.toLowerCase().includes('5 món'));
+            let aiPreferredStarters = aiStarters.filter(d => d.name.toLowerCase().includes('5 món'));
             const getRandom = (arr, n) => [...arr].sort(() => 0.5 - Math.random()).slice(0, n);
-            
+
             let bestMenu = [];
             let closestPriceDiff = Infinity;
             let bestFoodPrice = 0;
 
-            // AI CHẠY THỬ 500 KỊCH BẢN
+            // CHẠY THỬ 500 KỊCH BẢN — LUÔN có tráng miệng
             for (let i = 0; i < 500; i++) {
                 let tempMenu = [];
                 let currentFoodPrice = 0;
-                
-                // Luôn đảm bảo: 1 Khai vị, 1 Lẩu, 1 Món chính
-                let st = getRandom(preferredStarters.length > 0 && budgetForFood > 800000 ? preferredStarters : starters, 1)[0];
+
+                // Bắt buộc: 1 Tráng miệng (đặt trước để đảm bảo ngân sách)
+                let de = getRandom(aiDesserts, 1)[0];
+                if (de) { tempMenu.push(de); currentFoodPrice += de.price; }
+
+                // Bắt buộc: 1 Khai vị
+                let st = getRandom(aiPreferredStarters.length > 0 && budgetForFood > 800000 ? aiPreferredStarters : aiStarters, 1)[0];
                 if (st) { tempMenu.push(st); currentFoodPrice += st.price; }
 
-                let hp = getRandom(hotpots, 1)[0];
+                // Bắt buộc: 1 Lẩu
+                let hp = getRandom(aiHotpots, 1)[0];
                 if (hp) { tempMenu.push(hp); currentFoodPrice += hp.price; }
 
-                let m1 = getRandom(mains, 1)[0];
+                // Bắt buộc: 1 Món chính
+                let m1 = getRandom(aiMains, 1)[0];
                 if (m1) { tempMenu.push(m1); currentFoodPrice += m1.price; }
 
-                // LIỆU CƠM GẮP MẮM: Nếu tiền còn dư nhiều mới nhét thêm Tráng miệng và Cơm
-                if (budgetForFood - currentFoodPrice > 100000) {
-                    let de = getRandom(desserts, 1)[0];
-                    if (de) { tempMenu.push(de); currentFoodPrice += de.price; }
-                }
-
+                // Tùy ngân sách: thêm Cơm
                 if (budgetForFood - currentFoodPrice > 150000) {
-                    let ri = getRandom(rices, 1)[0];
+                    let ri = getRandom(aiRices, 1)[0];
                     if (ri) { tempMenu.push(ri); currentFoodPrice += ri.price; }
                 }
 
-                // Dư dả thêm món chính nữa
-                if (budgetForFood - currentFoodPrice > 200000 && mains.length > 1) {
-                    let extraMains = getUniqueDishes(mains.filter(m => m.id !== (m1 ? m1.id : null)), 1, tempMenu);
+                // Tùy ngân sách: thêm món chính thứ 2
+                if (budgetForFood - currentFoodPrice > 200000 && aiMains.length > 1) {
+                    let extraMains = getUniqueDishes(aiMains.filter(m => m.id !== (m1 ? m1.id : null)), 1, tempMenu);
                     if (extraMains.length > 0) {
                         tempMenu.push(extraMains[0]);
                         currentFoodPrice += extraMains[0].price;
@@ -921,7 +944,27 @@
                         ? 'bg-gradient-to-r from-amber-600 to-orange-600 text-white border-transparent transform scale-105' 
                         : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50'
                     }`;
-                    btn.innerText = cat;
+                    const catIcons = {
+                        'tất cả': '🍽️',
+                        'đồ nguội': '🥗',
+                        'món gỏi': '🥙',
+                        'món súp': '🍲',
+                        'món bò': '🥩',
+                        'món tôm': '🦐',
+                        'món cá': '🐟',
+                        'heo': '🍖',
+                        'vịt': '🦆',
+                        'món gà': '🍗',
+                        'món lẩu': '🫕',
+                        'món cơm': '🍚',
+                        'tráng miệng': '🍮',
+                    };
+                    const catLower = cat.toLowerCase();
+                    let icon = '';
+                    for (const [key, val] of Object.entries(catIcons)) {
+                        if (catLower.includes(key)) { icon = val + ' '; break; }
+                    }
+                    btn.innerHTML = icon + cat;
                     btn.onclick = () => { activeDishCategory = cat; renderDishes(listToRender); };
                     filterContainer.appendChild(btn);
                 });
