@@ -148,6 +148,25 @@
                         </div>
                         
                         <div>
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Loại Món (Danh mục)</label>
+                            <select id="dish-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-medium">
+                                <option value="Đồ Nguội">Đồ Nguội</option>
+                                <option value="Món Phụ Đồ Nguội">Món Phụ Đồ Nguội</option>
+                                <option value="Món Gỏi">Món Gỏi</option>
+                                <option value="Món Súp">Món Súp</option>
+                                <option value="Món Bò">Món Bò</option>
+                                <option value="Món Tôm và Mực">Món Tôm và Mực</option>
+                                <option value="Món Cá">Món Cá</option>
+                                <option value="Heo và Vịt">Heo và Vịt</option>
+                                <option value="Món Gà">Món Gà</option>
+                                <option value="Món Lẩu">Món Lẩu</option>
+                                <option value="Món Cơm">Món Cơm</option>
+                                <option value="Tráng Miệng">Tráng Miệng</option>
+                                <option value="Khác">Khác</option>
+                            </select>
+                        </div>
+                        
+                        <div>
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Hình ảnh món ăn</label>
                             <input type="file" id="dish-image" accept="image/*" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-medium">
                         </div>
@@ -236,6 +255,7 @@
                                 <option value="">Tất cả nhóm</option>
                                 <option value="gỏi">Gỏi / Nộm</option>
                                 <option value="đồ nguội">Đồ nguội / Chả</option>
+                                <option value="món phụ đồ nguội">Món phụ đồ nguội</option>
                                 <option value="soup">Soup / Súp</option>
                                 <option value="bò">Bò</option>
                                 <option value="gà">Gà</option>
@@ -509,19 +529,36 @@
                 const matchSearch = name.includes(searchVal);
                 let matchGroup = true;
                 if (groupVal) {
-                    if (groupVal === 'gỏi') matchGroup = name.includes('gỏi') || name.includes('nộm');
-                    else if (groupVal === 'đồ nguội') matchGroup = name.includes('nguội') || name.includes('chả') || name.includes('nem');
-                    else if (groupVal === 'soup') matchGroup = name.includes('soup') || name.includes('súp');
-                    else if (groupVal === 'bò') matchGroup = name.includes('bò') || name.includes('bê');
-                    else if (groupVal === 'gà') matchGroup = name.includes('gà');
-                    else if (groupVal === 'heo') matchGroup = name.includes('heo') || name.includes('lợn') || name.includes('sườn');
-                    else if (groupVal === 'tôm') matchGroup = name.includes('tôm');
-                    else if (groupVal === 'mực') matchGroup = name.includes('mực');
-                    else if (groupVal === 'cá') matchGroup = name.includes('cá');
-                    else if (groupVal === 'lẩu') matchGroup = name.includes('lẩu');
-                    else if (groupVal === 'cơm') matchGroup = name.includes('cơm') || name.includes('chiên') || name.includes('xôi');
-                    else if (groupVal === 'tráng miệng') matchGroup = name.includes('tráng miệng') || name.includes('chè') || name.includes('rau câu') || name.includes('trái cây');
-                    else matchGroup = name.includes(groupVal);
+                    const dishCat = (dish.category || "").toLowerCase();
+                    if (groupVal === 'món phụ đồ nguội') {
+                        matchGroup = dishCat === 'món phụ đồ nguội';
+                    } else if (groupVal === 'gỏi') {
+                        matchGroup = name.includes('gỏi') || name.includes('nộm') || dishCat === 'món gỏi';
+                    } else if (groupVal === 'đồ nguội') {
+                        matchGroup = name.includes('nguội') || name.includes('chả') || name.includes('nem') || dishCat === 'đồ nguội';
+                    } else if (groupVal === 'soup') {
+                        matchGroup = name.includes('soup') || name.includes('súp') || dishCat === 'món súp';
+                    } else if (groupVal === 'bò') {
+                        matchGroup = name.includes('bò') || name.includes('bê') || dishCat === 'món bò';
+                    } else if (groupVal === 'gà') {
+                        matchGroup = name.includes('gà') || dishCat === 'món gà';
+                    } else if (groupVal === 'heo') {
+                        matchGroup = name.includes('heo') || name.includes('lợn') || name.includes('sườn') || dishCat === 'heo và vịt';
+                    } else if (groupVal === 'tôm') {
+                        matchGroup = name.includes('tôm') || dishCat === 'món tôm và mực';
+                    } else if (groupVal === 'mực') {
+                        matchGroup = name.includes('mực') || dishCat === 'món tôm và mực';
+                    } else if (groupVal === 'cá') {
+                        matchGroup = name.includes('cá') || dishCat === 'món cá';
+                    } else if (groupVal === 'lẩu') {
+                        matchGroup = name.includes('lẩu') || dishCat === 'món lẩu';
+                    } else if (groupVal === 'cơm') {
+                        matchGroup = name.includes('cơm') || name.includes('chiên') || name.includes('xôi') || dishCat === 'món cơm';
+                    } else if (groupVal === 'tráng miệng') {
+                        matchGroup = name.includes('tráng miệng') || name.includes('chè') || name.includes('rau câu') || name.includes('trái cây') || dishCat === 'tráng miệng';
+                    } else {
+                        matchGroup = name.includes(groupVal) || dishCat.includes(groupVal);
+                    }
                 }
                 return matchSearch && matchGroup;
             });
@@ -553,6 +590,8 @@
                 } else {
                     imageHtml = `<div class="w-24 h-24 bg-slate-50 flex items-center justify-center rounded-xl border border-slate-200 text-slate-300 shrink-0 shadow-sm"><i class="fa-solid fa-image text-2xl"></i></div>`;
                 }
+                
+                const categoryBadge = dish.category ? `<span class="text-[10px] bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold px-2 py-0.5 rounded-md mt-1 shrink-0 uppercase tracking-wide inline-block">${dish.category}</span>` : '';
 
                 const card = document.createElement("div");
                 card.className = "bg-white rounded-2xl border border-slate-200 p-4.5 flex flex-col justify-between hover:border-amber-400 transition-all shadow-sm";
@@ -561,7 +600,10 @@
                         ${imageHtml}
                         <div class="flex-1 space-y-2 w-full">
                             <div class="flex justify-between items-start gap-2">
-                                <h4 class="font-black text-base text-slate-900 leading-tight">${dish.name}</h4>
+                                <div>
+                                    <h4 class="font-black text-base text-slate-900 leading-tight">${dish.name}</h4>
+                                    ${categoryBadge}
+                                </div>
                                 <span class="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-1 rounded-md shrink-0">Mẫu 10 người</span>
                             </div>
                             <div class="flex flex-wrap gap-2">${ingHtml}</div>
@@ -604,6 +646,7 @@
 
         async function addDish() {
             const name = document.getElementById("dish-name").value.trim();
+            const category = document.getElementById("dish-category").value;
             const fileInput = document.getElementById("dish-image");
             const file = fileInput.files[0];
 
@@ -643,6 +686,7 @@
 
                 const dishData = { 
                     name: name, 
+                    category: category,
                     ingredients: temporaryIngredients, 
                     image_url: finalImageUrl, 
                     timestamp: Date.now() 
@@ -671,6 +715,7 @@
         function resetDishForm() {
             currentEditingDishId = null; 
             document.getElementById("dish-name").value = "";
+            document.getElementById("dish-category").value = "Khác";
             document.getElementById("dish-image").value = ""; 
             temporaryIngredients = []; 
             document.getElementById("temp-ing-list").innerHTML = "";
@@ -680,8 +725,13 @@
             const dish = dishesList.find(d => d.id === id); if (!dish) return;
             currentEditingDishId = dish.id;
             document.getElementById("dish-name").value = dish.name;
+            if (dish.category) {
+                document.getElementById("dish-category").value = dish.category;
+            } else {
+                document.getElementById("dish-category").value = "Khác";
+            }
             document.getElementById("dish-image").value = ""; 
-            temporaryIngredients = [...dish.ingredients];
+            temporaryIngredients = [...(dish.ingredients || [])];
             renderTempIngredients(); document.getElementById("dish-name").focus();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -711,13 +761,17 @@
 
             dishesList.forEach(dish => {
                 const name = dish.name.toLowerCase();
-                if (name.includes('gỏi') || name.includes('nộm') || name.includes('chả') || name.includes('nem') || name.includes('nguội') || name.includes('soup') || name.includes('súp')) {
+                const cat = (dish.category || "").toLowerCase();
+                if (cat === "món phụ đồ nguội") {
+                    return; 
+                }
+                if (name.includes('gỏi') || name.includes('nộm') || name.includes('chả') || name.includes('nem') || name.includes('nguội') || name.includes('soup') || name.includes('súp') || cat.includes('đồ nguội') || cat.includes('gỏi') || cat.includes('súp')) {
                     groups["Khai Vị / Đồ Nguội / Soup"].push(dish);
-                } else if (name.includes('lẩu') || name.includes('cù lao')) {
+                } else if (name.includes('lẩu') || name.includes('cù lao') || cat.includes('lẩu')) {
                     groups["Món Lẩu"].push(dish);
-                } else if (name.includes('heo') || name.includes('bò') || name.includes('gà') || name.includes('vịt') || name.includes('tôm') || name.includes('cá') || name.includes('mực') || name.includes('cua') || name.includes('ghẹ')) {
+                } else if (name.includes('heo') || name.includes('bò') || name.includes('gà') || name.includes('vịt') || name.includes('tôm') || name.includes('cá') || name.includes('mực') || name.includes('cua') || name.includes('ghẹ') || cat.includes('bò') || cat.includes('gà') || cat.includes('heo') || cat.includes('tôm') || cat.includes('mực') || cat.includes('cá')) {
                     groups["Món Chính (Thịt, Hải Sản)"].push(dish);
-                } else if (name.includes('cơm') || name.includes('xôi') || name.includes('chè') || name.includes('rau câu') || name.includes('sữa chua') || name.includes('tráng miệng') || name.includes('tàu hủ')) {
+                } else if (name.includes('cơm') || name.includes('xôi') || name.includes('chè') || name.includes('rau câu') || name.includes('sữa chua') || name.includes('tráng miệng') || name.includes('tàu hủ') || cat.includes('cơm') || cat.includes('tráng miệng')) {
                     groups["Cơm / Tráng Miệng"].push(dish);
                 } else {
                     groups["Khác"].push(dish);
