@@ -304,9 +304,17 @@
                                 <input type="number" id="menu-tables" value="0" min="0" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-600">
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-[11px] font-bold text-slate-500 mb-1">Ghi chú phòng tiệc</label>
-                            <input type="text" id="menu-note" placeholder="Ví dụ: Ít cay..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-600">
+                        
+                        <!-- CẬP NHẬT: Thêm trường giờ đãi tiệc và chia layout -->
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1">Giờ đãi tiệc</label>
+                                <input type="time" id="menu-timeparty" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-600">
+                            </div>
+                            <div>
+                                <label class="block text-[11px] font-bold text-slate-500 mb-1">Ghi chú phòng tiệc</label>
+                                <input type="text" id="menu-note" placeholder="Ví dụ: Ít cay..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-2 py-1.5 text-xs font-semibold text-slate-600">
+                            </div>
                         </div>
 
                     </div>
@@ -520,7 +528,6 @@
             renderDishes(filtered);
         }
 
-        // HÀM MỚI: Hiển thị hình ảnh thu nhỏ và nguyên liệu nổi bật
         function renderDishes(listToRender = dishesList) {
             const container = document.getElementById("dishes-container");
             document.getElementById("dish-count").innerText = `${listToRender.length} món`;
@@ -812,12 +819,14 @@
             const date = document.getElementById("menu-date").value;
             const type = document.getElementById("menu-type").value;
             const note = document.getElementById("menu-note").value.trim();
+            const timeparty = document.getElementById("menu-timeparty").value; // CẬP NHẬT: Lấy giờ
             const tables = parseInt(document.getElementById("menu-tables").value) || 0;
             
             if (!customer || !date) { alert("Vui lòng nhập Tên khách hàng và Ngày tiệc!"); return; }
             if (selectedDishIdsInMenuForm.length === 0) { alert("Vui lòng chọn món ăn cho thực đơn!"); return; }
             
-            const menuData = { customer, phone, address, date, type, note, dishIds: selectedDishIdsInMenuForm, tables };
+            // CẬP NHẬT: Thêm timeparty vào menuData
+            const menuData = { customer, phone, address, date, type, note, dishIds: selectedDishIdsInMenuForm, tables, timeparty };
             
             if (currentEditingMenuId) {
                 const existingMenu = menusList.find(m => m.id === currentEditingMenuId);
@@ -858,6 +867,7 @@
                 let borderClass = isNear ? "border-rose-400 shadow-md shadow-rose-100 bg-rose-50/30" : "border-slate-200 bg-white hover:border-amber-300";
                 let alertBadge = isNear ? `<div class="inline-block bg-rose-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg mb-3 animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> SẮP DIỄN RA</div>` : "";
 
+                // CẬP NHẬT: Hiển thị thêm giờ
                 const block = document.createElement("div");
                 block.className = `${borderClass} border rounded-2xl p-4.5 grid grid-cols-1 md:grid-cols-3 gap-4 transition-all`;
                 block.innerHTML = `
@@ -871,6 +881,7 @@
                         <p class="text-[11px] font-semibold text-slate-600 mt-0.5"><i class="fa-solid fa-users w-3 text-center mr-1 opacity-70"></i> Quy mô: ${menu.tables || 0} bàn</p>
                         <p class="text-[11px] font-semibold text-slate-600 mt-0.5"><i class="fa-solid fa-location-dot w-3 text-center mr-1 opacity-70"></i> ĐC: ${menu.address || 'Chưa cập nhật'}</p>
                         <div class="text-xs font-bold mt-2 space-y-1">
+                            <div class="text-blue-600"><i class="fa-solid fa-clock w-3 text-center mr-1"></i> Giờ: ${menu.timeparty || 'Chưa cập nhật'}</div>
                             <div class="text-orange-600"><i class="fa-solid fa-calendar-day w-3 text-center mr-1"></i> ${menu.date}</div>
                             <div class="text-[11px] text-purple-700 font-black"><i class="fa-solid fa-moon w-3 text-center mr-1"></i> Âm: ${computedLunar}</div>
                         </div>
@@ -906,6 +917,7 @@
             document.getElementById("menu-address").value = menu.address || "";
             document.getElementById("menu-date").value = menu.date;
             document.getElementById("menu-lunar-date").value = getLunarDateString(menu.date) + " Âm"; 
+            document.getElementById("menu-timeparty").value = menu.timeparty || ""; // CẬP NHẬT: Sửa giờ
             document.getElementById("menu-type").value = menu.type;
             document.getElementById("menu-note").value = menu.note;
             document.getElementById("menu-tables").value = menu.tables !== undefined ? menu.tables : 0;
@@ -936,6 +948,7 @@
             document.getElementById("menu-address").value = ""; 
             document.getElementById("menu-date").value = "";
             document.getElementById("menu-lunar-date").value = ""; 
+            document.getElementById("menu-timeparty").value = ""; // CẬP NHẬT: Xóa trắng giờ
             document.getElementById("menu-note").value = ""; 
             document.getElementById("menu-tables").value = "0"; 
             selectedDishIdsInMenuForm = []; 
@@ -980,24 +993,42 @@
             activeMenus.forEach(menu => {
                 const tr = document.createElement("tr");
                 const computedLunar = getLunarDateString(menu.date);
+                
+                // CẬP NHẬT: Lấy danh sách tên món ăn để hiển thị
+                let dishNames = [];
+                menu.dishIds?.forEach(id => {
+                    const dish = dishesList.find(d => d.id === id);
+                    if (dish) dishNames.push(dish.name);
+                });
+                let dishListStr = dishNames.length > 0 ? dishNames.join(' • ') : 'Chưa có món nào';
+
+                // CẬP NHẬT: Thêm giờ đãi tiệc và danh sách món vào phần hiển thị
                 tr.innerHTML = `
-                    <td class="p-3.5 text-center">
+                    <td class="p-3.5 text-center align-top pt-4">
                         <input type="checkbox" value="${menu.id}" class="calc-party-checkbox scale-125 accent-amber-600 cursor-pointer">
                     </td>
                     
                     <td class="p-3.5 py-3 text-slate-950">
                         <div class="font-black text-sm text-slate-900">${menu.customer} <span class="text-[11px] font-normal text-slate-400 ml-1">(ĐT: ${menu.phone || 'Trống'})</span></div>
                         
-                        <div class="text-[11px] text-slate-600 font-bold mt-1 flex flex-wrap items-center gap-1.5">
+                        <div class="text-[11px] text-slate-600 font-bold mt-1.5 flex flex-wrap items-center gap-1.5">
+                            <span class="text-blue-600"><i class="fa-solid fa-clock"></i> ${menu.timeparty || '--:--'}</span>
+                            <span class="text-slate-300">|</span>
                             <span class="text-orange-600"><i class="fa-solid fa-calendar-day"></i> D: ${menu.date}</span>
                             <span class="text-slate-300">|</span>
                             <span class="text-[12px] text-purple-700 font-black"><i class="fa-solid fa-moon"></i> Â: ${computedLunar}</span>
                             <span class="text-slate-300">|</span>
                             <span class="bg-amber-50 border border-amber-200 text-amber-800 px-1.5 py-0.2 rounded font-bold uppercase text-[10px]">${menu.type}</span>
                         </div>
+                        
+                        <!-- HIỂN THỊ DANH SÁCH MÓN ĂN DƯỚI DẠNG CHỮ NHỎ -->
+                        <div class="mt-2 text-[11px] text-slate-600 bg-slate-50 border border-slate-100 p-2 rounded-lg leading-relaxed">
+                            <span class="font-bold text-amber-700"><i class="fa-solid fa-utensils mr-1"></i>Thực đơn:</span> 
+                            <span class="italic">${dishListStr}</span>
+                        </div>
                     </td>
                     
-                    <td class="p-3.5 text-center">
+                    <td class="p-3.5 text-center align-top pt-3">
                         <input type="number" min="0" value="${menu.tables !== undefined ? menu.tables : 0}" id="tables-for-menu-${menu.id}" class="w-full max-w-24 bg-slate-50 border border-slate-200 rounded-lg text-center font-black focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
                     </td>
                 `;
@@ -1102,7 +1133,6 @@
             XLSX.writeFile(wb, "Phieu_Di_Cho_PhiLong_Catering.xlsx");
         }
 
-        // HÀM MỚI BỔ SUNG: Xử lý chức năng Import Excel
         async function importDishesFromExcel(mode) {
             const fileInput = document.getElementById('excel-import-file');
             const file = fileInput.files[0];
