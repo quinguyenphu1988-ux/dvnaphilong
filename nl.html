@@ -423,7 +423,7 @@
             const todayStr = new Date().toISOString().split('T')[0];
             const lastSentDate = localStorage.getItem('last_telegram_alert_date');
             
-            if (lastSentDate === todayStr) return; // Nếu hôm nay gửi rồi thì bỏ qua
+            //if (lastSentDate === todayStr) return; // Nếu hôm nay gửi rồi thì bỏ qua
 
             const today = new Date(); today.setHours(0,0,0,0);
             let nearParties = [];
