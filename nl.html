@@ -410,7 +410,65 @@
         let menusList = [];
         let temporaryIngredients = [];
         let currentEditingDishId = null;
-        let globalCalculatedMarket = null; 
+        let globalCalculatedMarket = null;
+		
+		// --- CẤU HÌNH TELEGRAM BOT ---
+        const TELEGRAM_TOKEN = '8580811533:AAE1IMKPv3QG3TD2fLK2dBp-yYGt29phNZ8'; 
+        const TELEGRAM_CHAT_ID = '6428508789';
+
+        function sendTelegramPartyAlerts(activeMenus) {
+            if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) return;
+
+            // Kiểm tra xem hôm nay đã gửi báo cáo chưa (tránh spam khi tải lại trang)
+            const todayStr = new Date().toISOString().split('T')[0];
+            const lastSentDate = localStorage.getItem('last_telegram_alert_date');
+            
+            if (lastSentDate === todayStr) return; // Nếu hôm nay gửi rồi thì bỏ qua
+
+            const today = new Date(); today.setHours(0,0,0,0);
+            let nearParties = [];
+
+            activeMenus.forEach(m => {
+                const partyDate = new Date(m.date); partyDate.setHours(0,0,0,0);
+                const dayDiff = Math.ceil((partyDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+                
+                // Lọc ra các tiệc diễn ra trong vòng 3 ngày tới
+                if (dayDiff >= 0 && dayDiff <= 3) {
+                    nearParties.push({ ...m, dayDiff });
+                }
+            });
+
+            if (nearParties.length > 0) {
+                let message = `🔔 *BÁO CÁO TIỆC SẮP DIỄN RA (DVNA PHI LONG)*\n\n`;
+                nearParties.forEach((p, idx) => {
+                    let timeWarning = p.dayDiff === 0 ? "HÔM NAY" : `Còn ${p.dayDiff} ngày`;
+                    message += `${idx + 1}. Khách: *${p.customer}* (${timeWarning})\n`;
+                    message += `   - Loại: ${p.type} (${p.tables || 0} bàn)\n`;
+                    message += `   - Ngày: ${p.date} | Giờ: ${p.timeparty || 'Chưa hẹn'}\n`;
+                    message += `   - ĐC: ${p.address || 'Chưa cập nhật'}\n\n`;
+                });
+                
+                message += `👉 Truy cập hệ thống để xem chi tiết. Chúc một ngày làm việc hiệu quả!`;
+
+                // Gọi API Telegram để gửi tin nhắn
+                const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+                fetch(url, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        chat_id: TELEGRAM_CHAT_ID,
+                        text: message,
+                        parse_mode: 'Markdown'
+                    })
+                }).then(response => {
+                    if (response.ok) {
+                        // Lưu lịch sử để không gửi lại trong ngày hôm nay
+                        localStorage.setItem('last_telegram_alert_date', todayStr);
+                        console.log("Đã gửi cảnh báo Telegram thành công!");
+                    }
+                }).catch(err => console.error("Lỗi gửi Telegram:", err));
+            }
+        }
 
         function getLunarDateString(solarDateStr) {
             if (!solarDateStr || typeof Solar === 'undefined') return '---';
@@ -1032,6 +1090,9 @@
             } else { 
                 alertBox.classList.add("hidden"); 
             }
+            
+            // THÊM DÒNG NÀY VÀO CUỐI HÀM ĐỂ KÍCH HOẠT GỬI TELEGRAM
+            sendTelegramPartyAlerts(activeMenus);
         }
 
         function renderCalcPartiesTable() {
