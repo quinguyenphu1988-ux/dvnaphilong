@@ -282,7 +282,6 @@
         let globalFixedCostPerTable = 0;
         let globalFixedCostsList = [];
 
-        // HÀM FORMAT TIỀN TỆ XÓA LỖI GÕ NHẦM
         function updatePricePreview() {
             const input = document.getElementById('ai-target-price');
             const preview = document.getElementById('price-preview');
@@ -307,7 +306,6 @@
             await loadAllCloudData();
         });
 
-        // TẢI DỮ LIỆU & BÓC TÁCH CHI PHÍ CỨNG
         async function loadAllCloudData() {
             try {
                 let { data: rawDishes, error: e1 } = await _supabase.from('dishes').select('*').order('timestamp', { ascending: false });
@@ -381,7 +379,6 @@
             return finalSentence;
         }
 
-        // BỘ LỌC CHỐNG TRÙNG MÓN (LOẠI BỎ TRIỆT ĐỂ CÁC MÓN CÙNG NHÓM)
         function getUniqueDishes(pool, count, existingMenu) {
             let selected = [];
             let shuffled = [...pool].sort(() => 0.5 - Math.random());
@@ -416,14 +413,12 @@
             return selected;
         }
 
-        // PHÂN LOẠI MÓN ĂN — dựa vào trường category từ Supabase là chính
         function classifyDishes(dishArray) {
             let starters = [], hotpots = [], rices = [], desserts = [], mains = [];
             dishArray.forEach(d => {
                 const n = d.name.toLowerCase();
                 const c = (d.category || "").toLowerCase().trim();
 
-                // ƯU TIÊN category từ DB trước
                 if (c.includes('tráng miệng')) {
                     desserts.push(d);
                 } else if (c.includes('lẩu')) {
@@ -433,7 +428,6 @@
                 } else if (c.includes('gỏi') || c.includes('súp') || c.includes('đồ nguội') || c.includes('khai vị')) {
                     starters.push(d);
                 } else {
-                    // Fallback: nhận diện theo tên nếu category không rõ
                     if (n.includes('rau câu') || n.includes('chè') || n.includes('trái cây') || n.includes('sữa chua') || n.includes('sâm bổ lượng') || n.includes('nhãn nhục')) desserts.push(d);
                     else if (n.includes('lẩu') || n.includes('cù lao')) hotpots.push(d);
                     else if (n.includes('cơm') || n.includes('xôi') || n.includes('mì') || n.includes('bún') || n.includes('miến') || n.includes('cháo')) rices.push(d);
@@ -444,13 +438,14 @@
             return { starters, hotpots, rices, desserts, mains };
         }
 
-        // TẠO 20 THỰC ĐƠN MẪU — thuật toán riêng, đảm bảo LUÔN có tráng miệng
+        // ĐÃ LỌC BỎ MÓN PHỤ ĐỒ NGUỘI CHO THỰC ĐƠN MẪU
         function generateSampleMenus() {
             if (!dishesList || dishesList.length === 0) return;
 
             const safeDishes = dishesList.filter(d => {
                 const n = d.name.toLowerCase();
-                return !n.includes("cá lóc hấp bầu") && !n.includes("cá tai tượng") && d.price > 0;
+                const cat = d.category ? d.category.trim().toLowerCase() : "";
+                return !n.includes("cá lóc hấp bầu") && !n.includes("cá tai tượng") && d.price > 0 && cat !== "món phụ đồ nguội";
             });
 
             const { starters, hotpots, rices, desserts, mains } = classifyDishes(safeDishes);
@@ -465,31 +460,24 @@
                 let menuDishes = [];
                 let name = prefixes[i % prefixes.length] + " " + suffixes[i % suffixes.length];
 
-                // 1 Khai vị (bắt buộc)
                 if (preferredStarters.length > 0 && i % 2 === 0) menuDishes.push(getRandom(preferredStarters, 1)[0]);
                 else if (starters.length > 0) menuDishes.push(getRandom(starters, 1)[0]);
 
-                // 1 Lẩu (bắt buộc)
                 if (hotpots.length > 0) menuDishes.push(getRandom(hotpots, 1)[0]);
 
-                // 1 Tráng miệng (BẮT BUỘC — luôn có)
                 if (desserts.length > 0) menuDishes.push(getRandom(desserts, 1)[0]);
 
-                // 1 Cơm (xác suất 50%)
                 let addRice = (rices.length > 0 && i % 2 !== 0);
                 if (addRice) menuDishes.push(getRandom(rices, 1)[0]);
 
-                // Món chính (không trùng loại thịt)
                 let mainCount = addRice ? 2 : 3;
                 if (mains.length >= mainCount) {
                     menuDishes = menuDishes.concat(getUniqueDishes(mains, mainCount, menuDishes));
                 }
 
-                // Kiểm tra lại — nếu vì lý do nào đó tráng miệng bị thiếu thì bổ sung
                 const hasDessert = menuDishes.some(d => (d.category || "").toLowerCase().trim().includes('tráng miệng') || d.name.toLowerCase().includes('rau câu') || d.name.toLowerCase().includes('chè') || d.name.toLowerCase().includes('trái cây') || d.name.toLowerCase().includes('sữa chua') || d.name.toLowerCase().includes('bánh') || d.name.toLowerCase().includes('kem') || d.name.toLowerCase().includes('sâm bổ lượng'));
                 if (!hasDessert && desserts.length > 0) menuDishes.push(getRandom(desserts, 1)[0]);
 
-                // Tính giá & gắn hạng
                 let currentFoodPrice = menuDishes.reduce((sum, dish) => sum + (dish.price || 0), 0);
                 let totalPrice = Math.round((currentFoodPrice + globalFixedCostPerTable) * 1.2);
 
@@ -576,7 +564,7 @@
             document.getElementById('ai-result-area').classList.add('hidden');
         }
 
-        // THUẬT TOÁN AI GỢI Ý THEO GIÁ (TÁCH RIÊNG — đảo ngược công thức, liệu cơm gắp mắm)
+        // ĐÃ LỌC BỎ MÓN PHỤ ĐỒ NGUỘI CHO GỢI Ý MÓN THEO GIÁ
         function runAISuggestion() {
             const targetPrice = parseFloat(document.getElementById('ai-target-price').value) || 0;
 
@@ -585,7 +573,6 @@
                 return;
             }
 
-            // TÌM CHI PHÍ RẠP ĐỂ TRỪ NẾU NGÂN SÁCH QUÁ THẤP
             let rapCost = 150000;
             let rapItem = globalFixedCostsList.find(p => {
                 let n = (p.key || p.name || p.ten_mon || "").toLowerCase();
@@ -610,10 +597,10 @@
 
             const availableDishes = dishesList.filter(d => {
                 const n = d.name.toLowerCase();
-                return !n.includes("cá lóc hấp bầu") && !n.includes("cá tai tượng") && (d.price > 0);
+                const cat = d.category ? d.category.trim().toLowerCase() : "";
+                return !n.includes("cá lóc hấp bầu") && !n.includes("cá tai tượng") && (d.price > 0) && cat !== "món phụ đồ nguội";
             });
 
-            // Dùng hàm classifyDishes riêng — KHÔNG dùng chung với generateSampleMenus
             const aiCategories = classifyDishes(availableDishes);
             const aiStarters = aiCategories.starters;
             const aiHotpots = aiCategories.hotpots;
@@ -628,34 +615,27 @@
             let closestPriceDiff = Infinity;
             let bestFoodPrice = 0;
 
-            // CHẠY THỬ 500 KỊCH BẢN — LUÔN có tráng miệng
             for (let i = 0; i < 500; i++) {
                 let tempMenu = [];
                 let currentFoodPrice = 0;
 
-                // Bắt buộc: 1 Tráng miệng (đặt trước để đảm bảo ngân sách)
                 let de = getRandom(aiDesserts, 1)[0];
                 if (de) { tempMenu.push(de); currentFoodPrice += de.price; }
 
-                // Bắt buộc: 1 Khai vị
                 let st = getRandom(aiPreferredStarters.length > 0 && budgetForFood > 800000 ? aiPreferredStarters : aiStarters, 1)[0];
                 if (st) { tempMenu.push(st); currentFoodPrice += st.price; }
 
-                // Bắt buộc: 1 Lẩu
                 let hp = getRandom(aiHotpots, 1)[0];
                 if (hp) { tempMenu.push(hp); currentFoodPrice += hp.price; }
 
-                // Bắt buộc: 1 Món chính
                 let m1 = getRandom(aiMains, 1)[0];
                 if (m1) { tempMenu.push(m1); currentFoodPrice += m1.price; }
 
-                // Tùy ngân sách: thêm Cơm
                 if (budgetForFood - currentFoodPrice > 150000) {
                     let ri = getRandom(aiRices, 1)[0];
                     if (ri) { tempMenu.push(ri); currentFoodPrice += ri.price; }
                 }
 
-                // Tùy ngân sách: thêm món chính thứ 2
                 if (budgetForFood - currentFoodPrice > 200000 && aiMains.length > 1) {
                     let extraMains = getUniqueDishes(aiMains.filter(m => m.id !== (m1 ? m1.id : null)), 1, tempMenu);
                     if (extraMains.length > 0) {
@@ -694,7 +674,6 @@
             if (grouped.doNguoi.length > 0) grouped.doNguoi.forEach(d => { listContainer.innerHTML += renderItem(d); });
             grouped.others.forEach(d => { listContainer.innerHTML += renderItem(d); });
 
-            // HIỂN THỊ TRẠNG THÁI RẠP DỰA TRÊN NGÂN SÁCH
             let appliedFixedCost = isRapIncluded ? fullFixedCost : reducedFixedCost;
             
             if (appliedFixedCost > 0) {
@@ -713,7 +692,6 @@
                 document.getElementById('ai-status-label').innerHTML = '';
             }
 
-            // TỔNG BÁO GIÁ CHO KHÁCH (+20%)
             let finalTotalForTable = Math.round((bestFoodPrice + appliedFixedCost) * 1.2);
             
             document.getElementById('ai-total-price').innerHTML = `
@@ -761,7 +739,6 @@
             let doNguoi = []; 
             let others = [];
             
-            // 1. Kiểm tra xem thực đơn có món Đồ Nguội thuần túy nào không (không tính gỏi/súp)
             const hasPureDoNguoi = dishArray.some(d => {
                 const n = d.name.toLowerCase(); 
                 const c = (d.category || "").toLowerCase();
@@ -776,14 +753,11 @@
                 const isGoiOrSoup = n.includes('gỏi') || n.includes('nộm') || n.includes('súp') || n.includes('soup') || c.includes('gỏi') || c.includes('súp');
                 
                 if (isPureDoNguoi) {
-                    // Nếu là chả, nem, đồ nguội -> Luôn là Khai vị
                     doNguoi.push(d); 
                 } else if (isGoiOrSoup) {
                     if (hasPureDoNguoi) {
-                        // Khách đã chọn đồ nguội -> Gỏi/Súp chuyển thành MÓN CHÍNH
                         others.push(d);
                     } else {
-                        // Khách không chọn đồ nguội -> Gỏi/Súp làm món KHAI VỊ
                         doNguoi.push(d);
                     }
                 } else {
@@ -797,7 +771,6 @@
                     if (c.includes('tráng miệng') || n.includes('rau câu') || n.includes('chè') || n.includes('trái cây') || n.includes('sữa chua') || n.includes('bánh') || n.includes('kem') || n.includes('sâm bổ lượng') || n.includes('nhãn nhục')) return 4;
                     if (n.includes('cơm') || n.includes('xôi') || n.includes('mì') || n.includes('bún') || n.includes('miến') || n.includes('cháo') || c.includes('cơm')) return 3;
                     if (c.includes('lẩu') || n.includes('lẩu') || n.includes('cù lao')) return 2;
-                    // Nếu Gỏi/Soup lọt vào món chính, ưu tiên đưa lên đầu danh sách (ngay sau khai vị)
                     if (n.includes('gỏi') || n.includes('nộm') || n.includes('súp') || n.includes('soup') || c.includes('gỏi') || c.includes('súp')) return 0;
                     return 1; 
                 };
@@ -806,7 +779,6 @@
             return { doNguoi, others };
         }
 
-        // XUẤT RA BILL GIỎ HÀNG & MẪU
         function renderMenuHTMLToList(grouped, containerEl, mode = 'print') {
             let index = 1; containerEl.innerHTML = ""; let currentTotal = 0;
             
@@ -880,7 +852,6 @@
                     `;
                 }
 
-                // TỔNG GIỎ HÀNG (+20%)
                 let finalCartPrice = Math.round((currentTotal + globalFixedCostPerTable) * 1.2);
                 document.getElementById('cart-total-price').innerText = finalCartPrice > 0 ? finalCartPrice.toLocaleString('vi-VN') + ' đ' : '0 đ';
             }
@@ -940,7 +911,6 @@
             const categoriesSet = new Set(["Tất cả"]);
             listToRender.forEach(dish => { 
                 const cat = dish.category ? dish.category.trim() : "Món Khác";
-                // Ẩn "món phụ đồ nguội" khỏi thanh lọc ngang
                 if (cat.toLowerCase() !== "món phụ đồ nguội") {
                     categoriesSet.add(cat); 
                 }
@@ -993,7 +963,6 @@
 
             container.innerHTML = ""; 
 
-            // Tách danh sách để xử lý hiển thị món phụ nằm riêng ở dưới
             let mainDishes = [];
             let subDishes = [];
 
@@ -1011,7 +980,6 @@
                 return;
             }
 
-            // Hàm vẽ card món ăn
             const renderCard = (dish, isMonPhu) => {
                 if (!dish || !dish.name) return;
                 
@@ -1061,10 +1029,8 @@
                 container.appendChild(card);
             };
 
-            // 1. Render món chính trước
             mainDishes.forEach(dish => renderCard(dish, false));
 
-            // 2. Nếu ở tab Đồ nguội và có món phụ, render tiêu đề phân cách col-span-full rồi xếp món phụ xuống dưới cùng
             if (subDishes.length > 0) {
                 const divider = document.createElement("div");
                 divider.className = "col-span-full mt-6 border-t border-dashed border-slate-200 pt-6 mb-2";
