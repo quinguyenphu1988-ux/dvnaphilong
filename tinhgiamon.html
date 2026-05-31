@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="color-scheme" content="light">
+    
+    <title>DVNA Phi Long - Tính Giá Vốn & Giá Bán</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        body { background-color: #f8fafc !important; color: #0f172a !important; padding-bottom: 90px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .app-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        }
+
+        .glass-header {
+            background: rgba(255,255,255,0.85)!important;
+            backdrop-filter: blur(12px);
+        }
+
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #059669; color: white; padding: 10px 20px;
+            border-radius: 50px; font-weight: bold; font-size: 13px;
+            box-shadow: 0 10px 30px rgba(5, 150, 105, 0.3);
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+            z-index: 999999; display: flex; align-items: center; gap: 8px;
+        }
+        .toast.show { opacity: 1; }
+        
+        .missing-price { background: #fff1f2; border-left: 3px solid #f43f5e; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-white to-slate-50 font-sans min-h-screen antialiased">
+
+    <div id="toast-msg" class="toast"><i class="fa-solid fa-circle-check"></i> <span>Thành công!</span></div>
+
+    <header class="glass-header border-b border-slate-200 p-4 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-emerald-100 text-emerald-600 w-10 h-10 rounded-full flex items-center justify-center shadow-inner border border-emerald-200">
+                    <i class="fa-solid fa-calculator text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-black tracking-tight text-slate-800">Tính Giá Bán</h1>
+                    <p class="text-[11px] font-bold text-emerald-600 tracking-wide uppercase">Vốn Nguyên Liệu + Lãi 20%</p>
+                </div>
+            </div>
+            <button id="btn-sync-all" onclick="syncAllPricesToDB()" class="bg-amber-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 hover:bg-amber-700 transition-colors">
+                <i class="fa-solid fa-cloud-arrow-up"></i> <span class="hidden sm:inline">Cập Nhật Toàn Bộ</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 space-y-6">
+        <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 text-xs text-blue-800 font-medium leading-relaxed shadow-sm">
+            <i class="fa-solid fa-robot mr-1 text-blue-600"></i> Thuật toán tự động quy đổi đơn vị (từ Kg sang Gam, từ Lít sang Ml...) dựa theo bảng giá nguyên liệu. Sau đó tính tổng vốn và <b>cộng 20% lãi suất</b>.
+        </div>
+
+        <div id="loading-spinner" class="text-center py-10 text-slate-400">
+            <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-emerald-500"></i>
+            <p class="text-sm font-bold uppercase tracking-wider">Đang phân tích định lượng & tính toán...</p>
+        </div>
+
+        <div id="calculated-dishes-container" class="space-y-5"></div>
+    </main>
+
+    <script>
+        const SUPABASE_URL = "https://kslsewlljxkwcgceqxcf.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_I1NCl_wrxzsDRM8wFXgeVQ_8W_JKlKE";
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        let calculatedDishes = [];
+
+        window.addEventListener("DOMContentLoaded", async () => {
+            await calculateAndRender();
+        });
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast-msg');
+            toast.style.background = isError ? '#e11d48' : '#059669';
+            toast.querySelector('span').innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        // THUẬT TOÁN QUY ĐỔI ĐƠN VỊ VÀ TÍNH TIỀN
+        function convertAndCalculateCost(recWeight, recUnit, dbPrice, dbUnit) {
+            let w = parseFloat(recWeight) || 0;
+            let p = parseFloat(dbPrice) || 0;
+            let rU = (recUnit || "").toLowerCase().trim();
+            let dU = (dbUnit || "").toLowerCase().trim();
+
+            if (w === 0 || p === 0) return 0;
+
+            // Nếu nhập giá theo kg, nhưng công thức nấu dùng gam
+            if ((dU === 'kg' || dU === 'kilogram') && rU === 'gam') {
+                return p * (w / 1000);
+            }
+            // Nếu nhập giá theo gam, nhưng công thức lỡ ghi kg
+            if (dU === 'gam' && (rU === 'kg' || rU === 'kilogram')) {
+                return p * (w * 1000);
+            }
+            // Lít và Ml
+            if (dU === 'lít' && (rU === 'ml' || rU === 'millilit')) {
+                return p * (w / 1000);
+            }
+            if ((dU === 'ml' || dU === 'millilit') && rU === 'lít') {
+                return p * (w * 1000);
+            }
+
+            // Trường hợp cùng đơn vị hoặc các đơn vị đếm (cái, con, quả, bó...)
+            return p * w;
+        }
+
+        async function calculateAndRender() {
+            try {
+                let { data: dishes, error: e1 } = await _supabase.from('dishes').select('*');
+                if (e1) throw e1;
+
+                let { data: rawPrices, error: e2 } = await _supabase.from('Gia_Nguyen_Lieu').select('*');
+                if (e2) throw e2;
+
+                // Chuyển bảng giá thành Map để tra cứu cực nhanh
+                const priceMap = {};
+                (rawPrices || []).forEach(p => {
+                    const name = (p.TenNguyenLieu || "").trim().toLowerCase();
+                    if (name) {
+                        priceMap[name] = { price: p.GiaNguyenLieu || 0, unit: p.DonViTinh || "" };
+                    }
+                });
+
+                calculatedDishes = [];
+
+                (dishes || []).forEach(dish => {
+                    // Bỏ qua món phụ đồ nguội vì thường không tính riêng
+                    if(dish.category && dish.category.toLowerCase().trim() === 'món phụ đồ nguội') return;
+
+                    let totalCost = 0;
+                    let ingredientDetails = [];
+                    let hasMissingPrices = false;
+
+                    (dish.ingredients || []).forEach(ing => {
+                        const normName = (ing.name || "").trim().toLowerCase();
+                        const dbItem = priceMap[normName];
+                        
+                        let cost = 0;
+                        let isMissing = false;
+                        let refPrice = 0;
+                        let refUnit = "-";
+
+                        if (dbItem) {
+                            refPrice = dbItem.price;
+                            refUnit = dbItem.unit;
+                            cost = convertAndCalculateCost(ing.weight, ing.unit, dbItem.price, dbItem.unit);
+                            if (cost === 0 && ing.weight > 0) isMissing = true;
+                        } else {
+                            isMissing = true;
+                        }
+
+                        if (isMissing) hasMissingPrices = true;
+                        totalCost += cost;
+
+                        ingredientDetails.push({
+                            name: ing.name,
+                            weight: ing.weight,
+                            unit: ing.unit,
+                            cost: cost,
+                            isMissing: isMissing,
+                            refPrice: refPrice,
+                            refUnit: refUnit
+                        });
+                    });
+
+                    // CỘNG 20% LÃI SUẤT
+                    let rawFinalPrice = totalCost * 1.2;
+                    // LÀM TRÒN: Làm tròn lên đến hàng nghìn (vd: 154,200 -> 155,000)
+                    let finalPriceRounded = Math.ceil(rawFinalPrice / 1000) * 1000;
+
+                    calculatedDishes.push({
+                        dishId: dish.id,
+                        dishName: dish.name,
+                        category: dish.category || "Khác",
+                        totalCost: totalCost,
+                        profit: rawFinalPrice - totalCost,
+                        finalPrice: finalPriceRounded,
+                        details: ingredientDetails,
+                        hasMissingPrices: hasMissingPrices
+                    });
+                });
+
+                document.getElementById('loading-spinner').style.display = 'none';
+                renderList();
+
+            } catch (err) {
+                console.error(err);
+                alert("Lỗi tải dữ liệu: " + err.message);
+            }
+        }
+
+        function renderList() {
+            const container = document.getElementById("calculated-dishes-container");
+            container.innerHTML = "";
+
+            if (calculatedDishes.length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-slate-400 font-bold">Chưa có dữ liệu món ăn!</div>`;
+                return;
+            }
+
+            // Sắp xếp: Món nào thiếu giá nguyên liệu đưa lên đầu để dễ sửa
+            calculatedDishes.sort((a, b) => b.hasMissingPrices - a.hasMissingPrices);
+
+            calculatedDishes.forEach((item, index) => {
+                const card = document.createElement("div");
+                card.className = "app-card overflow-hidden";
+                
+                let detailsHtml = item.details.map(ing => {
+                    if (ing.isMissing) {
+                        return `<div class="missing-price px-3 py-2 flex justify-between text-xs">
+                                    <span class="font-bold text-rose-700">${ing.name} <span class="font-normal">(${ing.weight} ${ing.unit})</span></span>
+                                    <span class="text-rose-600 font-bold italic">Chưa nhập giá</span>
+                                </div>`;
+                    }
+                    return `<div class="px-3 py-2 flex justify-between text-xs border-b border-slate-100/50 last:border-0 hover:bg-slate-50">
+                                <span class="text-slate-700 font-medium">${ing.name} <span class="text-slate-400">(${ing.weight} ${ing.unit})</span></span>
+                                <span class="text-slate-900 font-bold">${ing.cost.toLocaleString('vi-VN')} đ <span class="text-[9px] text-slate-400 font-normal block text-right mt-0.5">(Quy đổi từ ${ing.refPrice.toLocaleString('vi-VN')}đ/${ing.refUnit})</span></span>
+                            </div>`;
+                }).join('');
+
+                if (item.details.length === 0) {
+                    detailsHtml = `<div class="px-3 py-2 text-xs text-slate-400 italic">Món này chưa thiết lập cấu trúc nguyên liệu.</div>`;
+                }
+
+                let warningIcon = item.hasMissingPrices ? `<i class="fa-solid fa-triangle-exclamation text-rose-500 ml-2 animate-pulse" title="Thiếu giá nguyên liệu"></i>` : '';
+
+                card.innerHTML = `
+                    <div class="bg-slate-50 border-b border-slate-100 p-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="text-base font-black text-slate-900 leading-tight">${item.dishName} ${warningIcon}</h3>
+                                <span class="text-[10px] bg-slate-200 text-slate-600 px-2 py-0.5 rounded uppercase mt-1 inline-block">${item.category}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-3 gap-2 bg-white rounded-xl border border-slate-200 p-3 mb-1">
+                            <div class="text-center border-r border-slate-100">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">Tổng Vốn</p>
+                                <p class="text-[13px] font-black text-slate-700 mt-0.5">${item.totalCost.toLocaleString('vi-VN')} đ</p>
+                            </div>
+                            <div class="text-center border-r border-slate-100">
+                                <p class="text-[10px] font-bold text-slate-400 uppercase">+ 20% Lãi</p>
+                                <p class="text-[13px] font-black text-emerald-600 mt-0.5">${item.profit.toLocaleString('vi-VN')} đ</p>
+                            </div>
+                            <div class="text-center">
+                                <p class="text-[10px] font-bold text-amber-600 uppercase drop-shadow-sm">Giá Đề Xuất</p>
+                                <p class="text-sm font-black text-amber-600 mt-0.5">${item.finalPrice.toLocaleString('vi-VN')} đ</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="p-2">
+                        <details class="group cursor-pointer">
+                            <summary class="text-[11px] font-bold text-blue-600 p-2 outline-none select-none flex items-center gap-2 bg-blue-50/50 rounded-lg">
+                                <i class="fa-solid fa-chevron-right transition-transform group-open:rotate-90"></i> Xem diễn giải chi tiết vốn
+                            </summary>
+                            <div class="mt-2 pl-2 border-l-2 border-slate-100 ml-2">
+                                ${detailsHtml}
+                            </div>
+                        </details>
+                    </div>
+                `;
+                container.appendChild(card);
+            });
+        }
+
+        // CẬP NHẬT GIÁ VÀO BẢNG danh_muc_gia (hoặc bất kỳ bảng nào lưu giá món cuối cùng)
+        async function syncAllPricesToDB() {
+            const validDishes = calculatedDishes.filter(d => d.totalCost > 0);
+            
+            if (validDishes.length === 0) {
+                showToast("Chưa có món nào tính được giá để cập nhật!", true);
+                return;
+            }
+
+            if (!confirm(`Hệ thống sẽ cập nhật giá mới (có tính 20% lãi) cho ${validDishes.length} món ăn vào CSDL. Tiếp tục?`)) return;
+
+            const btn = document.getElementById('btn-sync-all');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> Đang đồng bộ...`;
+            btn.disabled = true;
+
+            try {
+                // Trong code index.html cũ của bạn, bảng danh_muc_gia dùng để tra cứu giá theo tên món.
+                // Ở đây ta sẽ lấy bảng danh_muc_gia hiện tại, sau đó Update hoặc Insert.
+                let { data: existingPrices } = await _supabase.from('danh_muc_gia').select('*');
+                
+                let successCount = 0;
+
+                for (let dish of validDishes) {
+                    // Dò xem tên món đã tồn tại trong danh_muc_gia chưa
+                    let existRecord = (existingPrices || []).find(p => {
+                        let name = p.key || p.name || p.ten_mon || "";
+                        return name.toLowerCase().trim() === dish.dishName.toLowerCase().trim();
+                    });
+
+                    // Định dạng payload. Dựa vào cấu trúc bạn hay dùng (ten_mon, gia)
+                    let payload = {
+                        ten_mon: dish.dishName,
+                        gia: dish.finalPrice,
+                        don_vi: "bàn", // Báo giá thường theo bàn
+                        key: dish.dishName.toLowerCase() // Nếu bảng dùng cột key để lọc
+                    };
+
+                    if (existRecord) {
+                        await _supabase.from('danh_muc_gia').update(payload).eq('id', existRecord.id);
+                    } else {
+                        await _supabase.from('danh_muc_gia').insert([payload]);
+                    }
+                    successCount++;
+                }
+
+                showToast(`Đã đồng bộ thành công giá bán ${successCount} món ăn!`);
+            } catch (err) {
+                console.error(err);
+                showToast("Lỗi đồng bộ: " + err.message, true);
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+    </script>
+</body>
+</html>
