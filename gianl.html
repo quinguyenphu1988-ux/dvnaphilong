@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="color-scheme" content="light">
+    
+    <title>DVNA Phi Long - Cập Nhật Giá Nguyên Liệu</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        body { background-color: #f8fafc !important; color: #0f172a !important; padding-bottom: 80px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f1f1; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+
+        .app-card {
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+        }
+
+        .glass-header {
+            background: rgba(255,255,255,0.85)!important;
+            backdrop-filter: blur(12px);
+        }
+
+        input, select, button { -webkit-tap-highlight-color: transparent; outline: none; }
+
+        .toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: #059669; color: white; padding: 10px 20px;
+            border-radius: 50px; font-weight: bold; font-size: 13px;
+            box-shadow: 0 10px 30px rgba(5, 150, 105, 0.3);
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+            z-index: 999999; display: flex; align-items: center; gap: 8px;
+        }
+        .toast.show { opacity: 1; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-50 via-white to-slate-50 font-sans min-h-screen antialiased">
+
+    <div id="toast-msg" class="toast"><i class="fa-solid fa-circle-check"></i> <span>Đã lưu thành công!</span></div>
+
+    <header class="glass-header border-b border-slate-200 p-4 sticky top-0 z-50 shadow-sm">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="bg-amber-100 text-amber-600 w-10 h-10 rounded-full flex items-center justify-center shadow-inner border border-amber-200">
+                    <i class="fa-solid fa-tags text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg sm:text-xl font-black tracking-tight text-slate-800">Giá Nguyên Liệu</h1>
+                    <p class="text-[11px] font-bold text-amber-600 tracking-wide uppercase">Cơ sở dữ liệu Phi Long</p>
+                </div>
+            </div>
+            <button id="btn-save-all" onclick="saveAllIngredients()" class="bg-emerald-600 text-white font-bold text-xs px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2 hover:bg-emerald-700 transition-colors">
+                <i class="fa-solid fa-cloud-arrow-up"></i> <span class="hidden sm:inline">Lưu Tất Cả</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="max-w-4xl mx-auto p-4 space-y-6">
+        <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-xs text-amber-800 font-medium leading-relaxed">
+            <i class="fa-solid fa-circle-info mr-1 text-amber-600"></i> Hệ thống đã tự động quét tất cả món ăn trong menu và tổng hợp lại danh sách bên dưới. Bạn hãy nhập giá tiền tương ứng cho mỗi đơn vị tính.
+        </div>
+
+        <div class="relative mb-6">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+            </div>
+            <input type="text" id="search-box" placeholder="Tìm tên nguyên liệu..." oninput="renderGroupedIngredients()" class="w-full bg-white border border-slate-200 rounded-2xl pl-10 pr-4 py-3 text-sm font-bold shadow-sm focus:border-amber-500 focus:ring-1 focus:ring-amber-500">
+        </div>
+
+        <div id="loading-spinner" class="text-center py-10 text-slate-400">
+            <i class="fa-solid fa-spinner fa-spin text-3xl mb-3 text-amber-500"></i>
+            <p class="text-sm font-bold uppercase tracking-wider">Đang trích xuất dữ liệu...</p>
+        </div>
+
+        <div id="ingredients-container" class="space-y-5"></div>
+    </main>
+
+    <script>
+        const SUPABASE_URL = "https://kslsewlljxkwcgceqxcf.supabase.co";
+        const SUPABASE_KEY = "sb_publishable_I1NCl_wrxzsDRM8wFXgeVQ_8W_JKlKE";
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // Lưu trữ dữ liệu toàn cục
+        let masterIngredients = {}; 
+        window.ingredientIndexMap = {}; 
+
+        window.addEventListener("DOMContentLoaded", async () => {
+            await loadAndProcessData();
+        });
+
+        function showToast(message) {
+            const toast = document.getElementById('toast-msg');
+            toast.querySelector('span').innerText = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2500);
+        }
+
+        async function loadAndProcessData() {
+            try {
+                // 1. Tải danh sách món ăn
+                let { data: dishes, error: e1 } = await _supabase.from('dishes').select('ingredients');
+                if (e1) throw e1;
+
+                // 2. Tải bảng giá nguyên liệu hiện tại
+                let { data: prices, error: e2 } = await _supabase.from('Gia_Nguyen_Lieu').select('*');
+                if (e2) throw e2;
+
+                masterIngredients = {};
+                
+                // Trích xuất từ món ăn
+                (dishes || []).forEach(dish => {
+                    (dish.ingredients || []).forEach(ing => {
+                        const name = ing.name ? ing.name.trim() : "";
+                        if (!name) return;
+                        const normName = name.toLowerCase();
+                        
+                        if (!masterIngredients[normName]) {
+                            masterIngredients[normName] = {
+                                name: name,
+                                type: (ing.type || 'Khác').trim().toLowerCase(),
+                                unit: (ing.unit || '').trim(),
+                                price: 0,
+                                dbId: null,
+                                isModified: false
+                            };
+                        }
+                    });
+                });
+
+                // Đắp dữ liệu giá từ DB vào Map
+                (prices || []).forEach(p => {
+                    const normName = (p.TenNguyenLieu || "").trim().toLowerCase();
+                    if (masterIngredients[normName]) {
+                        masterIngredients[normName].price = p.GiaNguyenLieu || 0;
+                        masterIngredients[normName].unit = p.DonViTinh || masterIngredients[normName].unit;
+                        masterIngredients[normName].dbId = p.id;
+                    } else if (normName) {
+                        // Nếu có trong DB mà không có trong món ăn nào, vẫn hiển thị ở nhóm "Khác"
+                        masterIngredients[normName] = {
+                            name: p.TenNguyenLieu,
+                            type: 'khác',
+                            unit: p.DonViTinh || '',
+                            price: p.GiaNguyenLieu || 0,
+                            dbId: p.id,
+                            isModified: false
+                        };
+                    }
+                });
+
+                document.getElementById('loading-spinner').style.display = 'none';
+                renderGroupedIngredients();
+
+            } catch (err) {
+                console.error("Lỗi:", err);
+                alert("Lỗi tải dữ liệu: " + err.message);
+            }
+        }
+
+        function renderGroupedIngredients() {
+            const container = document.getElementById("ingredients-container");
+            container.innerHTML = "";
+            window.ingredientIndexMap = {}; 
+
+            const searchQuery = document.getElementById("search-box").value.toLowerCase();
+            let grouped = {};
+            let indexCounter = 0;
+
+            // Lọc và Nhóm
+            Object.values(masterIngredients).forEach(ing => {
+                if (searchQuery && !ing.name.toLowerCase().includes(searchQuery)) return;
+                
+                let groupType = ing.type || "khác";
+                if (!grouped[groupType]) grouped[groupType] = [];
+                
+                // Cấp phát ID an toàn cho HTML Element
+                const safeId = "ing_" + indexCounter++;
+                ing.safeId = safeId;
+                window.ingredientIndexMap[safeId] = ing; 
+
+                grouped[groupType].push(ing);
+            });
+
+            if (Object.keys(grouped).length === 0) {
+                container.innerHTML = `<div class="text-center py-10 text-slate-400 font-bold">Không tìm thấy nguyên liệu nào!</div>`;
+                return;
+            }
+
+            // Sắp xếp thứ tự ưu tiên nhóm
+            const groupOrder = ['bò', 'gà', 'vịt', 'heo', 'cá', 'tôm', 'mực', 'cua', 'ghẹ', 'rau củ quả', 'gia vị', 'khác'];
+            const sortedGroups = Object.keys(grouped).sort((a, b) => {
+                let idxA = groupOrder.indexOf(a); let idxB = groupOrder.indexOf(b);
+                if(idxA === -1) idxA = 99; if(idxB === -1) idxB = 99;
+                return idxA - idxB;
+            });
+
+            // Vẽ giao diện
+            sortedGroups.forEach(type => {
+                const items = grouped[type].sort((a, b) => a.name.localeCompare(b.name));
+                
+                const card = document.createElement("div");
+                card.className = "app-card overflow-hidden";
+                
+                // Header nhóm
+                card.innerHTML = `
+                    <div class="bg-slate-50 border-b border-slate-100 px-4 py-3 flex items-center justify-between">
+                        <h3 class="text-sm font-black text-slate-800 uppercase tracking-wide flex items-center gap-2">
+                            <i class="fa-solid fa-layer-group text-amber-500"></i> Nhóm: ${type}
+                        </h3>
+                        <span class="bg-slate-200 text-slate-600 text-[10px] font-black px-2 py-1 rounded-md">${items.length} mục</span>
+                    </div>
+                    <div class="divide-y divide-slate-100 p-2" id="group_${type.replace(/\s+/g, '_')}"></div>
+                `;
+                
+                const listContainer = card.querySelector('div.divide-y');
+
+                items.forEach(ing => {
+                    const row = document.createElement("div");
+                    row.className = "flex flex-col sm:flex-row justify-between sm:items-center py-3 px-2 gap-3 hover:bg-amber-50/30 transition-colors rounded-xl";
+                    
+                    row.innerHTML = `
+                        <div class="flex-1">
+                            <p class="font-bold text-slate-900 text-[13px] leading-tight">${ing.name}</p>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <div class="relative w-20 shrink-0">
+                                <label class="absolute -top-2 left-2 bg-white px-1 text-[9px] font-bold text-slate-400">Đơn vị</label>
+                                <input type="text" id="unit_${ing.safeId}" value="${ing.unit}" class="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs font-bold text-center bg-white focus:border-amber-500">
+                            </div>
+                            <div class="relative flex-1 sm:w-32">
+                                <label class="absolute -top-2 left-2 bg-white px-1 text-[9px] font-bold text-slate-400">Giá (VNĐ)</label>
+                                <input type="number" inputmode="numeric" id="price_${ing.safeId}" value="${ing.price}" class="w-full border border-slate-200 rounded-lg px-2 py-2 text-xs font-black text-rose-600 text-right bg-white focus:border-amber-500" onchange="markModified('${ing.safeId}')">
+                            </div>
+                            <button onclick="saveSingleIngredient('${ing.safeId}')" id="btn_${ing.safeId}" class="bg-slate-100 text-slate-500 hover:bg-emerald-100 hover:text-emerald-700 w-9 h-9 rounded-lg flex items-center justify-center shrink-0 transition-colors border border-slate-200 cursor-pointer">
+                                <i class="fa-solid fa-check"></i>
+                            </button>
+                        </div>
+                    `;
+                    listContainer.appendChild(row);
+                });
+
+                container.appendChild(card);
+            });
+        }
+
+        function markModified(safeId) {
+            const ing = window.ingredientIndexMap[safeId];
+            if (ing) {
+                ing.isModified = true;
+                const btn = document.getElementById(`btn_${safeId}`);
+                if(btn) {
+                    btn.classList.remove('bg-slate-100', 'text-slate-500', 'border-slate-200');
+                    btn.classList.add('bg-amber-100', 'text-amber-700', 'border-amber-300');
+                    btn.innerHTML = `<i class="fa-solid fa-floppy-disk"></i>`;
+                }
+            }
+        }
+
+        async function saveSingleIngredient(safeId) {
+            const ing = window.ingredientIndexMap[safeId];
+            if (!ing) return;
+
+            const btn = document.getElementById(`btn_${safeId}`);
+            const originalHtml = btn.innerHTML;
+            btn.innerHTML = `<i class="fa-solid fa-spinner fa-spin text-[10px]"></i>`;
+            btn.disabled = true;
+
+            const newPrice = parseFloat(document.getElementById(`price_${safeId}`).value) || 0;
+            const newUnit = document.getElementById(`unit_${safeId}`).value.trim();
+
+            const payload = {
+                TenNguyenLieu: ing.name,
+                GiaNguyenLieu: newPrice,
+                DonViTinh: newUnit
+            };
+
+            try {
+                if (ing.dbId) {
+                    // Update
+                    const { error } = await _supabase.from('Gia_Nguyen_Lieu').update(payload).eq('id', ing.dbId);
+                    if (error) throw error;
+                } else {
+                    // Insert
+                    const { data, error } = await _supabase.from('Gia_Nguyen_Lieu').insert([payload]).select();
+                    if (error) throw error;
+                    if (data && data.length > 0) ing.dbId = data[0].id; // Cập nhật lại ID
+                }
+                
+                // Reset trạng thái nút
+                ing.price = newPrice;
+                ing.unit = newUnit;
+                ing.isModified = false;
+                
+                btn.classList.remove('bg-amber-100', 'text-amber-700', 'border-amber-300');
+                btn.classList.add('bg-emerald-600', 'text-white', 'border-emerald-600');
+                btn.innerHTML = `<i class="fa-solid fa-check-double"></i>`;
+                
+                showToast(`Đã lưu giá: ${ing.name}`);
+                
+                // Đổi lại màu sau 2 giây
+                setTimeout(() => {
+                    btn.classList.remove('bg-emerald-600', 'text-white', 'border-emerald-600');
+                    btn.classList.add('bg-slate-100', 'text-slate-500', 'border-slate-200');
+                    btn.innerHTML = `<i class="fa-solid fa-check"></i>`;
+                    btn.disabled = false;
+                }, 2000);
+
+            } catch (err) {
+                console.error(err);
+                alert("Lỗi khi lưu: " + err.message);
+                btn.innerHTML = originalHtml;
+                btn.disabled = false;
+            }
+        }
+
+        async function saveAllIngredients() {
+            const btnSaveAll = document.getElementById('btn-save-all');
+            const originalContent = btnSaveAll.innerHTML;
+            
+            // Tìm tất cả các món đã bị thay đổi (isModified = true)
+            const modifiedKeys = Object.keys(window.ingredientIndexMap).filter(key => window.ingredientIndexMap[key].isModified);
+            
+            if (modifiedKeys.length === 0) {
+                // Quét thủ công phòng trường hợp người dùng chưa trigger onchange
+                let pendingSaves = [];
+                for (let safeId in window.ingredientIndexMap) {
+                    const inputPrice = document.getElementById(`price_${safeId}`);
+                    if (inputPrice) {
+                        const currentVal = parseFloat(inputPrice.value) || 0;
+                        if (currentVal !== window.ingredientIndexMap[safeId].price) {
+                            pendingSaves.push(safeId);
+                        }
+                    }
+                }
+                
+                if (pendingSaves.length === 0) {
+                    showToast("Không có thay đổi nào cần lưu!");
+                    return;
+                } else {
+                    modifiedKeys.push(...pendingSaves);
+                }
+            }
+
+            if (!confirm(`Bạn sắp lưu hàng loạt ${modifiedKeys.length} nguyên liệu. Tiếp tục?`)) return;
+
+            btnSaveAll.innerHTML = `<i class="fa-solid fa-spinner fa-spin"></i> <span class="hidden sm:inline">Đang lưu...</span>`;
+            btnSaveAll.disabled = true;
+
+            let successCount = 0;
+            
+            // Lưu tuần tự để tránh quá tải API
+            for (let safeId of modifiedKeys) {
+                const ing = window.ingredientIndexMap[safeId];
+                const newPrice = parseFloat(document.getElementById(`price_${safeId}`).value) || 0;
+                const newUnit = document.getElementById(`unit_${safeId}`).value.trim();
+                
+                const payload = {
+                    TenNguyenLieu: ing.name,
+                    GiaNguyenLieu: newPrice,
+                    DonViTinh: newUnit
+                };
+
+                try {
+                    if (ing.dbId) {
+                        await _supabase.from('Gia_Nguyen_Lieu').update(payload).eq('id', ing.dbId);
+                    } else {
+                        const { data } = await _supabase.from('Gia_Nguyen_Lieu').insert([payload]).select();
+                        if (data && data.length > 0) ing.dbId = data[0].id;
+                    }
+                    ing.price = newPrice;
+                    ing.unit = newUnit;
+                    ing.isModified = false;
+                    
+                    // Update UI nút
+                    const btn = document.getElementById(`btn_${safeId}`);
+                    if(btn) {
+                        btn.classList.remove('bg-amber-100', 'text-amber-700', 'border-amber-300');
+                        btn.classList.add('bg-slate-100', 'text-slate-500', 'border-slate-200');
+                        btn.innerHTML = `<i class="fa-solid fa-check"></i>`;
+                    }
+                    
+                    successCount++;
+                } catch (err) {
+                    console.error("Lỗi khi lưu " + ing.name, err);
+                }
+            }
+
+            btnSaveAll.innerHTML = originalContent;
+            btnSaveAll.disabled = false;
+            
+            if (successCount > 0) {
+                showToast(`Đã lưu thành công ${successCount} nguyên liệu!`);
+            }
+        }
+    </script>
+</body>
+</html>
