@@ -380,41 +380,47 @@
 
             return finalSentence;
         }
+		
+		// BỘ LỌC KIỂM TRA TRÙNG LẶP NGUYÊN LIỆU (Chính xác hơn với khoảng trắng)
+		function hasConflict(dishName, currentMenuNames) {
+			const coreTypes = [' cá ', ' bò ', ' gà ', ' heo ', ' tôm ', ' mực ', ' cua ', ' ghẹ ', ' dê ', ' vịt ', ' ếch ', ' lươn ', ' chả ', ' nem '];
+			const dName = " " + dishName.toLowerCase() + " ";
+			
+			// Tìm xem món mới có chứa nguyên liệu cốt lõi nào không
+			let myTypes = coreTypes.filter(t => dName.includes(t));
+			if (myTypes.length === 0) return false;
+
+			for (let existingName of currentMenuNames) {
+				// Bỏ qua check trùng cho các combo 5 món
+				if (existingName.includes("5 món") || dishName.toLowerCase().includes("5 món")) continue;
+				const paddedExisting = " " + existingName.toLowerCase() + " ";
+				let sharedTypes = myTypes.filter(t => paddedExisting.includes(t));
+				if (sharedTypes.length > 0) return true;
+			}
+			return false;
+		}
 
         // BỘ LỌC CHỐNG TRÙNG MÓN (LOẠI BỎ TRIỆT ĐỂ CÁC MÓN CÙNG NHÓM)
-        function getUniqueDishes(pool, count, existingMenu) {
-            let selected = [];
-            let shuffled = [...pool].sort(() => 0.5 - Math.random());
-            const coreTypes = ['cá', 'bò', 'gà', 'heo', 'tôm', 'mực', 'cua', 'ghẹ', 'dê', 'vịt', 'ếch', 'lươn'];
-            
-            for (let dish of shuffled) {
-                if (selected.length >= count) break;
-                let dName = dish.name.toLowerCase();
-                
-                let myTypes = coreTypes.filter(t => dName.includes(t));
-                let hasConflict = false;
-                let currentMenuNames = [...existingMenu, ...selected].map(x => x.name.toLowerCase());
-                
-                for (let existingName of currentMenuNames) {
-                    if (existingName.includes("5 món")) continue; 
-                    let sharedTypes = myTypes.filter(t => existingName.includes(t));
-                    if (sharedTypes.length > 0) {
-                        hasConflict = true;
-                        break;
-                    }
-                }
-                
-                if (!hasConflict) {
-                    selected.push(dish);
-                }
-            }
-            
-            if (selected.length < count) {
-                let unused = shuffled.filter(d => !selected.includes(d));
-                selected = selected.concat(unused.slice(0, count - selected.length));
-            }
-            return selected;
-        }
+		function getUniqueDishes(pool, count, existingMenu) {
+			let selected = [];
+			let shuffled = [...pool].sort(() => 0.5 - Math.random());
+			
+			for (let dish of shuffled) {
+				if (selected.length >= count) break;
+				
+				let currentMenuNames = [...existingMenu, ...selected].map(x => x.name);
+				if (!hasConflict(dish.name, currentMenuNames)) {
+					selected.push(dish);
+				}
+			}
+			
+			// Nếu lọc quá khắt khe mà thiếu món, đành phải lấy bù (nhưng ưu tiên món chưa chọn)
+			if (selected.length < count) {
+				let unused = shuffled.filter(d => !selected.includes(d));
+				selected = selected.concat(unused.slice(0, count - selected.length));
+			}
+			return selected;
+		}
 
         // PHÂN LOẠI MÓN ĂN — dựa vào trường category từ Supabase là chính
         function classifyDishes(dishArray) {
@@ -445,68 +451,80 @@
         }
 
         // TẠO 20 THỰC ĐƠN MẪU — thuật toán riêng, đảm bảo LUÔN có tráng miệng
-        function generateSampleMenus() {
-            if (!dishesList || dishesList.length === 0) return;
+		function generateSampleMenus() {
+			if (!dishesList || dishesList.length === 0) return;
 
-            const safeDishes = dishesList.filter(d => {
-                const n = d.name.toLowerCase();
-                return !n.includes("cá lóc hấp bầu") && !n.includes("cá tai tượng") && d.price > 0;
-            });
+			// FIX LỖI 1: Lọc bỏ Món phụ đồ nguội
+			const safeDishes = dishesList.filter(d => {
+				const n = d.name.toLowerCase();
+				const cat = (d.category || "").toLowerCase().trim();
+				return !n.includes("cá lóc hấp bầu") && !n.includes("cá tai tượng") && (d.price > 0) && (cat !== "món phụ đồ nguội");
+			});
 
-            const { starters, hotpots, rices, desserts, mains } = classifyDishes(safeDishes);
-            const preferredStarters = starters.filter(d => d.name.toLowerCase().includes("5 món"));
-            const getRandom = (arr, count) => [...arr].sort(() => 0.5 - Math.random()).slice(0, count);
+			const { starters, hotpots, rices, desserts, mains } = classifyDishes(safeDishes);
+			const preferredStarters = starters.filter(d => d.name.toLowerCase().includes("5 món"));
+			const getRandom = (arr, count) => [...arr].sort(() => 0.5 - Math.random()).slice(0, count);
 
-            const prefixes = ["Uyên Ương", "Phụng Thành", "Long Phụng", "Bách Niên", "Vĩnh Kết", "Kim Ngọc", "Phú Quý", "Cát Tường", "Thiên Phương", "Hồng Đồ", "Hạnh Phúc", "Như Ý", "Tài Lộc", "Bình An", "Đại Cát"];
-            const suffixes = ["Hồ Điệp", "Cát Tường", "Hòa Minh", "Hảo Hợp", "Đồng Tâm", "Mãn Đường", "Vinh Hoa", "Viên Mãn", "Các", "Đại Triển", "Trường Tồn", "Phú Quý", "Gia Đạo"];
+			const prefixes = ["Uyên Ương", "Phụng Thành", "Long Phụng", "Bách Niên", "Vĩnh Kết", "Kim Ngọc", "Phú Quý", "Cát Tường", "Thiên Phương", "Hồng Đồ", "Hạnh Phúc", "Như Ý", "Tài Lộc", "Bình An", "Đại Cát"];
+			const suffixes = ["Hồ Điệp", "Cát Tường", "Hòa Minh", "Hảo Hợp", "Đồng Tâm", "Mãn Đường", "Vinh Hoa", "Viên Mãn", "Các", "Đại Triển", "Trường Tồn", "Phú Quý", "Gia Đạo"];
 
-            generatedSampleMenus = [];
-            for (let i = 1; i <= 20; i++) {
-                let menuDishes = [];
-                let name = prefixes[i % prefixes.length] + " " + suffixes[i % suffixes.length];
+			generatedSampleMenus = [];
+			for (let i = 1; i <= 20; i++) {
+				let menuDishes = [];
+				let name = prefixes[i % prefixes.length] + " " + suffixes[i % suffixes.length];
 
-                // 1 Khai vị (bắt buộc)
-                if (preferredStarters.length > 0 && i % 2 === 0) menuDishes.push(getRandom(preferredStarters, 1)[0]);
-                else if (starters.length > 0) menuDishes.push(getRandom(starters, 1)[0]);
+				// 1 Khai vị (bắt buộc)
+				let stPool = (preferredStarters.length > 0 && i % 2 === 0) ? preferredStarters : starters;
+				if (stPool.length > 0) menuDishes.push(getRandom(stPool, 1)[0]);
 
-                // 1 Lẩu (bắt buộc)
-                if (hotpots.length > 0) menuDishes.push(getRandom(hotpots, 1)[0]);
+				// 1 Lẩu (Kiểm tra trùng với Khai vị)
+				if (hotpots.length > 0) {
+					let currentNamesHp = menuDishes.map(d => d.name);
+					let hpPool = hotpots.filter(d => !hasConflict(d.name, currentNamesHp));
+					if (hpPool.length === 0) hpPool = hotpots; // Fallback nếu không còn món nào khác
+					menuDishes.push(getRandom(hpPool, 1)[0]);
+				}
 
-                // 1 Tráng miệng (BẮT BUỘC — luôn có)
-                if (desserts.length > 0) menuDishes.push(getRandom(desserts, 1)[0]);
+				// 1 Tráng miệng (BẮT BUỘC)
+				if (desserts.length > 0) menuDishes.push(getRandom(desserts, 1)[0]);
 
-                // 1 Cơm (xác suất 50%)
-                let addRice = (rices.length > 0 && i % 2 !== 0);
-                if (addRice) menuDishes.push(getRandom(rices, 1)[0]);
+				// 1 Cơm (xác suất 50% và check trùng)
+				let addRice = (rices.length > 0 && i % 2 !== 0);
+				if (addRice) {
+					let currentNamesRi = menuDishes.map(d => d.name);
+					let ricePool = rices.filter(d => !hasConflict(d.name, currentNamesRi));
+					if (ricePool.length === 0) ricePool = rices;
+					menuDishes.push(getRandom(ricePool, 1)[0]);
+				}
 
-                // Món chính (không trùng loại thịt)
-                let mainCount = addRice ? 2 : 3;
-                if (mains.length >= mainCount) {
-                    menuDishes = menuDishes.concat(getUniqueDishes(mains, mainCount, menuDishes));
-                }
+				// Món chính (Sử dụng hàm getUniqueDishes đã nâng cấp)
+				let mainCount = addRice ? 2 : 3;
+				if (mains.length >= mainCount) {
+					menuDishes = menuDishes.concat(getUniqueDishes(mains, mainCount, menuDishes));
+				}
 
-                // Kiểm tra lại — nếu vì lý do nào đó tráng miệng bị thiếu thì bổ sung
-                const hasDessert = menuDishes.some(d => (d.category || "").toLowerCase().trim().includes('tráng miệng') || d.name.toLowerCase().includes('rau câu') || d.name.toLowerCase().includes('chè') || d.name.toLowerCase().includes('trái cây') || d.name.toLowerCase().includes('sữa chua') || d.name.toLowerCase().includes('bánh') || d.name.toLowerCase().includes('kem') || d.name.toLowerCase().includes('sâm bổ lượng'));
-                if (!hasDessert && desserts.length > 0) menuDishes.push(getRandom(desserts, 1)[0]);
+				// Kiểm tra lại tráng miệng
+				const hasDessert = menuDishes.some(d => (d.category || "").toLowerCase().trim().includes('tráng miệng') || d.name.toLowerCase().includes('rau câu') || d.name.toLowerCase().includes('chè') || d.name.toLowerCase().includes('trái cây') || d.name.toLowerCase().includes('sữa chua') || d.name.toLowerCase().includes('bánh') || d.name.toLowerCase().includes('kem') || d.name.toLowerCase().includes('sâm bổ lượng'));
+				if (!hasDessert && desserts.length > 0) menuDishes.push(getRandom(desserts, 1)[0]);
 
-                // Tính giá & gắn hạng
-                let currentFoodPrice = menuDishes.reduce((sum, dish) => sum + (dish.price || 0), 0);
-                let totalPrice = Math.round((currentFoodPrice + globalFixedCostPerTable) * 1.2);
+				// Tính giá & gắn hạng
+				let currentFoodPrice = menuDishes.reduce((sum, dish) => sum + (dish.price || 0), 0);
+				let totalPrice = Math.round((currentFoodPrice + globalFixedCostPerTable) * 1.2);
 
-                let tier = "Thực Đơn Tiêu Chuẩn";
-                if (totalPrice >= 2500000) tier = "Thực Đơn VIP";
-                else if (totalPrice >= 1900000) tier = "Thực Đơn Cao Cấp";
+				let tier = "Thực Đơn Tiêu Chuẩn";
+				if (totalPrice >= 2500000) tier = "Thực Đơn VIP";
+				else if (totalPrice >= 1900000) tier = "Thực Đơn Cao Cấp";
 
-                generatedSampleMenus.push({
-                    id: i,
-                    name: name,
-                    tier: tier,
-                    dishes: menuDishes,
-                    image_url: getRandom(menuDishes, 1)[0]?.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c"
-                });
-            }
-            renderSampleMenus();
-        }
+				generatedSampleMenus.push({
+					id: i,
+					name: name,
+					tier: tier,
+					dishes: menuDishes,
+					image_url: getRandom(menuDishes, 1)[0]?.image_url || "https://images.unsplash.com/photo-1546069901-ba9599a7e63c"
+				});
+			}
+			renderSampleMenus();
+		}
 
         function renderSampleMenus() {
             const container = document.getElementById("sample-menus-container");
@@ -576,154 +594,155 @@
             document.getElementById('ai-result-area').classList.add('hidden');
         }
 
-        // THUẬT TOÁN AI GỢI Ý THEO GIÁ (TÁCH RIÊNG — đảo ngược công thức, liệu cơm gắp mắm)
-        function runAISuggestion() {
-            const targetPrice = parseFloat(document.getElementById('ai-target-price').value) || 0;
+				// THUẬT TOÁN AI GỢI Ý THEO GIÁ (BẢN ĐẦY ĐỦ ĐÃ FIX LỖI)
+		function runAISuggestion() {
+			const targetPrice = parseFloat(document.getElementById('ai-target-price').value) || 0;
 
-            if (targetPrice <= 0) {
-                alert("Vui lòng nhập Tổng ngân sách mong muốn cho 1 bàn tiệc!");
-                return;
-            }
+			if (targetPrice <= 0) {
+				alert("Vui lòng nhập Tổng ngân sách mong muốn cho 1 bàn tiệc!");
+				return;
+			}
 
-            // TÌM CHI PHÍ RẠP ĐỂ TRỪ NẾU NGÂN SÁCH QUÁ THẤP
-            let rapCost = 150000;
-            let rapItem = globalFixedCostsList.find(p => {
-                let n = (p.key || p.name || p.ten_mon || "").toLowerCase();
-                return n.includes('rạp') || n.includes('bàn ghế') || n.includes('chén');
-            });
-            if (rapItem) rapCost = parseFloat(rapItem.value || rapItem.price || rapItem.gia || 0);
+			let rapCost = 150000;
+			let rapItem = globalFixedCostsList.find(p => {
+				let n = (p.key || p.name || p.ten_mon || "").toLowerCase();
+				return n.includes('rạp') || n.includes('bàn ghế') || n.includes('chén');
+			});
+			if (rapItem) rapCost = parseFloat(rapItem.value || rapItem.price || rapItem.gia || 0);
 
-            let fullFixedCost = globalFixedCostPerTable;
-            let reducedFixedCost = fullFixedCost - rapCost;
+			let fullFixedCost = globalFixedCostPerTable;
+			let reducedFixedCost = fullFixedCost - rapCost;
 
-            let budgetForFood = (targetPrice / 1.2) - fullFixedCost;
-            let isRapIncluded = true;
+			let budgetForFood = (targetPrice / 1.2) - fullFixedCost;
+			let isRapIncluded = true;
 
-            if (budgetForFood < 400000) {
-                isRapIncluded = false;
-                budgetForFood = (targetPrice / 1.2) - reducedFixedCost;
-                if (budgetForFood <= 0) {
-                    alert("Ngân sách quá thấp, không đủ để lên bất kỳ món ăn nào dù đã trừ chi phí rạp/bàn ghế!");
-                    return;
-                }
-            }
+			if (budgetForFood < 400000) {
+				isRapIncluded = false;
+				budgetForFood = (targetPrice / 1.2) - reducedFixedCost;
+				if (budgetForFood <= 0) {
+					alert("Ngân sách quá thấp, không đủ để lên bất kỳ món ăn nào dù đã trừ chi phí rạp/bàn ghế!");
+					return;
+				}
+			}
 
-            const availableDishes = dishesList.filter(d => {
-                const n = d.name.toLowerCase();
-                return !n.includes("cá lóc hấp bầu") && !n.includes("cá tai tượng") && (d.price > 0);
-            });
+			// FIX LỖI 1: Lọc bỏ Món phụ đồ nguội
+			const availableDishes = dishesList.filter(d => {
+				const n = d.name.toLowerCase();
+				const cat = (d.category || "").toLowerCase().trim();
+				return !n.includes("cá lóc hấp bầu") && !n.includes("cá tai tượng") && (d.price > 0) && (cat !== "món phụ đồ nguội");
+			});
 
-            // Dùng hàm classifyDishes riêng — KHÔNG dùng chung với generateSampleMenus
-            const aiCategories = classifyDishes(availableDishes);
-            const aiStarters = aiCategories.starters;
-            const aiHotpots = aiCategories.hotpots;
-            const aiRices = aiCategories.rices;
-            const aiDesserts = aiCategories.desserts;
-            const aiMains = aiCategories.mains;
+			const aiCategories = classifyDishes(availableDishes);
+			const aiStarters = aiCategories.starters;
+			const aiHotpots = aiCategories.hotpots;
+			const aiRices = aiCategories.rices;
+			const aiDesserts = aiCategories.desserts;
+			const aiMains = aiCategories.mains;
 
-            let aiPreferredStarters = aiStarters.filter(d => d.name.toLowerCase().includes('5 món'));
-            const getRandom = (arr, n) => [...arr].sort(() => 0.5 - Math.random()).slice(0, n);
+			let aiPreferredStarters = aiStarters.filter(d => d.name.toLowerCase().includes('5 món'));
+			const getRandom = (arr, n) => [...arr].sort(() => 0.5 - Math.random()).slice(0, n);
 
-            let bestMenu = [];
-            let closestPriceDiff = Infinity;
-            let bestFoodPrice = 0;
+			let bestMenu = [];
+			let closestPriceDiff = Infinity;
+			let bestFoodPrice = 0;
 
-            // CHẠY THỬ 500 KỊCH BẢN — LUÔN có tráng miệng
-            for (let i = 0; i < 500; i++) {
-                let tempMenu = [];
-                let currentFoodPrice = 0;
+			// CHẠY THỬ 500 KỊCH BẢN 
+			for (let i = 0; i < 500; i++) {
+				let tempMenu = [];
+				let currentFoodPrice = 0;
 
-                // Bắt buộc: 1 Tráng miệng (đặt trước để đảm bảo ngân sách)
-                let de = getRandom(aiDesserts, 1)[0];
-                if (de) { tempMenu.push(de); currentFoodPrice += de.price; }
+				// Bắt buộc: 1 Tráng miệng
+				let de = getRandom(aiDesserts, 1)[0];
+				if (de) { tempMenu.push(de); currentFoodPrice += de.price; }
 
-                // Bắt buộc: 1 Khai vị
-                let st = getRandom(aiPreferredStarters.length > 0 && budgetForFood > 800000 ? aiPreferredStarters : aiStarters, 1)[0];
-                if (st) { tempMenu.push(st); currentFoodPrice += st.price; }
+				// Bắt buộc: 1 Khai vị
+				let stPool = (aiPreferredStarters.length > 0 && budgetForFood > 800000) ? aiPreferredStarters : aiStarters;
+				let st = getRandom(stPool, 1)[0];
+				if (st) { tempMenu.push(st); currentFoodPrice += st.price; }
 
-                // Bắt buộc: 1 Lẩu
-                let hp = getRandom(aiHotpots, 1)[0];
-                if (hp) { tempMenu.push(hp); currentFoodPrice += hp.price; }
+				// Bắt buộc: 1 Lẩu (Check trùng với Khai vị)
+				let currentNamesHp = tempMenu.map(d => d.name);
+				let hpPool = aiHotpots.filter(d => !hasConflict(d.name, currentNamesHp));
+				if (hpPool.length === 0) hpPool = aiHotpots;
+				let hp = getRandom(hpPool, 1)[0];
+				if (hp) { tempMenu.push(hp); currentFoodPrice += hp.price; }
 
-                // Bắt buộc: 1 Món chính
-                let m1 = getRandom(aiMains, 1)[0];
-                if (m1) { tempMenu.push(m1); currentFoodPrice += m1.price; }
+				// Bắt buộc: 1 Món chính (Check trùng)
+				let currentNamesM1 = tempMenu.map(d => d.name);
+				let m1Pool = aiMains.filter(d => !hasConflict(d.name, currentNamesM1));
+				if (m1Pool.length === 0) m1Pool = aiMains;
+				let m1 = getRandom(m1Pool, 1)[0];
+				if (m1) { tempMenu.push(m1); currentFoodPrice += m1.price; }
 
-                // Tùy ngân sách: thêm Cơm
-                if (budgetForFood - currentFoodPrice > 150000) {
-                    let ri = getRandom(aiRices, 1)[0];
-                    if (ri) { tempMenu.push(ri); currentFoodPrice += ri.price; }
-                }
+				// Tùy ngân sách: thêm Cơm (Check trùng)
+				if (budgetForFood - currentFoodPrice > 150000) {
+					let currentNamesRi = tempMenu.map(d => d.name);
+					let riPool = aiRices.filter(d => !hasConflict(d.name, currentNamesRi));
+					if (riPool.length === 0) riPool = aiRices;
+					let ri = getRandom(riPool, 1)[0];
+					if (ri) { tempMenu.push(ri); currentFoodPrice += ri.price; }
+				}
 
-                // Tùy ngân sách: thêm món chính thứ 2
-                if (budgetForFood - currentFoodPrice > 200000 && aiMains.length > 1) {
-                    let extraMains = getUniqueDishes(aiMains.filter(m => m.id !== (m1 ? m1.id : null)), 1, tempMenu);
-                    if (extraMains.length > 0) {
-                        tempMenu.push(extraMains[0]);
-                        currentFoodPrice += extraMains[0].price;
-                    }
-                }
+				// Tùy ngân sách: thêm món chính thứ 2
+				if (budgetForFood - currentFoodPrice > 200000 && aiMains.length > 1) {
+					let extraMains = getUniqueDishes(aiMains.filter(m => m.id !== (m1 ? m1.id : null)), 1, tempMenu);
+					if (extraMains.length > 0) {
+						tempMenu.push(extraMains[0]);
+						currentFoodPrice += extraMains[0].price;
+					}
+				}
 
-                let priceDiff = Math.abs(currentFoodPrice - budgetForFood);
-                if (priceDiff < closestPriceDiff) {
-                    closestPriceDiff = priceDiff;
-                    bestMenu = [...tempMenu];
-                    bestFoodPrice = currentFoodPrice;
-                }
-            }
+				let priceDiff = Math.abs(currentFoodPrice - budgetForFood);
+				if (priceDiff < closestPriceDiff) {
+					closestPriceDiff = priceDiff;
+					bestMenu = [...tempMenu];
+					bestFoodPrice = currentFoodPrice;
+				}
+			}
 
-            aiSuggestedDishIds = [];
-            const listContainer = document.getElementById('ai-suggested-list');
-            listContainer.innerHTML = "";
-            
-            const grouped = getGroupedMenu(bestMenu);
-            let index = 1;
+			// --- PHẦN RENDER KẾT QUẢ RA MÀN HÌNH ĐÃ ĐƯỢC KHÔI PHỤC ---
+			if (bestMenu.length === 0) {
+				alert("Không thể tìm được thực đơn phù hợp với mức giá này!");
+				return;
+			}
 
-            const renderItem = (dish) => {
-                aiSuggestedDishIds.push(dish.id);
-                return `
-                    <li class="flex justify-between items-center text-[12px] font-semibold text-slate-700 border-b border-slate-50 py-2">
-                        <div class="flex items-center gap-2 pl-1">
-                            <span class="text-emerald-600 font-black">${index++}.</span>
-                            <span>${dish.name}</span>
-                        </div>
-                    </li>
-                `;
-            };
+			let finalFixedCost = isRapIncluded ? fullFixedCost : reducedFixedCost;
+			let finalTotalPrice = Math.round((bestFoodPrice + finalFixedCost) * 1.2);
+			document.getElementById('ai-total-price').innerText = finalTotalPrice.toLocaleString('vi-VN') + ' đ';
 
-            if (grouped.doNguoi.length > 0) grouped.doNguoi.forEach(d => { listContainer.innerHTML += renderItem(d); });
-            grouped.others.forEach(d => { listContainer.innerHTML += renderItem(d); });
+			let statusHtml = isRapIncluded 
+				? `<div class="text-[10px] text-emerald-600 bg-emerald-50 p-2 rounded-lg border border-emerald-100 flex items-center gap-2"><i class="fa-solid fa-circle-check"></i> Đã bao gồm đủ: rạp, bàn ghế, chén bát, nước uống, phục vụ...</div>` 
+				: `<div class="text-[10px] text-amber-600 bg-amber-50 p-2 rounded-lg border border-amber-100 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> Ngân sách thấp: Đã trừ tiền Rạp/Bàn ghế ra khỏi báo giá.</div>`;
+			document.getElementById('ai-status-label').innerHTML = statusHtml;
 
-            // HIỂN THỊ TRẠNG THÁI RẠP DỰA TRÊN NGÂN SÁCH
-            let appliedFixedCost = isRapIncluded ? fullFixedCost : reducedFixedCost;
-            
-            if (appliedFixedCost > 0) {
-                let labelText = isRapIncluded 
-                    ? `<i class="fa-solid fa-circle-check text-emerald-500"></i> <span class="italic">đã bao gồm rạp, bàn ghế, chén đũa, nước ngọt, suối, phục vụ...</span>`
-                    : `<i class="fa-solid fa-circle-exclamation text-amber-500"></i> <span class="italic text-amber-800">Chưa bao gồm rạp, bàn ghế. Đã có nước ngọt, suối, phục vụ...</span>`;
-                
-                let labelColor = isRapIncluded ? 'bg-emerald-50/50 border-emerald-100 text-emerald-800' : 'bg-amber-50/50 border-amber-200 text-amber-800';
+			aiSuggestedDishIds = bestMenu.map(d => d.id);
+			
+			const ul = document.getElementById('ai-suggested-list');
+			ul.innerHTML = "";
+			
+			// Gom nhóm để hiển thị rõ ràng Khai Vị & Món Chính
+			const grouped = getGroupedMenu(bestMenu);
+			let index = 1;
+			
+			if (grouped.doNguoi.length > 0) {
+				let itemsHtml = grouped.doNguoi.map(d => `<div class="pl-8 py-1 text-[12px] text-slate-600 italic">- ${d.name}</div>`).join('');
+				ul.innerHTML += `
+					<li class="mb-2">
+						<div class="flex items-center gap-2 text-sm text-slate-700"><span class="text-emerald-600 font-black">${index++}.</span><span class="font-bold uppercase tracking-wide">Món Khai Vị</span></div>
+						${itemsHtml}
+					</li>
+				`;
+			}
+			grouped.others.forEach(dish => {
+				ul.innerHTML += `
+					<li class="flex items-center gap-2 text-sm text-slate-700 border-b border-slate-50 py-1.5">
+						<span class="text-emerald-600 font-black">${index++}.</span><span class="font-semibold">${dish.name}</span>
+					</li>
+				`;
+			});
 
-                document.getElementById('ai-status-label').innerHTML = `
-                    <div class="flex justify-between items-center text-[11px] font-bold p-2.5 mt-2 rounded-lg border ${labelColor}">
-                        <div class="flex items-center gap-2 pl-1">${labelText}</div>
-                    </div>
-                `;
-            } else {
-                document.getElementById('ai-status-label').innerHTML = '';
-            }
-
-            // TỔNG BÁO GIÁ CHO KHÁCH (+20%)
-            let finalTotalForTable = Math.round((bestFoodPrice + appliedFixedCost) * 1.2);
-            
-            document.getElementById('ai-total-price').innerHTML = `
-                <div class="text-right">
-                    <span class="block text-xl font-black text-rose-600">${finalTotalForTable.toLocaleString('vi-VN')} đ</span>
-                </div>
-            `;
-            document.getElementById('ai-result-area').classList.remove('hidden');
-        }
-
+			document.getElementById('ai-result-area').classList.remove('hidden');
+		}
         function applySuggestionToCart() {
             cartDishes = [...aiSuggestedDishIds];
             updateCartBadge();
