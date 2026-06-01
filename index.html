@@ -278,6 +278,7 @@
         let generatedSampleMenus = [];
         let currentSelectedSampleMenuId = null;
         let aiSuggestedDishIds = [];
+        let aiSelectedFixedCostKeys = [];
 
         let globalFixedCostPerTable = 0;
         let globalFixedCostsList = [];
@@ -700,39 +701,101 @@
 				}
 			}
 
-			// --- PHẦN RENDER KẾT QUẢ RA MÀN HÌNH ĐÃ ĐƯỢC KHÔI PHỤC ---
+			// --- KHỞI TẠO CÁC DỊCH VỤ ĐI KÈM VÀ RENDER KẾT QUẢ ---
 			if (bestMenu.length === 0) {
 				alert("Không thể tìm được thực đơn phù hợp với mức giá này!");
 				return;
 			}
 
-			let finalFixedCost = isRapIncluded ? fullFixedCost : reducedFixedCost;
-			let finalTotalPrice = Math.round((bestFoodPrice + finalFixedCost) * 1.2);
-			document.getElementById('ai-total-price').innerText = finalTotalPrice.toLocaleString('vi-VN') + ' đ';
-
-			let statusHtml = isRapIncluded 
-				? `<div class="bg-emerald-50 p-3 rounded-xl border border-emerald-200 flex flex-col gap-2 shadow-sm mb-1">
-						<div class="flex items-start gap-1.5 text-[11px] text-emerald-700 font-bold leading-relaxed">
-							<span class="text-rose-600 font-black animate-pulse text-sm leading-none mt-0.5">***</span>
-							<span><i class="fa-solid fa-circle-check"></i> Đã bao gồm đủ: rạp, bàn ghế, chén bát, nước uống, phục vụ...</span>
-						</div>
-						<div class="flex items-start gap-1.5 text-[11px] text-amber-700 font-semibold pt-2 border-t border-emerald-100/70">
-							<span class="text-amber-500 font-black text-sm leading-none mt-0.5">***</span>
-							<span class="italic">Nếu không cần rạp thì trừ chi phí rạp, hoặc chi phí khác </span>
-						</div>
-				   </div>` 
-				: `<div class="text-[11px] text-amber-700 bg-amber-50 p-3 rounded-xl border border-amber-200 flex items-center gap-2 shadow-sm mb-1">
-						<i class="fa-solid fa-triangle-exclamation text-amber-500 text-base"></i> 
-						<span>Ngân sách thấp: Đã trừ tiền Rạp/Bàn ghế ra khỏi báo giá.</span>
-				   </div>`;
-			document.getElementById('ai-status-label').innerHTML = statusHtml;
+			// Mặc định chọn tất cả các chi phí cố định (Dù là bắt buộc hay tùy chọn đều lưu vào mảng này ban đầu)
+			aiSelectedFixedCostKeys = globalFixedCostsList.map(item => item.key || item.name || item.ten_mon);
+			
+			// Nếu ngân sách quá thấp đã bỏ rạp từ trước thì uncheck rạp
+			if (!isRapIncluded) {
+				let rapItem = globalFixedCostsList.find(p => {
+					let n = (p.key || p.name || p.ten_mon || "").toLowerCase();
+					return n.includes('rạp') || n.includes('bàn ghế') || n.includes('chén');
+				});
+				if (rapItem) {
+					let rapKey = rapItem.key || rapItem.name || rapItem.ten_mon;
+					aiSelectedFixedCostKeys = aiSelectedFixedCostKeys.filter(k => k !== rapKey);
+				}
+			}
 
 			aiSuggestedDishIds = bestMenu.map(d => d.id);
+			renderAISuggestionResult();
+		}
+
+		function toggleAIFixedCost(keyStr) {
+			if (aiSelectedFixedCostKeys.includes(keyStr)) {
+				aiSelectedFixedCostKeys = aiSelectedFixedCostKeys.filter(k => k !== keyStr);
+			} else {
+				aiSelectedFixedCostKeys.push(keyStr);
+			}
+			renderAISuggestionResult();
+		}
+
+		function removeDishFromAISuggestion(dishId) {
+			aiSuggestedDishIds = aiSuggestedDishIds.filter(id => id !== dishId);
+			renderAISuggestionResult();
+		}
+
+		function renderAISuggestionResult() {
+			let currentAIFixedCost = 0;
+			let checkboxesHtml = '';
+
+			// Tạo giao diện các dấu tick cho dịch vụ đi kèm (ẨN CÁC CHI PHÍ BẮT BUỘC)
+			globalFixedCostsList.forEach(item => {
+				let key = item.key || item.name || item.ten_mon;
+				let lowerKey = key.toLowerCase();
+				let val = parseFloat(item.value || item.price || item.gia || 0);
+				
+				// Xác định 3 chi phí CHO PHÉP KHÁCH HÀNG BỎ (Rạp, Suối, Nước Ngọt)
+				let isOptional = lowerKey.includes('rạp') || lowerKey.includes('bàn ghế') || lowerKey.includes('suối') || lowerKey.includes('nước ngọt');
+				
+				if (!isOptional) {
+					// CÁC CHI PHÍ BẮT BUỘC: Luôn cộng tiền, KHÔNG HIỂN THỊ CHECKBOX
+					currentAIFixedCost += val;
+				} else {
+					// CÁC CHI PHÍ TÙY CHỌN: Hiển thị checkbox, chỉ cộng tiền nếu được tick
+					let isChecked = aiSelectedFixedCostKeys.includes(key);
+					if (isChecked) {
+						currentAIFixedCost += val;
+					}
+
+					let safeKey = key.replace(/'/g, "\\'");
+					checkboxesHtml += `
+						<label class="flex items-center gap-1.5 cursor-pointer bg-white/80 px-2.5 py-1.5 rounded-lg border ${isChecked ? 'border-emerald-300 shadow-sm' : 'border-slate-200 opacity-60'} hover:bg-white transition-all select-none">
+							<input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleAIFixedCost('${safeKey}')" class="accent-emerald-600 cursor-pointer w-4 h-4 rounded">
+							<span class="text-[12px] font-bold ${isChecked ? 'text-emerald-800' : 'text-slate-500'} capitalize">${key}</span>
+						</label>
+					`;
+				}
+			});
+
+			let bestMenu = aiSuggestedDishIds.map(id => dishesList.find(d => d.id === id)).filter(Boolean);
+			let bestFoodPrice = bestMenu.reduce((sum, dish) => sum + (dish.price || 0), 0);
 			
+			// TÍNH TỔNG TIỀN: (Tiền món ăn + Tiền dịch vụ đã tick + Tiền chi phí bắt buộc) * 1.2 (20% lợi nhuận)
+			let finalTotalPrice = Math.round((bestFoodPrice + currentAIFixedCost) * 1.2);
+			document.getElementById('ai-total-price').innerText = finalTotalPrice > 0 ? finalTotalPrice.toLocaleString('vi-VN') + ' đ' : '0 đ';
+
+			let statusHtml = `
+				<div class="bg-emerald-50 p-3.5 rounded-xl border border-emerald-200 flex flex-col gap-3 shadow-sm mb-1 mt-3">
+					<div class="flex items-start gap-1.5 text-[11px] text-emerald-800 font-bold leading-relaxed border-b border-emerald-100/70 pb-2">
+						<span class="text-rose-600 font-black animate-pulse text-sm leading-none mt-0.5">***</span>
+						<span><i class="fa-solid fa-circle-check"></i> Đã bao gồm các dịch vụ (Bỏ tick nếu không cần để giảm chi phí):</span>
+					</div>
+					<div class="flex flex-wrap gap-2">
+						${checkboxesHtml}
+					</div>
+				</div>
+			`;
+			document.getElementById('ai-status-label').innerHTML = statusHtml;
+
 			const ul = document.getElementById('ai-suggested-list');
 			ul.innerHTML = "";
 			
-			// Gom nhóm để hiển thị rõ ràng Khai Vị & Món Chính
 			const grouped = getGroupedMenu(bestMenu);
 			let index = 1;
 			
@@ -746,9 +809,18 @@
 				`;
 			}
 			grouped.others.forEach(dish => {
+				let c = (dish.category || "").toLowerCase();
+				let n = dish.name.toLowerCase();
+				let isDessert = c.includes('tráng miệng') || n.includes('rau câu') || n.includes('chè') || n.includes('trái cây') || n.includes('sữa chua') || n.includes('bánh') || n.includes('kem') || n.includes('sâm bổ lượng') || n.includes('nhãn nhục');
+				
+				let removeBtn = isDessert ? `<button onclick="removeDishFromAISuggestion(${dish.id})" class="text-rose-500 hover:text-rose-700 bg-rose-50 hover:bg-rose-100 w-7 h-7 flex items-center justify-center rounded-lg transition-colors cursor-pointer shrink-0" title="Bỏ món tráng miệng này"><i class="fa-solid fa-trash-can"></i></button>` : '';
+
 				ul.innerHTML += `
-					<li class="flex items-center gap-2 text-sm text-slate-700 border-b border-slate-50 py-1.5">
-						<span class="text-emerald-600 font-black">${index++}.</span><span class="font-semibold">${dish.name}</span>
+					<li class="flex items-center justify-between gap-2 text-sm text-slate-700 border-b border-slate-50 py-1.5">
+						<div class="flex items-center gap-2">
+							<span class="text-emerald-600 font-black">${index++}.</span><span class="font-semibold">${dish.name}</span>
+						</div>
+						${removeBtn}
 					</li>
 				`;
 			});
