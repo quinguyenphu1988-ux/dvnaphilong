@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="color-scheme" content="light">
     
-    <title>DVNA Phi Long - Hệ Thống Quản Lý Tiệc (Cloud)</title>
+    <title>Dịch Vụ Nấu Ăn Phi Long - Hệ Thống Quản Lý Tiệc</title>
 
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -414,16 +414,17 @@
 		
 		// --- CẤU HÌNH TELEGRAM BOT ---
         const TELEGRAM_TOKEN = '8580811533:AAE1IMKPv3QG3TD2fLK2dBp-yYGt29phNZ8'; 
-        const TELEGRAM_CHAT_ID = '6428508789';
+        // Thay vì 1 người, giờ ta dùng danh sách [ID_1, ID_2, ...] để gửi cho nhiều người
+        const TELEGRAM_CHAT_IDS = ['-5197568749']; // Anh điền ID của nhân viên vào trong ngoặc vuông này, cách nhau bởi dấu phẩy
 
         function sendTelegramPartyAlerts(activeMenus) {
-            if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID) return;
+            if (!TELEGRAM_TOKEN || TELEGRAM_CHAT_IDS.length === 0) return;
 
             // Kiểm tra xem hôm nay đã gửi báo cáo chưa (tránh spam khi tải lại trang)
             const todayStr = new Date().toISOString().split('T')[0];
             const lastSentDate = localStorage.getItem('last_telegram_alert_date');
             
-            //if (lastSentDate === todayStr) return; // Nếu hôm nay gửi rồi thì bỏ qua
+            if (lastSentDate === todayStr) return; // Nếu hôm nay gửi rồi thì bỏ qua
 
             const today = new Date(); today.setHours(0,0,0,0);
             let nearParties = [];
@@ -452,22 +453,43 @@
 
                 // Gọi API Telegram để gửi tin nhắn
                 const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+                TELEGRAM_CHAT_IDS.forEach(chatId => {
+                    fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'Markdown' })
+                    }).then(response => {
+                        if (response.ok) {
+                            // Lưu lịch sử để không gửi lại trong ngày hôm nay
+                            localStorage.setItem('last_telegram_alert_date', todayStr);
+                            console.log("Đã gửi cảnh báo Telegram thành công!");
+                        }
+                    }).catch(err => console.error("Lỗi gửi Telegram:", err));
+                });
+            }
+        }
+
+        
+        function sendTelegramSingleAlert(menuData, isUpdate = false) {
+            if (!TELEGRAM_TOKEN || TELEGRAM_CHAT_IDS.length === 0) return;
+            
+            let title = isUpdate ? "🔄 CẬP NHẬT THÔNG TIN TIỆC" : "🎉 CÓ ĐƠN ĐẶT TIỆC MỚI";
+            let message = `*${title}*\n\n`;
+            message += `👤 Khách hàng: *${menuData.customer}*\n`;
+            message += `📱 SĐT: ${menuData.phone || 'Trống'}\n`;
+            message += `🍽 Loại: ${menuData.type} (${menuData.tables || 0} bàn)\n`;
+            message += `📅 Ngày: ${menuData.date} | Giờ: ${menuData.timeparty || 'Chưa hẹn'}\n`;
+            message += `📍 ĐC: ${menuData.address || 'Chưa cập nhật'}\n`;
+            if (menuData.note) message += `📝 Ghi chú: ${menuData.note}\n`;
+
+            const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+            TELEGRAM_CHAT_IDS.forEach(chatId => {
                 fetch(url, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        chat_id: TELEGRAM_CHAT_ID,
-                        text: message,
-                        parse_mode: 'Markdown'
-                    })
-                }).then(response => {
-                    if (response.ok) {
-                        // Lưu lịch sử để không gửi lại trong ngày hôm nay
-                        localStorage.setItem('last_telegram_alert_date', todayStr);
-                        console.log("Đã gửi cảnh báo Telegram thành công!");
-                    }
+                    body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'Markdown' })
                 }).catch(err => console.error("Lỗi gửi Telegram:", err));
-            }
+            });
         }
 
         function getLunarDateString(solarDateStr) {
@@ -944,9 +966,11 @@
                 const existingMenu = menusList.find(m => m.id === currentEditingMenuId);
                 menuData.status = existingMenu ? existingMenu.status : 'pending';
                 await _supabase.from('menus').update(menuData).eq('id', currentEditingMenuId);
+                sendTelegramSingleAlert(menuData, true); // Báo cập nhật
             } else {
                 menuData.status = 'pending';
                 await _supabase.from('menus').insert([menuData]);
+                sendTelegramSingleAlert(menuData, false); // Báo thêm mới
             }
             resetMenuForm();
             await loadAllCloudData();
