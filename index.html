@@ -194,7 +194,7 @@
             <div class="bg-amber-50 p-3 rounded-xl mb-4 flex flex-col items-center border border-amber-100">
                 <span class="text-xs font-bold text-amber-800 uppercase mb-1">TỔNG BÁO GIÁ / BÀN:</span>
                 <span id="cart-total-price" class="text-xl font-black text-rose-600">0 đ</span>
-                <span class="text-[9px] text-slate-500 italic mt-1 text-center"><i class="fa-solid fa-circle-check text-emerald-500"></i> đã bao gồm rạp, bàn ghế, chén đũa, nước ngọt, suối, khăn lạnh, gas, phục vụ, vận chuyển...</span>
+                <span id="cart-total-note" class="text-[10px] text-slate-500 italic mt-1 text-center font-medium"><i class="fa-solid fa-circle-check text-emerald-500"></i> đã bao gồm đầy đủ rạp, bàn ghế, chén đũa, nước ngọt, suối, phục vụ...</span>
             </div>
 
             <div class="pt-4 border-t border-slate-100 flex justify-between items-center">
@@ -277,8 +277,10 @@
         let cartDishes = []; 
         let generatedSampleMenus = [];
         let currentSelectedSampleMenuId = null;
+        
         let aiSuggestedDishIds = [];
         let aiSelectedFixedCostKeys = [];
+        let cartSelectedFixedCostKeys = []; // Biến lưu các mục dịch vụ thực tế của giỏ hàng
 
         let globalFixedCostPerTable = 0;
         let globalFixedCostsList = [];
@@ -323,6 +325,9 @@
                 globalFixedCostPerTable = globalFixedCostsList.reduce((sum, item) => {
                     return sum + parseFloat(item.value || item.price || item.gia || 0);
                 }, 0);
+                
+                // Khởi tạo mặc định giỏ hàng lấy full dịch vụ
+                cartSelectedFixedCostKeys = globalFixedCostsList.map(item => item.key || item.name || item.ten_mon);
 
                 dishesList = (rawDishes || []).map(dish => {
                     const dishName = dish.name ? dish.name.toLowerCase().trim() : "";
@@ -580,10 +585,12 @@
             document.getElementById('sample-detail-modal').classList.add('show');
         }
 
+        // Tích hợp thay đổi 3: Đồng bộ dịch vụ vào giỏ hàng
         function applySampleToCart() {
             const menu = generatedSampleMenus.find(m => m.id === currentSelectedSampleMenuId);
             if(!menu) return;
             cartDishes = menu.dishes.map(d => d.id);
+            cartSelectedFixedCostKeys = globalFixedCostsList.map(item => item.key || item.name || item.ten_mon); 
             updateCartBadge();
             renderDishes(dishesList);
             closeModal('sample-detail-modal');
@@ -827,8 +834,11 @@
 
 			document.getElementById('ai-result-area').classList.remove('hidden');
 		}
+
+        // Tích hợp thay đổi 3: Đồng bộ dịch vụ vào giỏ hàng
         function applySuggestionToCart() {
             cartDishes = [...aiSuggestedDishIds];
+            cartSelectedFixedCostKeys = [...aiSelectedFixedCostKeys]; 
             updateCartBadge();
             renderDishes(dishesList);
             closeModal('suggest-modal');
@@ -856,8 +866,13 @@
             document.getElementById('cart-badge').innerText = cartDishes.length;
         }
 
+        // Tích hợp thay đổi 3: Reset dịch vụ khi xóa giỏ
         function clearCart() {
-            cartDishes = []; updateCartBadge(); renderDishes(dishesList); closeModal('cart-modal');
+            cartDishes = []; 
+            cartSelectedFixedCostKeys = globalFixedCostsList.map(item => item.key || item.name || item.ten_mon); 
+            updateCartBadge(); 
+            renderDishes(dishesList); 
+            closeModal('cart-modal');
         }
 
         function getGroupedMenu(dishArray) {
@@ -909,7 +924,7 @@
             return { doNguoi, others };
         }
 
-        // XUẤT RA BILL GIỎ HÀNG & MẪU
+        // Tích hợp thay đổi 5: XUẤT RA BILL GIỎ HÀNG (Sửa logic tính giá dựa trên dịch vụ đã chọn)
         function renderMenuHTMLToList(grouped, containerEl, mode = 'print') {
             let index = 1; containerEl.innerHTML = ""; let currentTotal = 0;
             
@@ -970,21 +985,57 @@
             });
 
             if(mode === 'cart') {
+                let currentCartFixedCost = 0;
+                let excludedItems = [];
+                
+                // 1. Tính toán lại chi phí dựa trên các mục ĐANG ĐƯỢC CHỌN trong giỏ hàng
+                globalFixedCostsList.forEach(item => {
+                    let key = item.key || item.name || item.ten_mon;
+                    let val = parseFloat(item.value || item.price || item.gia || 0);
+                    if (cartSelectedFixedCostKeys.includes(key)) {
+                        currentCartFixedCost += val;
+                    } else {
+                        excludedItems.push(key); // Lọc ra các mục đã bị khách bỏ tick
+                    }
+                });
+
+                let statusHtml = '';
+                const noteEl = document.getElementById('cart-total-note');
+
+                // 2. Xét điều kiện để hiển thị dòng chữ Đã bao gồm hay Đã trừ ra
+                if (excludedItems.length > 0) {
+                    statusHtml = `
+                        <div class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-circle-exclamation text-rose-500 text-lg"></i>
+                            <span class="font-bold text-rose-700 italic text-[11px]">Thực đơn đã trừ ra các mục: <span class="uppercase">${excludedItems.join(', ')}</span></span>
+                        </div>
+                    `;
+                    // Cập nhật text dưới tổng báo giá
+                    if(noteEl) noteEl.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-500"></i> Thực đơn đã trừ ra: <b class="text-rose-600">${excludedItems.join(', ')}</b>`;
+                } else {
+                    statusHtml = `
+                        <div class="flex items-center gap-2.5">
+                            <i class="fa-solid fa-circle-check text-emerald-500 text-lg"></i>
+                            <span class="font-bold text-emerald-800 italic text-[11px]">Đã bao gồm đầy đủ rạp, bàn ghế, chén đũa, nước ngọt, suối, phục vụ...</span>
+                        </div>
+                    `;
+                    // Cập nhật text dưới tổng báo giá
+                    if(noteEl) noteEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500"></i> đã bao gồm đầy đủ rạp, bàn ghế, chén đũa, nước ngọt, suối, phục vụ...`;
+                }
+
+                // 3. Render khung thông báo vào danh sách món
                 if (globalFixedCostsList.length > 0) {
                     containerEl.innerHTML += `
                         <li class="mb-2 mt-4">
-                            <div class="flex items-center justify-between text-sm text-slate-700 bg-emerald-50/50 border border-emerald-100 p-2.5 rounded-lg">
-                                <div class="flex items-center gap-2.5">
-                                    <i class="fa-solid fa-circle-check text-emerald-500"></i>
-                                    <span class="font-bold text-emerald-800 italic text-[11px]">đã bao gồm rạp, bàn ghế, chén đũa, nước ngọt, suối, phục vụ...</span>
-                                </div>
+                            <div class="flex items-center justify-between text-sm text-slate-700 ${excludedItems.length > 0 ? 'bg-rose-50/50 border-rose-200' : 'bg-emerald-50/50 border-emerald-100'} border p-2.5 rounded-lg">
+                                ${statusHtml}
                             </div>
                         </li>
                     `;
                 }
 
-                // TỔNG GIỎ HÀNG (+20%)
-                let finalCartPrice = Math.round((currentTotal + globalFixedCostPerTable) * 1.2);
+                // 4. Tính lại TỔNG GIỎ HÀNG (+20%) lấy từ chi phí CỦA GIỎ HÀNG (currentCartFixedCost) thay vì giá cứng
+                let finalCartPrice = Math.round((currentTotal + currentCartFixedCost) * 1.2);
                 document.getElementById('cart-total-price').innerText = finalCartPrice > 0 ? finalCartPrice.toLocaleString('vi-VN') + ' đ' : '0 đ';
             }
         }
