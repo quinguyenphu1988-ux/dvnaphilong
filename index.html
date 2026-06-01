@@ -585,7 +585,6 @@
             document.getElementById('sample-detail-modal').classList.add('show');
         }
 
-        // Tích hợp thay đổi 3: Đồng bộ dịch vụ vào giỏ hàng
         function applySampleToCart() {
             const menu = generatedSampleMenus.find(m => m.id === currentSelectedSampleMenuId);
             if(!menu) return;
@@ -602,7 +601,7 @@
             document.getElementById('ai-result-area').classList.add('hidden');
         }
 
-				// THUẬT TOÁN AI GỢI Ý THEO GIÁ (BẢN ĐẦY ĐỦ ĐÃ FIX LỖI)
+		// THUẬT TOÁN AI GỢI Ý THEO GIÁ
 		function runAISuggestion() {
 			const targetPrice = parseFloat(document.getElementById('ai-target-price').value) || 0;
 
@@ -633,7 +632,6 @@
 				}
 			}
 
-			// FIX LỖI 1: Lọc bỏ Món phụ đồ nguội
 			const availableDishes = dishesList.filter(d => {
 				const n = d.name.toLowerCase();
 				const cat = (d.category || "").toLowerCase().trim();
@@ -654,35 +652,29 @@
 			let closestPriceDiff = Infinity;
 			let bestFoodPrice = 0;
 
-			// CHẠY THỬ 500 KỊCH BẢN 
 			for (let i = 0; i < 500; i++) {
 				let tempMenu = [];
 				let currentFoodPrice = 0;
 
-				// Bắt buộc: 1 Tráng miệng
 				let de = getRandom(aiDesserts, 1)[0];
 				if (de) { tempMenu.push(de); currentFoodPrice += de.price; }
 
-				// Bắt buộc: 1 Khai vị
 				let stPool = (aiPreferredStarters.length > 0 && budgetForFood > 800000) ? aiPreferredStarters : aiStarters;
 				let st = getRandom(stPool, 1)[0];
 				if (st) { tempMenu.push(st); currentFoodPrice += st.price; }
 
-				// Bắt buộc: 1 Lẩu (Check trùng với Khai vị)
 				let currentNamesHp = tempMenu.map(d => d.name);
 				let hpPool = aiHotpots.filter(d => !hasConflict(d.name, currentNamesHp));
 				if (hpPool.length === 0) hpPool = aiHotpots;
 				let hp = getRandom(hpPool, 1)[0];
 				if (hp) { tempMenu.push(hp); currentFoodPrice += hp.price; }
 
-				// Bắt buộc: 1 Món chính (Check trùng)
 				let currentNamesM1 = tempMenu.map(d => d.name);
 				let m1Pool = aiMains.filter(d => !hasConflict(d.name, currentNamesM1));
 				if (m1Pool.length === 0) m1Pool = aiMains;
 				let m1 = getRandom(m1Pool, 1)[0];
 				if (m1) { tempMenu.push(m1); currentFoodPrice += m1.price; }
 
-				// Tùy ngân sách: thêm Cơm (Check trùng)
 				if (budgetForFood - currentFoodPrice > 150000) {
 					let currentNamesRi = tempMenu.map(d => d.name);
 					let riPool = aiRices.filter(d => !hasConflict(d.name, currentNamesRi));
@@ -691,7 +683,6 @@
 					if (ri) { tempMenu.push(ri); currentFoodPrice += ri.price; }
 				}
 
-				// Tùy ngân sách: thêm món chính thứ 2
 				if (budgetForFood - currentFoodPrice > 200000 && aiMains.length > 1) {
 					let extraMains = getUniqueDishes(aiMains.filter(m => m.id !== (m1 ? m1.id : null)), 1, tempMenu);
 					if (extraMains.length > 0) {
@@ -708,16 +699,13 @@
 				}
 			}
 
-			// --- KHỞI TẠO CÁC DỊCH VỤ ĐI KÈM VÀ RENDER KẾT QUẢ ---
 			if (bestMenu.length === 0) {
 				alert("Không thể tìm được thực đơn phù hợp với mức giá này!");
 				return;
 			}
 
-			// Mặc định chọn tất cả các chi phí cố định (Dù là bắt buộc hay tùy chọn đều lưu vào mảng này ban đầu)
 			aiSelectedFixedCostKeys = globalFixedCostsList.map(item => item.key || item.name || item.ten_mon);
 			
-			// Nếu ngân sách quá thấp đã bỏ rạp từ trước thì uncheck rạp
 			if (!isRapIncluded) {
 				let rapItem = globalFixedCostsList.find(p => {
 					let n = (p.key || p.name || p.ten_mon || "").toLowerCase();
@@ -742,6 +730,16 @@
 			renderAISuggestionResult();
 		}
 
+        // HÀM MỚI: Tích hợp Checkbox Bật/Tắt dịch vụ ngay trong Giỏ Hàng
+        function toggleCartFixedCost(keyStr) {
+            if (cartSelectedFixedCostKeys.includes(keyStr)) {
+                cartSelectedFixedCostKeys = cartSelectedFixedCostKeys.filter(k => k !== keyStr);
+            } else {
+                cartSelectedFixedCostKeys.push(keyStr);
+            }
+            openCartModal(); // Cập nhật lại giao diện giỏ hàng (giá và text) ngay lập tức
+        }
+
 		function removeDishFromAISuggestion(dishId) {
 			aiSuggestedDishIds = aiSuggestedDishIds.filter(id => id !== dishId);
 			renderAISuggestionResult();
@@ -751,20 +749,16 @@
 			let currentAIFixedCost = 0;
 			let checkboxesHtml = '';
 
-			// Tạo giao diện các dấu tick cho dịch vụ đi kèm (ẨN CÁC CHI PHÍ BẮT BUỘC)
 			globalFixedCostsList.forEach(item => {
 				let key = item.key || item.name || item.ten_mon;
 				let lowerKey = key.toLowerCase();
 				let val = parseFloat(item.value || item.price || item.gia || 0);
 				
-				// Xác định 3 chi phí CHO PHÉP KHÁCH HÀNG BỎ (Rạp, Suối, Nước Ngọt)
 				let isOptional = lowerKey.includes('rạp') || lowerKey.includes('bàn ghế') || lowerKey.includes('suối') || lowerKey.includes('nước ngọt');
 				
 				if (!isOptional) {
-					// CÁC CHI PHÍ BẮT BUỘC: Luôn cộng tiền, KHÔNG HIỂN THỊ CHECKBOX
 					currentAIFixedCost += val;
 				} else {
-					// CÁC CHI PHÍ TÙY CHỌN: Hiển thị checkbox, chỉ cộng tiền nếu được tick
 					let isChecked = aiSelectedFixedCostKeys.includes(key);
 					if (isChecked) {
 						currentAIFixedCost += val;
@@ -783,7 +777,6 @@
 			let bestMenu = aiSuggestedDishIds.map(id => dishesList.find(d => d.id === id)).filter(Boolean);
 			let bestFoodPrice = bestMenu.reduce((sum, dish) => sum + (dish.price || 0), 0);
 			
-			// TÍNH TỔNG TIỀN: (Tiền món ăn + Tiền dịch vụ đã tick + Tiền chi phí bắt buộc) * 1.2 (20% lợi nhuận)
 			let finalTotalPrice = Math.round((bestFoodPrice + currentAIFixedCost) * 1.2);
 			document.getElementById('ai-total-price').innerText = finalTotalPrice > 0 ? finalTotalPrice.toLocaleString('vi-VN') + ' đ' : '0 đ';
 
@@ -835,7 +828,6 @@
 			document.getElementById('ai-result-area').classList.remove('hidden');
 		}
 
-        // Tích hợp thay đổi 3: Đồng bộ dịch vụ vào giỏ hàng
         function applySuggestionToCart() {
             cartDishes = [...aiSuggestedDishIds];
             cartSelectedFixedCostKeys = [...aiSelectedFixedCostKeys]; 
@@ -866,7 +858,6 @@
             document.getElementById('cart-badge').innerText = cartDishes.length;
         }
 
-        // Tích hợp thay đổi 3: Reset dịch vụ khi xóa giỏ
         function clearCart() {
             cartDishes = []; 
             cartSelectedFixedCostKeys = globalFixedCostsList.map(item => item.key || item.name || item.ten_mon); 
@@ -879,7 +870,6 @@
             let doNguoi = []; 
             let others = [];
             
-            // 1. Kiểm tra xem thực đơn có món Đồ Nguội thuần túy nào không (không tính gỏi/súp)
             const hasPureDoNguoi = dishArray.some(d => {
                 const n = d.name.toLowerCase(); 
                 const c = (d.category || "").toLowerCase();
@@ -894,14 +884,11 @@
                 const isGoiOrSoup = n.includes('gỏi') || n.includes('nộm') || n.includes('súp') || n.includes('soup') || c.includes('gỏi') || c.includes('súp');
                 
                 if (isPureDoNguoi) {
-                    // Nếu là chả, nem, đồ nguội -> Luôn là Khai vị
                     doNguoi.push(d); 
                 } else if (isGoiOrSoup) {
                     if (hasPureDoNguoi) {
-                        // Khách đã chọn đồ nguội -> Gỏi/Súp chuyển thành MÓN CHÍNH
                         others.push(d);
                     } else {
-                        // Khách không chọn đồ nguội -> Gỏi/Súp làm món KHAI VỊ
                         doNguoi.push(d);
                     }
                 } else {
@@ -915,7 +902,6 @@
                     if (c.includes('tráng miệng') || n.includes('rau câu') || n.includes('chè') || n.includes('trái cây') || n.includes('sữa chua') || n.includes('bánh') || n.includes('kem') || n.includes('sâm bổ lượng') || n.includes('nhãn nhục')) return 4;
                     if (n.includes('cơm') || n.includes('xôi') || n.includes('mì') || n.includes('bún') || n.includes('miến') || n.includes('cháo') || c.includes('cơm')) return 3;
                     if (c.includes('lẩu') || n.includes('lẩu') || n.includes('cù lao')) return 2;
-                    // Nếu Gỏi/Soup lọt vào món chính, ưu tiên đưa lên đầu danh sách (ngay sau khai vị)
                     if (n.includes('gỏi') || n.includes('nộm') || n.includes('súp') || n.includes('soup') || c.includes('gỏi') || c.includes('súp')) return 0;
                     return 1; 
                 };
@@ -924,7 +910,7 @@
             return { doNguoi, others };
         }
 
-        // Tích hợp thay đổi 5: XUẤT RA BILL GIỎ HÀNG (Sửa logic tính giá dựa trên dịch vụ đã chọn)
+        // BẢN MỚI: TÍCH HỢP GIAO DIỆN CHỌN DỊCH VỤ TRỰC TIẾP VÀO GIỎ HÀNG
         function renderMenuHTMLToList(grouped, containerEl, mode = 'print') {
             let index = 1; containerEl.innerHTML = ""; let currentTotal = 0;
             
@@ -984,57 +970,77 @@
                 }
             });
 
+            // LOGIC XỬ LÝ CHECKBOX DỊCH VỤ TRONG GIỎ HÀNG 
             if(mode === 'cart') {
                 let currentCartFixedCost = 0;
                 let excludedItems = [];
-                
+                let checkboxesHtml = ''; 
+
                 // 1. Tính toán lại chi phí dựa trên các mục ĐANG ĐƯỢC CHỌN trong giỏ hàng
                 globalFixedCostsList.forEach(item => {
                     let key = item.key || item.name || item.ten_mon;
                     let val = parseFloat(item.value || item.price || item.gia || 0);
+                    let lowerKey = key.toLowerCase();
+                    
+                    let isOptional = lowerKey.includes('rạp') || lowerKey.includes('bàn ghế') || lowerKey.includes('suối') || lowerKey.includes('nước ngọt');
+
                     if (cartSelectedFixedCostKeys.includes(key)) {
                         currentCartFixedCost += val;
                     } else {
-                        excludedItems.push(key); // Lọc ra các mục đã bị khách bỏ tick
+                        excludedItems.push(key); 
+                    }
+
+                    // 2. Vẽ checkbox nếu là mục tuỳ chọn
+                    if (isOptional) {
+                        let isChecked = cartSelectedFixedCostKeys.includes(key);
+                        let safeKey = key.replace(/'/g, "\\'");
+                        checkboxesHtml += `
+                            <label class="flex items-center gap-1.5 cursor-pointer bg-white px-2.5 py-1.5 rounded-lg border ${isChecked ? 'border-emerald-400 shadow-sm' : 'border-slate-200 opacity-60'} hover:bg-slate-50 transition-all select-none">
+                                <input type="checkbox" ${isChecked ? 'checked' : ''} onchange="toggleCartFixedCost('${safeKey}')" class="accent-emerald-600 cursor-pointer w-3.5 h-3.5 rounded">
+                                <span class="text-[11px] font-bold ${isChecked ? 'text-emerald-700' : 'text-slate-500'} capitalize">${key}</span>
+                            </label>
+                        `;
                     }
                 });
 
                 let statusHtml = '';
                 const noteEl = document.getElementById('cart-total-note');
 
-                // 2. Xét điều kiện để hiển thị dòng chữ Đã bao gồm hay Đã trừ ra
+                // 3. Xét điều kiện để hiển thị dòng chữ Đã bao gồm hay Đã trừ ra
                 if (excludedItems.length > 0) {
                     statusHtml = `
-                        <div class="flex items-center gap-2.5">
+                        <div class="flex items-center gap-2.5 mb-2 border-b border-rose-100 pb-2.5">
                             <i class="fa-solid fa-circle-exclamation text-rose-500 text-lg"></i>
-                            <span class="font-bold text-rose-700 italic text-[11px]">Thực đơn đã trừ ra các mục: <span class="uppercase">${excludedItems.join(', ')}</span></span>
+                            <span class="font-bold text-rose-700 italic text-[11px] leading-snug">Thực đơn đã trừ ra các mục: <span class="uppercase">${excludedItems.join(', ')}</span></span>
                         </div>
                     `;
-                    // Cập nhật text dưới tổng báo giá
                     if(noteEl) noteEl.innerHTML = `<i class="fa-solid fa-circle-exclamation text-rose-500"></i> Thực đơn đã trừ ra: <b class="text-rose-600">${excludedItems.join(', ')}</b>`;
                 } else {
                     statusHtml = `
-                        <div class="flex items-center gap-2.5">
+                        <div class="flex items-center gap-2.5 mb-2 border-b border-emerald-100 pb-2.5">
                             <i class="fa-solid fa-circle-check text-emerald-500 text-lg"></i>
-                            <span class="font-bold text-emerald-800 italic text-[11px]">Đã bao gồm đầy đủ rạp, bàn ghế, chén đũa, nước ngọt, suối, phục vụ...</span>
+                            <span class="font-bold text-emerald-800 italic text-[11px] leading-snug">Đã bao gồm đầy đủ rạp, bàn ghế, chén đũa, nước ngọt, suối...</span>
                         </div>
                     `;
-                    // Cập nhật text dưới tổng báo giá
                     if(noteEl) noteEl.innerHTML = `<i class="fa-solid fa-circle-check text-emerald-500"></i> đã bao gồm đầy đủ rạp, bàn ghế, chén đũa, nước ngọt, suối, phục vụ...`;
                 }
 
-                // 3. Render khung thông báo vào danh sách món
+                // 4. Injected HTML khu vực Tuỳ chỉnh dịch vụ vào cuối giỏ hàng
                 if (globalFixedCostsList.length > 0) {
                     containerEl.innerHTML += `
                         <li class="mb-2 mt-4">
-                            <div class="flex items-center justify-between text-sm text-slate-700 ${excludedItems.length > 0 ? 'bg-rose-50/50 border-rose-200' : 'bg-emerald-50/50 border-emerald-100'} border p-2.5 rounded-lg">
+                            <div class="flex flex-col text-sm text-slate-700 ${excludedItems.length > 0 ? 'bg-rose-50 border-rose-200' : 'bg-emerald-50 border-emerald-100'} border p-3 rounded-xl shadow-sm">
                                 ${statusHtml}
+                                <div class="text-[10px] text-slate-500 font-black mb-2 uppercase tracking-wide">Tuỳ chỉnh dịch vụ đi kèm:</div>
+                                <div class="flex flex-wrap gap-2">
+                                    ${checkboxesHtml}
+                                </div>
                             </div>
                         </li>
                     `;
                 }
 
-                // 4. Tính lại TỔNG GIỎ HÀNG (+20%) lấy từ chi phí CỦA GIỎ HÀNG (currentCartFixedCost) thay vì giá cứng
+                // 5. Tính lại TỔNG GIỎ HÀNG (+20%)
                 let finalCartPrice = Math.round((currentTotal + currentCartFixedCost) * 1.2);
                 document.getElementById('cart-total-price').innerText = finalCartPrice > 0 ? finalCartPrice.toLocaleString('vi-VN') + ' đ' : '0 đ';
             }
@@ -1094,7 +1100,6 @@
             const categoriesSet = new Set(["Tất cả"]);
             listToRender.forEach(dish => { 
                 const cat = dish.category ? dish.category.trim() : "Món Khác";
-                // Ẩn "món phụ đồ nguội" khỏi thanh lọc ngang
                 if (cat.toLowerCase() !== "món phụ đồ nguội") {
                     categoriesSet.add(cat); 
                 }
@@ -1147,7 +1152,6 @@
 
             container.innerHTML = ""; 
 
-            // Tách danh sách để xử lý hiển thị món phụ nằm riêng ở dưới
             let mainDishes = [];
             let subDishes = [];
 
@@ -1165,7 +1169,6 @@
                 return;
             }
 
-            // Hàm vẽ card món ăn
             const renderCard = (dish, isMonPhu) => {
                 if (!dish || !dish.name) return;
                 
@@ -1215,10 +1218,8 @@
                 container.appendChild(card);
             };
 
-            // 1. Render món chính trước
             mainDishes.forEach(dish => renderCard(dish, false));
 
-            // 2. Nếu ở tab Đồ nguội và có món phụ, render tiêu đề phân cách col-span-full rồi xếp món phụ xuống dưới cùng
             if (subDishes.length > 0) {
                 const divider = document.createElement("div");
                 divider.className = "col-span-full mt-6 border-t border-dashed border-slate-200 pt-6 mb-2";
