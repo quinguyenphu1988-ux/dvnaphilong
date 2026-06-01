@@ -150,19 +150,6 @@
                         <div>
                             <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Loại Món (Danh mục)</label>
                             <select id="dish-category" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-medium">
-                                <option value="Đồ Nguội">Đồ Nguội</option>
-                                <option value="Món Phụ Đồ Nguội">Món Phụ Đồ Nguội</option>
-                                <option value="Món Gỏi">Món Gỏi</option>
-                                <option value="Món Súp">Món Súp</option>
-                                <option value="Món Bò">Món Bò</option>
-                                <option value="Món Tôm và Mực">Món Tôm và Mực</option>
-                                <option value="Món Cá">Món Cá</option>
-                                <option value="Heo và Vịt">Heo và Vịt</option>
-                                <option value="Món Gà">Món Gà</option>
-                                <option value="Món Lẩu">Món Lẩu</option>
-                                <option value="Món Cơm">Món Cơm</option>
-                                <option value="Tráng Miệng">Tráng Miệng</option>
-                                <option value="Khác">Khác</option>
                             </select>
                         </div>
                         
@@ -325,7 +312,6 @@
                             </div>
                         </div>
                         
-                        <!-- CẬP NHẬT: Thêm trường giờ đãi tiệc và chia layout -->
                         <div class="grid grid-cols-2 gap-3">
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-500 mb-1">Giờ đãi tiệc</label>
@@ -414,17 +400,41 @@
 		
 		// --- CẤU HÌNH TELEGRAM BOT ---
         const TELEGRAM_TOKEN = '8580811533:AAE1IMKPv3QG3TD2fLK2dBp-yYGt29phNZ8'; 
-        // Thay vì 1 người, giờ ta dùng danh sách [ID_1, ID_2, ...] để gửi cho nhiều người
-        const TELEGRAM_CHAT_IDS = ['-5197568749']; // Anh điền ID của nhân viên vào trong ngoặc vuông này, cách nhau bởi dấu phẩy
+        const TELEGRAM_CHAT_IDS = ['-5197568749']; 
+
+        // --- HÀM TẠO DANH MỤC MÓN ĂN TỰ ĐỘNG (CHỈ LẤY CHUẨN TỪ CSDL) ---
+        function renderCategoryOptions() {
+            const selectEl = document.getElementById("dish-category");
+            if (!selectEl) return;
+            
+            // Chỉ quét toàn bộ dishesList lấy ra các danh mục duy nhất đã có trên Supabase
+            let uniqueCategoriesFromDB = [...new Set(dishesList.map(d => d.category).filter(Boolean))];
+            
+            // Xử lý trường hợp CSDL hoàn toàn trống chưa có gì
+            if (uniqueCategoriesFromDB.length === 0) {
+                uniqueCategoriesFromDB.push("Chưa có danh mục");
+            }
+            
+            // Sắp xếp danh sách alphabet cho dễ nhìn (tùy chọn)
+            uniqueCategoriesFromDB.sort();
+            
+            // Render thẻ option
+            selectEl.innerHTML = "";
+            uniqueCategoriesFromDB.forEach(cat => {
+                const option = document.createElement("option");
+                option.value = cat; 
+                option.textContent = cat;
+                selectEl.appendChild(option);
+            });
+        }
 
         function sendTelegramPartyAlerts(activeMenus) {
             if (!TELEGRAM_TOKEN || TELEGRAM_CHAT_IDS.length === 0) return;
 
-            // Kiểm tra xem hôm nay đã gửi báo cáo chưa (tránh spam khi tải lại trang)
             const todayStr = new Date().toISOString().split('T')[0];
             const lastSentDate = localStorage.getItem('last_telegram_alert_date');
             
-            if (lastSentDate === todayStr) return; // Nếu hôm nay gửi rồi thì bỏ qua
+            if (lastSentDate === todayStr) return; 
 
             const today = new Date(); today.setHours(0,0,0,0);
             let nearParties = [];
@@ -433,7 +443,6 @@
                 const partyDate = new Date(m.date); partyDate.setHours(0,0,0,0);
                 const dayDiff = Math.ceil((partyDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
                 
-                // Lọc ra các tiệc diễn ra trong vòng 3 ngày tới
                 if (dayDiff >= 0 && dayDiff <= 3) {
                     nearParties.push({ ...m, dayDiff });
                 }
@@ -451,7 +460,6 @@
                 
                 message += `👉 Truy cập hệ thống để xem chi tiết. Chúc một ngày làm việc hiệu quả!`;
 
-                // Gọi API Telegram để gửi tin nhắn
                 const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
                 TELEGRAM_CHAT_IDS.forEach(chatId => {
                     fetch(url, {
@@ -460,15 +468,12 @@
                         body: JSON.stringify({ chat_id: chatId, text: message, parse_mode: 'Markdown' })
                     }).then(response => {
                         if (response.ok) {
-                            // Lưu lịch sử để không gửi lại trong ngày hôm nay
                             localStorage.setItem('last_telegram_alert_date', todayStr);
-                            console.log("Đã gửi cảnh báo Telegram thành công!");
                         }
                     }).catch(err => console.error("Lỗi gửi Telegram:", err));
                 });
             }
         }
-
         
         function sendTelegramSingleAlert(menuData, isUpdate = false) {
             if (!TELEGRAM_TOKEN || TELEGRAM_CHAT_IDS.length === 0) return;
@@ -540,6 +545,9 @@
                 
                 let { data: menus, error: e2 } = await _supabase.from('menus').select('*');
                 if (!e2) menusList = menus || [];
+
+                // Render lại danh mục sau khi load xong dữ liệu
+                renderCategoryOptions();
 
                 filterDishes();
                 renderMenuDishSelector();
@@ -792,24 +800,47 @@
             }
         }
 
+        // --- CẬP NHẬT HÀM RESET: TRỎ VỀ OPTION ĐẦU TIÊN THAY VÌ GÁN CỨNG ---
         function resetDishForm() {
             currentEditingDishId = null; 
             document.getElementById("dish-name").value = "";
-            document.getElementById("dish-category").value = "Khác";
+            
+            // Cập nhật lại dropdown danh mục
+            renderCategoryOptions();
+            const selectEl = document.getElementById("dish-category");
+            if (selectEl.options.length > 0) {
+                selectEl.selectedIndex = 0;
+            }
+            
             document.getElementById("dish-image").value = ""; 
             temporaryIngredients = []; 
             document.getElementById("temp-ing-list").innerHTML = "";
         }
 
+        // --- CẬP NHẬT HÀM EDIT: GÁN CHÍNH XÁC ---
         function editDish(id) {
             const dish = dishesList.find(d => d.id === id); if (!dish) return;
             currentEditingDishId = dish.id;
             document.getElementById("dish-name").value = dish.name;
+            
+            // Cập nhật lại dropdown danh mục
+            renderCategoryOptions();
+            
+            const selectEl = document.getElementById("dish-category");
             if (dish.category) {
-                document.getElementById("dish-category").value = dish.category;
+                const options = Array.from(selectEl.options).map(opt => opt.value);
+                // Nếu category này chưa có trong list option (trường hợp hiếm), thêm nó vào
+                if (!options.includes(dish.category)) {
+                    const newOpt = document.createElement("option");
+                    newOpt.value = dish.category;
+                    newOpt.textContent = dish.category;
+                    selectEl.appendChild(newOpt);
+                }
+                selectEl.value = dish.category;
             } else {
-                document.getElementById("dish-category").value = "Khác";
+                if (selectEl.options.length > 0) selectEl.selectedIndex = 0;
             }
+            
             document.getElementById("dish-image").value = ""; 
             temporaryIngredients = [...(dish.ingredients || [])];
             renderTempIngredients(); document.getElementById("dish-name").focus();
@@ -1115,7 +1146,6 @@
                 alertBox.classList.add("hidden"); 
             }
             
-            // THÊM DÒNG NÀY VÀO CUỐI HÀM ĐỂ KÍCH HOẠT GỬI TELEGRAM
             sendTelegramPartyAlerts(activeMenus);
         }
 
@@ -1160,7 +1190,6 @@
                             <span class="bg-amber-50 border border-amber-200 text-amber-800 px-1.5 py-0.2 rounded font-bold uppercase text-[10px]">${menu.type}</span>
                         </div>
                         
-                        <!-- HIỂN THỊ DANH SÁCH MÓN ĂN DƯỚI DẠNG CHỮ NHỎ -->
                         <div class="mt-2 text-[11px] text-slate-600 bg-slate-50 border border-slate-100 p-2 rounded-lg leading-relaxed">
                             <span class="font-bold text-amber-700"><i class="fa-solid fa-utensils mr-1"></i>Thực đơn:</span> 
                             <span class="italic">${dishListStr}</span>
@@ -1337,7 +1366,7 @@
                                     ingredients: excelIngredients,
                                     image_url: null,
                                     timestamp: Date.now(),
-                                    category: "KHÁC" 
+                                    category: "Chưa có danh mục" 
                                 };
                                 
                                 const { error } = await _supabase
