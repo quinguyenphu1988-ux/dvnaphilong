@@ -131,6 +131,7 @@
             <button onclick="switchTab('tab-dishes')" id="btn-tab-dishes" class="tab-btn active px-6 py-4 font-bold text-sm border-b-2 border-amber-600 text-amber-600 flex items-center gap-2.5 transition-all"><i class="fa-solid fa-burger text-base"></i> Danh Mục Món Ăn</button>
             <button onclick="switchTab('tab-menus')" id="btn-tab-menus" class="tab-btn px-6 py-4 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-amber-600 flex items-center gap-2.5 transition-all"><i class="fa-solid fa-calendar-check text-base"></i> Đặt Thực Đơn Tiệc</button>
             <button onclick="switchTab('tab-calc')" id="btn-tab-calc" class="tab-btn px-6 py-4 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-amber-600 flex items-center gap-2.5 transition-all"><i class="fa-solid fa-basket-shopping text-base"></i> Tính Vật Tư Đi Chợ</button>
+            <button onclick="switchTab('tab-sync-price'); loadSyncPriceData();" id="btn-tab-sync-price" class="tab-btn px-6 py-4 font-semibold text-sm border-b-2 border-transparent text-slate-500 hover:text-amber-600 flex items-center gap-2.5 transition-all"><i class="fa-solid fa-scale-balanced text-base"></i> Kiểm Tra Giá Món</button>
         </div>
     </nav>
 
@@ -367,11 +368,9 @@
             </div>
         </div>
 		
-		<button onclick="document.getElementById('tab-sync-price').classList.toggle('hidden'); loadSyncPriceData();" class="px-5 py-3 font-bold text-sm bg-amber-100 text-amber-700 rounded-xl hover:bg-amber-200 transition border border-amber-200 cursor-pointer mb-4">
-			<i class="fa-solid fa-scale-balanced"></i> Công Cụ Kiểm Tra Giá Món
-		</button>
+		
 
-		<div id="tab-sync-price" class="hidden space-y-6 w-full max-w-7xl mx-auto">
+		<div id="tab-sync-price" class="tab-content space-y-6 w-full max-w-7xl mx-auto">
     <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-md">
         <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
             <div>
@@ -435,6 +434,10 @@
         <button onclick="switchTab('tab-calc')">
             <i class="fa-solid fa-basket-shopping"></i>
             <span>Đi chợ</span>
+        </button>
+        <button onclick="switchTab('tab-sync-price'); loadSyncPriceData();">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <span>Giá món</span>
         </button>
     </div>
 
@@ -622,9 +625,10 @@
 
             const mobileBtns = document.querySelectorAll('#mobile-bottom-nav button');
             mobileBtns.forEach(b => b.classList.remove('active-nav'));
-            if(tabId === 'tab-dishes') mobileBtns[0].classList.add('active-nav');
-            if(tabId === 'tab-menus') mobileBtns[1].classList.add('active-nav');
-            if(tabId === 'tab-calc') mobileBtns[2].classList.add('active-nav');
+            if(tabId === 'tab-dishes' && mobileBtns[0]) mobileBtns[0].classList.add('active-nav');
+            if(tabId === 'tab-menus' && mobileBtns[1]) mobileBtns[1].classList.add('active-nav');
+            if(tabId === 'tab-calc' && mobileBtns[2]) mobileBtns[2].classList.add('active-nav');
+            if(tabId === 'tab-sync-price' && mobileBtns[3]) mobileBtns[3].classList.add('active-nav');
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
