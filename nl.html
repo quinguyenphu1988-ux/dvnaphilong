@@ -503,22 +503,10 @@
                 let message = `🔔 *BÁO CÁO TIỆC SẮP DIỄN RA (DVNA PHI LONG)*\n\n`;
                 nearParties.forEach((p, idx) => {
                     let timeWarning = p.dayDiff === 0 ? "HÔM NAY" : `Còn ${p.dayDiff} ngày`;
-                    
-                    // --- CẬP NHẬT: Lấy danh sách tên món ăn từ dishIds ---
-                    let dishNames = [];
-                    if (p.dishIds && p.dishIds.length > 0) {
-                        p.dishIds.forEach(id => {
-                            const dish = dishesList.find(d => d.id === id);
-                            if (dish) dishNames.push(dish.name);
-                        });
-                    }
-                    let dishesStr = dishNames.length > 0 ? dishNames.join(' • ') : 'Chưa chọn món';
-
                     message += `${idx + 1}. Khách: *${p.customer}* (${timeWarning})\n`;
                     message += `   - Loại: ${p.type} (${p.tables || 0} bàn)\n`;
                     message += `   - Ngày: ${p.date} | Giờ: ${p.timeparty || 'Chưa hẹn'}\n`;
-                    message += `   - ĐC: ${p.address || 'Chưa cập nhật'}\n`;
-                    message += `   - Thực đơn: ${dishesStr}\n\n`;
+                    message += `   - ĐC: ${p.address || 'Chưa cập nhật'}\n\n`;
                 });
                 
                 message += `👉 Truy cập hệ thống để xem chi tiết. Chúc một ngày làm việc hiệu quả!`;
@@ -541,16 +529,6 @@
         function sendTelegramSingleAlert(menuData, isUpdate = false) {
             if (!TELEGRAM_TOKEN || TELEGRAM_CHAT_IDS.length === 0) return;
             
-            // --- CẬP NHẬT: Lấy danh sách tên món ăn từ dishIds ---
-            let dishNames = [];
-            if (menuData.dishIds && menuData.dishIds.length > 0) {
-                menuData.dishIds.forEach(id => {
-                    const dish = dishesList.find(d => d.id === id);
-                    if (dish) dishNames.push(dish.name);
-                });
-            }
-            let dishesStr = dishNames.length > 0 ? dishNames.join('\n    - ') : 'Chưa chọn món';
-
             let title = isUpdate ? "🔄 CẬP NHẬT THÔNG TIN TIỆC" : "🎉 CÓ ĐƠN ĐẶT TIỆC MỚI";
             let message = `*${title}*\n\n`;
             message += `👤 Khách hàng: *${menuData.customer}*\n`;
@@ -558,7 +536,6 @@
             message += `🍽 Loại: ${menuData.type} (${menuData.tables || 0} bàn)\n`;
             message += `📅 Ngày: ${menuData.date} | Giờ: ${menuData.timeparty || 'Chưa hẹn'}\n`;
             message += `📍 ĐC: ${menuData.address || 'Chưa cập nhật'}\n`;
-            message += `🍲 Thực đơn:\n    - ${dishesStr}\n`;
             if (menuData.note) message += `📝 Ghi chú: ${menuData.note}\n`;
 
             const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
@@ -718,7 +695,7 @@
                     } else if (groupVal === 'cơm') {
                         matchGroup = name.includes('cơm') || name.includes('chiên') || name.includes('xôi') || dishCat === 'món cơm';
                     } else if (groupVal === 'tráng miệng') {
-                        matchGroup = name.includes('tráng miệng') || name.includes('chè') || name.includes('rau câu') || name.includes('sữa chua') || name.includes('trái cây') || dishCat === 'tráng miệng';
+                        matchGroup = name.includes('tráng miệng') || name.includes('chè') || name.includes('rau câu') || name.includes('trái cây') || dishCat === 'tráng miệng';
                     } else {
                         matchGroup = name.includes(groupVal) || dishCat.includes(groupVal);
                     }
@@ -764,7 +741,7 @@
                         <div class="flex-1 space-y-2 w-full">
                             <div class="flex justify-between items-start gap-2">
                                 <div>
-                                    h4 class="font-black text-base text-slate-900 leading-tight">${dish.name}</h4>
+                                    <h4 class="font-black text-base text-slate-900 leading-tight">${dish.name}</h4>
                                     ${categoryBadge}
                                 </div>
                                 <span class="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-1 rounded-md shrink-0">Mẫu 10 người</span>
@@ -1115,7 +1092,7 @@ async function loadSyncPriceData() {
 
         dishes.forEach(dish => {
             let dishName = dish.name.trim();
-            let searchName = dishName.toLowerCase().trim();
+            let searchName = dishName.toLowerCase();
             let cat = (dish.category || "Chưa phân loại").trim();
             
             let foundPrice = prices.find(p => p.key && p.key.toLowerCase().trim() === searchName);
