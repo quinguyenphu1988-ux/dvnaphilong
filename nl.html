@@ -211,11 +211,12 @@
                     </div>
 
                     <div class="mt-4 border-t border-slate-200 pt-4 space-y-2.5">
-                        <div class="flex items-center gap-1.5">
+                        <div class="flex items-center gap-1.5 cursor-pointer hover:opacity-70 transition-opacity select-none" onclick="document.getElementById('excel-import-wrap').classList.toggle('hidden')">
                             <i class="fa-solid fa-file-excel text-emerald-600 text-sm"></i>
-                            <h3 class="text-xs font-black text-slate-900 uppercase tracking-wide">Nhập từ file Excel</h3>
+                            <h3 class="text-xs font-black text-slate-900 uppercase tracking-wide">Nhập từ file Excel <span class="text-emerald-600 lowercase font-medium">(Bấm ẩn/hiện)</span></h3>
+                            <i class="fa-solid fa-chevron-down text-slate-400 text-[10px] ml-auto"></i>
                         </div>
-                        <div class="bg-emerald-50/70 rounded-xl p-3 border border-emerald-100/80">
+                        <div id="excel-import-wrap" class="bg-emerald-50/70 rounded-xl p-3 border border-emerald-100/80 hidden">
                             <p class="text-[10px] text-emerald-800 font-medium mb-2 leading-relaxed">
                                 * Cột bắt buộc: <span class="font-bold text-emerald-700">TenMon, TenNguyenLieu, SoLuong, DonVi, Loai</span>
                             </p>
@@ -232,7 +233,7 @@
                             </div>
                         </div>
                     </div>
-                    </div>
+                </div>
 
                 <div class="lg:col-span-2 space-y-4">
                     <div class="app-card px-4 py-3 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
@@ -258,7 +259,7 @@
                             <span id="dish-count" class="bg-amber-100 text-amber-800 text-xs font-black px-3 py-1.5 rounded-xl text-center">0 món</span>
                         </div>
                     </div>
-                    <div id="dishes-container" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+                    <div id="dishes-container" class="space-y-2 w-full"></div>
                 </div>
             </div>
         </div>
@@ -453,40 +454,25 @@
         const TELEGRAM_TOKEN = '8580811533:AAE1IMKPv3QG3TD2fLK2dBp-yYGt29phNZ8'; 
         const TELEGRAM_CHAT_IDS = ['-5197568749']; 
 
-        // --- HÀM TẠO DANH MỤC MÓN ĂN TỰ ĐỘNG (ĐÃ FIX: BƠM CỨNG CÁC NHÓM MẶC ĐỊNH ĐỂ KHÔNG BỊ TRỐNG KHI DB RỖNG) ---
+        // --- HÀM TẠO DANH MỤC MÓN ĂN TỰ ĐỘNG (CHỈ LẤY CHUẨN TỪ CSDL) ---
         function renderCategoryOptions() {
             const selectEl = document.getElementById("dish-category");
             if (!selectEl) return;
             
-            // 1. Khôi phục lại một bộ khung các nhóm món chuẩn
-            const defaultCategories = [
-                "Món Gỏi / Nộm",
-                "Đồ Nguội / Chả",
-                "Món Phụ Đồ Nguội",
-                "Soup / Súp",
-                "Món Bò",
-                "Món Gà",
-                "Món Heo",
-                "Món Tôm",
-                "Món Mực",
-                "Món Cá",
-                "Món Lẩu",
-                "Cơm / Xôi",
-                "Tráng Miệng",
-                "Khác"
-            ];
+            // Chỉ quét toàn bộ dishesList lấy ra các danh mục duy nhất đã có trên Supabase
+            let uniqueCategoriesFromDB = [...new Set(dishesList.map(d => d.category).filter(Boolean))];
             
-            // 2. Lấy thêm các danh mục đang có thực tế trong CSDL (giữ lại các nhóm người dùng đã tự gõ)
-            let dbCategories = dishesList.map(d => d.category?.trim()).filter(Boolean);
+            // Xử lý trường hợp CSDL hoàn toàn trống chưa có gì
+            if (uniqueCategoriesFromDB.length === 0) {
+                uniqueCategoriesFromDB.push("Chưa có danh mục");
+            }
             
-            // 3. Gộp 2 mảng lại và loại bỏ trùng lặp
-            let allCategories = [...new Set([...defaultCategories, ...dbCategories])];
+            // Sắp xếp danh sách alphabet cho dễ nhìn (tùy chọn)
+            uniqueCategoriesFromDB.sort();
             
-            allCategories.sort(); // Sắp xếp Alphabet
-            
-            // 4. Render lại toàn bộ option cho Dropdown
+            // Render thẻ option
             selectEl.innerHTML = "";
-            allCategories.forEach(cat => {
+            uniqueCategoriesFromDB.forEach(cat => {
                 const option = document.createElement("option");
                 option.value = cat; 
                 option.textContent = cat;
@@ -677,43 +663,40 @@
         }
 
         function filterDishes() {
-            const searchVal = document.getElementById("dish-search") ? document.getElementById("dish-search").value.toLowerCase().trim() : "";
-            const groupVal = document.getElementById("dish-filter-group") ? document.getElementById("dish-filter-group").value.toLowerCase().trim() : "";
-            
+            const searchVal = document.getElementById("dish-search").value.toLowerCase();
+            const groupVal = document.getElementById("dish-filter-group").value.toLowerCase();
             const filtered = dishesList.filter(dish => {
-                const name = (dish.name || "").toLowerCase();
-                const dishCat = (dish.category || "").toLowerCase().trim();
-                
+                const name = dish.name.toLowerCase();
                 const matchSearch = name.includes(searchVal);
                 let matchGroup = true;
-                
                 if (groupVal) {
+                    const dishCat = (dish.category || "").toLowerCase();
                     if (groupVal === 'món phụ đồ nguội') {
                         matchGroup = dishCat === 'món phụ đồ nguội';
                     } else if (groupVal === 'gỏi') {
-                        matchGroup = name.includes('gỏi') || name.includes('nộm') || dishCat.includes('gỏi') || dishCat.includes('nộm');
+                        matchGroup = name.includes('gỏi') || name.includes('nộm') || dishCat === 'món gỏi';
                     } else if (groupVal === 'đồ nguội') {
-                        matchGroup = name.includes('nguội') || name.includes('chả') || name.includes('nem') || dishCat.includes('nguội') || dishCat.includes('chả');
+                        matchGroup = name.includes('nguội') || name.includes('chả') || name.includes('nem') || dishCat === 'đồ nguội';
                     } else if (groupVal === 'soup') {
-                        matchGroup = name.includes('soup') || name.includes('súp') || dishCat.includes('súp') || dishCat.includes('soup');
+                        matchGroup = name.includes('soup') || name.includes('súp') || dishCat === 'món súp';
                     } else if (groupVal === 'bò') {
-                        matchGroup = name.includes('bò') || name.includes('bê') || dishCat.includes('bò');
+                        matchGroup = name.includes('bò') || name.includes('bê') || dishCat === 'món bò';
                     } else if (groupVal === 'gà') {
-                        matchGroup = name.includes('gà') || dishCat.includes('gà');
+                        matchGroup = name.includes('gà') || dishCat === 'món gà';
                     } else if (groupVal === 'heo') {
-                        matchGroup = name.includes('heo') || name.includes('lợn') || name.includes('sườn') || dishCat.includes('heo') || dishCat.includes('vịt');
+                        matchGroup = name.includes('heo') || name.includes('lợn') || name.includes('sườn') || dishCat === 'heo và vịt';
                     } else if (groupVal === 'tôm') {
-                        matchGroup = name.includes('tôm') || dishCat.includes('tôm');
+                        matchGroup = name.includes('tôm') || dishCat === 'món tôm và mực';
                     } else if (groupVal === 'mực') {
-                        matchGroup = name.includes('mực') || dishCat.includes('mực');
+                        matchGroup = name.includes('mực') || dishCat === 'món tôm và mực';
                     } else if (groupVal === 'cá') {
-                        matchGroup = name.includes('cá') || dishCat.includes('cá');
+                        matchGroup = name.includes('cá') || dishCat === 'món cá';
                     } else if (groupVal === 'lẩu') {
-                        matchGroup = name.includes('lẩu') || name.includes('cù lao') || dishCat.includes('lẩu');
+                        matchGroup = name.includes('lẩu') || dishCat === 'món lẩu';
                     } else if (groupVal === 'cơm') {
-                        matchGroup = name.includes('cơm') || name.includes('chiên') || name.includes('xôi') || dishCat.includes('cơm') || dishCat.includes('xôi');
+                        matchGroup = name.includes('cơm') || name.includes('chiên') || name.includes('xôi') || dishCat === 'món cơm';
                     } else if (groupVal === 'tráng miệng') {
-                        matchGroup = name.includes('tráng miệng') || name.includes('chè') || name.includes('rau câu') || name.includes('trái cây') || dishCat.includes('tráng miệng');
+                        matchGroup = name.includes('tráng miệng') || name.includes('chè') || name.includes('rau câu') || name.includes('trái cây') || dishCat === 'tráng miệng';
                     } else {
                         matchGroup = name.includes(groupVal) || dishCat.includes(groupVal);
                     }
@@ -723,56 +706,113 @@
             renderDishes(filtered);
         }
 
+        // --- CẬP NHẬT: GOM NHÓM DANH SÁCH MÓN ĂN TRÊN TAB MÓN ĂN ---
         function renderDishes(listToRender = dishesList) {
             const container = document.getElementById("dishes-container");
             document.getElementById("dish-count").innerText = `${listToRender.length} món`;
             container.innerHTML = "";
+            
             if(listToRender.length === 0) {
-                container.innerHTML = `<div class="col-span-full p-8 text-center text-sm text-slate-400 bg-white rounded-2xl border border-slate-200">Không tìm thấy món ăn nào phù hợp...</div>`;
+                container.innerHTML = `<div class="p-8 text-center text-sm text-slate-400 bg-white rounded-2xl border border-slate-200">Không tìm thấy món ăn nào phù hợp...</div>`;
                 return;
             }
             
+            // Chia nhóm theo Category
+            const groupedDishes = {};
             listToRender.forEach(dish => {
-                let ingHtml = "";
-                if(dish.ingredients && dish.ingredients.length > 0) {
-                    dish.ingredients.forEach(i => {
-                        ingHtml += `<span class="inline-flex items-center border px-2.5 py-1 rounded-lg text-[13px] font-bold ${getTypeBadgeStyle(i.type)}">${i.name}: ${i.weight} ${i.unit}</span>`;
-                    });
-                } else {
-                    ingHtml = `<span class="text-sm text-slate-400 italic">Chưa có chi tiết nguyên liệu.</span>`;
-                }
+                const cat = (dish.category || "Chưa phân loại").trim();
+                if (!groupedDishes[cat]) groupedDishes[cat] = [];
+                groupedDishes[cat].push(dish);
+            });
 
-                let imageHtml = "";
-                if (dish.image_url) {
-                    imageHtml = `<img src="${dish.image_url}" alt="${dish.name}" class="w-24 h-24 object-cover rounded-xl border border-slate-200 shrink-0 shadow-sm">`;
-                } else {
-                    imageHtml = `<div class="w-24 h-24 bg-slate-50 flex items-center justify-center rounded-xl border border-slate-200 text-slate-300 shrink-0 shadow-sm"><i class="fa-solid fa-image text-2xl"></i></div>`;
-                }
+            // Sắp xếp tên nhóm ABC
+            const sortedCats = Object.keys(groupedDishes).sort();
+
+            // Khởi tạo trạng thái mở/đóng nếu chưa có (mặc định mở hết)
+            if (typeof window.openDishTabGroups === 'undefined') {
+                window.openDishTabGroups = sortedCats; 
+            }
+
+            sortedCats.forEach(cat => {
+                const isOpen = window.openDishTabGroups.includes(cat);
                 
-                const categoryBadge = dish.category ? `<span class="text-[10px] bg-indigo-100 text-indigo-700 border border-indigo-200 font-bold px-2 py-0.5 rounded-md mt-1 shrink-0 uppercase tracking-wide inline-block">${dish.category}</span>` : '';
+                // Khung bọc cả nhóm
+                const groupWrapper = document.createElement("div");
+                groupWrapper.className = "bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6";
 
-                const card = document.createElement("div");
-                card.className = "bg-white rounded-2xl border border-slate-200 p-4.5 flex flex-col justify-between hover:border-amber-400 transition-all shadow-sm";
-                card.innerHTML = `
-                    <div class="flex items-start gap-4">
-                        ${imageHtml}
-                        <div class="flex-1 space-y-2 w-full">
-                            <div class="flex justify-between items-start gap-2">
-                                <div>
-                                    <h4 class="font-black text-base text-slate-900 leading-tight">${dish.name}</h4>
-                                    ${categoryBadge}
-                                </div>
-                                <span class="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-1 rounded-md shrink-0">Mẫu 10 người</span>
-                            </div>
-                            <div class="flex flex-wrap gap-2">${ingHtml}</div>
-                        </div>
+                // Tiêu đề của nhóm (bấm để thu gọn / mở rộng)
+                const groupHeader = document.createElement("div");
+                groupHeader.className = "bg-amber-50 p-3.5 flex justify-between items-center cursor-pointer select-none hover:bg-amber-100/50 transition-colors";
+                groupHeader.innerHTML = `
+                    <div class="text-[13px] font-black text-amber-800 uppercase tracking-widest flex items-center gap-2">
+                        <i class="fa-solid fa-layer-group"></i> ${cat} <span class="text-[10px] font-bold text-amber-700 bg-amber-100 border border-amber-200 px-2 py-0.5 rounded-md ml-1">${groupedDishes[cat].length} món</span>
                     </div>
-                    <div class="flex justify-end gap-4 mt-4 pt-3 border-t border-slate-100">
-                        <button onclick="editDish(${dish.id})" class="text-xs font-black text-blue-600 hover:text-blue-800 cursor-pointer flex items-center gap-1"><i class="fa-solid fa-pen-to-square"></i> Sửa món</button>
-                        <button onclick="removeDish(${dish.id})" class="text-xs font-black text-rose-500 hover:text-rose-700 cursor-pointer flex items-center gap-1"><i class="fa-solid fa-trash"></i> Xóa</button>
-                    </div>
+                    <i class="fa-solid fa-chevron-down text-amber-600 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}"></i>
                 `;
-                container.appendChild(card);
+
+                // Container chứa danh sách món bên trong
+                const gridContainer = document.createElement("div");
+                gridContainer.className = `p-4 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 ${isOpen ? '' : 'hidden'}`;
+
+                // Xử lý sự kiện click
+                groupHeader.onclick = () => {
+                    gridContainer.classList.toggle("hidden");
+                    const icon = groupHeader.querySelector(".fa-chevron-down");
+                    icon.classList.toggle("rotate-180");
+                    
+                    // Lưu trạng thái vào biến window để không bị mất khi load lại
+                    if (!gridContainer.classList.contains("hidden")) {
+                        if (!window.openDishTabGroups.includes(cat)) window.openDishTabGroups.push(cat);
+                    } else {
+                        window.openDishTabGroups = window.openDishTabGroups.filter(g => g !== cat);
+                    }
+                };
+
+                // Render các thẻ món ăn vào grid
+                groupedDishes[cat].forEach(dish => {
+                    let ingHtml = "";
+                    if(dish.ingredients && dish.ingredients.length > 0) {
+                        dish.ingredients.forEach(i => {
+                            ingHtml += `<span class="inline-flex items-center border px-2.5 py-1 rounded-lg text-[13px] font-bold ${getTypeBadgeStyle(i.type)}">${i.name}: ${i.weight} ${i.unit}</span>`;
+                        });
+                    } else {
+                        ingHtml = `<span class="text-sm text-slate-400 italic">Chưa có chi tiết nguyên liệu.</span>`;
+                    }
+
+                    let imageHtml = "";
+                    if (dish.image_url) {
+                        imageHtml = `<img src="${dish.image_url}" alt="${dish.name}" class="w-24 h-24 object-cover rounded-xl border border-slate-200 shrink-0 shadow-sm">`;
+                    } else {
+                        imageHtml = `<div class="w-24 h-24 bg-slate-50 flex items-center justify-center rounded-xl border border-slate-200 text-slate-300 shrink-0 shadow-sm"><i class="fa-solid fa-image text-2xl"></i></div>`;
+                    }
+                    
+                    const card = document.createElement("div");
+                    card.className = "bg-white rounded-xl border border-slate-100 p-4 flex flex-col justify-between hover:border-amber-400 transition-all shadow-sm";
+                    
+                    card.innerHTML = `
+                        <div class="flex items-start gap-4">
+                            ${imageHtml}
+                            <div class="flex-1 space-y-2 w-full">
+                                <div class="flex justify-between items-start gap-2">
+                                    <div>
+                                        <h4 class="font-black text-base text-slate-900 leading-tight">${dish.name}</h4>
+                                    </div>
+                                    <span class="text-[10px] bg-slate-100 text-slate-600 font-bold px-2 py-1 rounded-md shrink-0">Mẫu 10 người</span>
+                                </div>
+                                <div class="flex flex-wrap gap-2">${ingHtml}</div>
+                            </div>
+                        </div>
+                        <div class="flex justify-end gap-4 mt-4 pt-3 border-t border-slate-100">
+                            <button onclick="editDish(${dish.id})" class="text-xs font-black text-blue-600 hover:text-blue-800 cursor-pointer flex items-center gap-1"><i class="fa-solid fa-pen-to-square"></i> Sửa món</button>
+                            <button onclick="removeDish(${dish.id})" class="text-xs font-black text-rose-500 hover:text-rose-700 cursor-pointer flex items-center gap-1"><i class="fa-solid fa-trash"></i> Xóa</button>
+                        </div>
+                    `;
+                    gridContainer.appendChild(card);
+                });
+                
+                groupWrapper.appendChild(groupHeader);
+                groupWrapper.appendChild(gridContainer);
+                container.appendChild(groupWrapper);
             });
         }
 
@@ -870,52 +910,50 @@
             }
         }
 
-        // --- HÀM RESET FORM MÓN ĂN ---
+        // --- CẬP NHẬT HÀM RESET: TRỎ VỀ OPTION ĐẦU TIÊN THAY VÌ GÁN CỨNG ---
         function resetDishForm() {
             currentEditingDishId = null; 
             document.getElementById("dish-name").value = "";
             
+            // Cập nhật lại dropdown danh mục
             renderCategoryOptions();
             const selectEl = document.getElementById("dish-category");
-            if (selectEl && selectEl.options.length > 0) {
+            if (selectEl.options.length > 0) {
                 selectEl.selectedIndex = 0;
             }
             
-            if(document.getElementById("dish-image")) document.getElementById("dish-image").value = ""; 
+            document.getElementById("dish-image").value = ""; 
             temporaryIngredients = []; 
             document.getElementById("temp-ing-list").innerHTML = "";
         }
 
-        // --- HÀM SỬA MÓN ĂN ---
+        // --- CẬP NHẬT HÀM EDIT: GÁN CHÍNH XÁC ---
         function editDish(id) {
-            const dish = dishesList.find(d => d.id === id); 
-            if (!dish) return;
-            
+            const dish = dishesList.find(d => d.id === id); if (!dish) return;
             currentEditingDishId = dish.id;
             document.getElementById("dish-name").value = dish.name;
             
+            // Cập nhật lại dropdown danh mục
             renderCategoryOptions();
             
             const selectEl = document.getElementById("dish-category");
-            if (selectEl) {
-                if (dish.category) {
-                    const options = Array.from(selectEl.options).map(opt => opt.value);
-                    if (!options.includes(dish.category.trim())) {
-                        const newOpt = document.createElement("option");
-                        newOpt.value = dish.category.trim();
-                        newOpt.textContent = dish.category.trim();
-                        selectEl.appendChild(newOpt);
-                    }
-                    selectEl.value = dish.category.trim();
-                } else {
-                    if (selectEl.options.length > 0) selectEl.selectedIndex = 0;
+            if (dish.category) {
+                const options = Array.from(selectEl.options).map(opt => opt.value);
+                // Nếu category này chưa có trong list option (trường hợp hiếm), thêm nó vào
+                if (!options.includes(dish.category)) {
+                    const newOpt = document.createElement("option");
+                    newOpt.value = dish.category;
+                    newOpt.textContent = dish.category;
+                    selectEl.appendChild(newOpt);
                 }
+                selectEl.value = dish.category;
+            } else {
+                if (selectEl.options.length > 0) selectEl.selectedIndex = 0;
             }
             
-            if(document.getElementById("dish-image")) document.getElementById("dish-image").value = ""; 
+            document.getElementById("dish-image").value = ""; 
             temporaryIngredients = [...(dish.ingredients || [])];
-            renderTempIngredients(); 
-            document.getElementById("dish-name").focus();
+            renderTempIngredients(); document.getElementById("dish-name").focus();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -928,45 +966,28 @@
 
         let selectedDishIdsInMenuForm = [];
 
-        // --- CŨNG BẢO VỆ HÀM RENDER MENU GROUP CHỐNG LỖI CÁC MÓN BLANK ---
         function renderMenuDishSelector() {
             const container = document.getElementById("menu-dish-selector");
             container.innerHTML = "";
             
-            window.openDishGroups = window.openDishGroups || ["Khai Vị / Đồ Nguội / Soup"]; 
-            
-            const groups = {
-                "Khai Vị / Đồ Nguội / Soup": [],
-                "Món Lẩu": [],
-                "Món Chính (Thịt, Hải Sản)": [],
-                "Cơm / Tráng Miệng": [],
-                "Khác": []
-            };
-
+            // Nhóm theo Category thực tế từ CSDL
+            const groups = {};
             dishesList.forEach(dish => {
-                const name = (dish.name || "").toLowerCase();
-                const cat = (dish.category || "").toLowerCase();
-                
-                if (cat === "món phụ đồ nguội") {
-                    return; 
-                }
-                
-                if (name.includes('gỏi') || name.includes('nộm') || name.includes('chả') || name.includes('nem') || name.includes('nguội') || name.includes('soup') || name.includes('súp') || cat.includes('đồ nguội') || cat.includes('gỏi') || cat.includes('súp')) {
-                    groups["Khai Vị / Đồ Nguội / Soup"].push(dish);
-                } else if (name.includes('lẩu') || name.includes('cù lao') || cat.includes('lẩu')) {
-                    groups["Món Lẩu"].push(dish);
-                } else if (name.includes('heo') || name.includes('bò') || name.includes('gà') || name.includes('vịt') || name.includes('tôm') || name.includes('cá') || name.includes('mực') || name.includes('cua') || name.includes('ghẹ') || cat.includes('bò') || cat.includes('gà') || cat.includes('heo') || cat.includes('tôm') || cat.includes('mực') || cat.includes('cá')) {
-                    groups["Món Chính (Thịt, Hải Sản)"].push(dish);
-                } else if (name.includes('cơm') || name.includes('xôi') || name.includes('chè') || name.includes('rau câu') || name.includes('sữa chua') || name.includes('tráng miệng') || name.includes('tàu hủ') || cat.includes('cơm') || cat.includes('tráng miệng')) {
-                    groups["Cơm / Tráng Miệng"].push(dish);
-                } else {
-                    groups["Khác"].push(dish);
-                }
+                const cat = (dish.category || "Chưa phân loại").trim();
+                if (!groups[cat]) groups[cat] = [];
+                groups[cat].push(dish);
             });
+
+            const sortedCats = Object.keys(groups).sort();
+
+            if (typeof window.openDishSelectorGroups === 'undefined') {
+                window.openDishSelectorGroups = sortedCats.length > 0 ? [sortedCats[0]] : []; // Mặc định mở nhóm đầu tiên
+            }
 
             container.className = "flex flex-col max-h-64 overflow-y-auto rounded-xl gap-2";
 
-            for (const [groupName, dishes] of Object.entries(groups)) {
+            sortedCats.forEach(groupName => {
+                const dishes = groups[groupName];
                 if (dishes.length > 0) {
                     const groupDiv = document.createElement("div");
                     groupDiv.className = "bg-white rounded-xl border border-slate-200 overflow-hidden shadow-sm shrink-0";
@@ -975,7 +996,7 @@
                     header.type = "button";
                     header.className = "w-full flex justify-between items-center p-3 bg-amber-50/50 text-amber-800 font-bold text-[11px] uppercase tracking-wide focus:outline-none";
                     
-                    const isOpen = window.openDishGroups.includes(groupName);
+                    const isOpen = window.openDishSelectorGroups.includes(groupName);
                     header.innerHTML = `<span><i class="fa-solid fa-list mr-1.5 opacity-60"></i> ${groupName} (${dishes.length})</span> <i class="fa-solid fa-chevron-down transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}"></i>`;
                     
                     const listContainer = document.createElement("div");
@@ -987,11 +1008,11 @@
                         if (currentlyHidden) {
                             listContainer.classList.remove("hidden");
                             header.querySelector(".fa-chevron-down").classList.add("rotate-180");
-                            if (!window.openDishGroups.includes(groupName)) window.openDishGroups.push(groupName);
+                            if (!window.openDishSelectorGroups.includes(groupName)) window.openDishSelectorGroups.push(groupName);
                         } else {
                             listContainer.classList.add("hidden");
                             header.querySelector(".fa-chevron-down").classList.remove("rotate-180");
-                            window.openDishGroups = window.openDishGroups.filter(g => g !== groupName);
+                            window.openDishSelectorGroups = window.openDishSelectorGroups.filter(g => g !== groupName);
                         }
                     };
 
@@ -1030,7 +1051,7 @@
                     groupDiv.appendChild(listContainer);
                     container.appendChild(groupDiv);
                 }
-            }
+            });
         }
 
         function selectDishToMenuForm(id) { if (!selectedDishIdsInMenuForm.includes(id)) { selectedDishIdsInMenuForm.push(id); renderSelectedDishesBadges(); } }
@@ -1285,6 +1306,8 @@ function renderMenus() {
             }
             const today = new Date(); today.setHours(0,0,0,0);
             activeMenus.forEach(menu => {
+                
+                // Hiển thị lại danh sách phẳng cho Tab Tiệc
                 let dishListHtml = "";
                 menu.dishIds?.forEach(id => {
                     const dish = dishesList.find(d => d.id === id);
@@ -1299,7 +1322,6 @@ function renderMenus() {
                 let borderClass = isNear ? "border-rose-400 shadow-md shadow-rose-100 bg-rose-50/30" : "border-slate-200 bg-white hover:border-amber-300";
                 let alertBadge = isNear ? `<div class="inline-block bg-rose-600 text-white text-[10px] font-black px-2.5 py-1 rounded-lg mb-3 animate-pulse"><i class="fa-solid fa-triangle-exclamation"></i> SẮP DIỄN RA</div>` : "";
 
-                // CẬP NHẬT: Hiển thị thêm giờ
                 const block = document.createElement("div");
                 block.className = `${borderClass} border rounded-2xl p-4.5 grid grid-cols-1 md:grid-cols-3 gap-4 transition-all`;
                 block.innerHTML = `
@@ -1319,7 +1341,7 @@ function renderMenus() {
                         </div>
                     </div>
                     <div class="bg-white p-3.5 rounded-xl border border-slate-100 h-fit flex flex-col">
-                        <ul class="space-y-1 mb-auto">${dishListHtml}</ul>
+                        <ul class="space-y-1.5 mb-auto">${dishListHtml}</ul>
                         ${menu.note ? `<div class="mt-3 pt-2 border-t border-slate-100 text-[10px] italic text-slate-500"><span class="font-semibold text-slate-600">Lưu ý:</span> ${menu.note}</div>` : ''}
                     </div>
                     <div class="flex justify-end items-center gap-6 pt-3 border-t border-slate-100 md:border-t-0 md:pt-0 md:flex-col md:justify-center md:gap-2">
@@ -1414,6 +1436,7 @@ function renderMenus() {
             sendTelegramPartyAlerts(activeMenus);
         }
 
+        // --- CẬP NHẬT: GOM NHÓM MÓN ĂN Ở BẢNG ĐI CHỢ ---
         function renderCalcPartiesTable() {
             const tbody = document.getElementById("calc-parties-table-body"); tbody.innerHTML = "";
             
@@ -1428,15 +1451,19 @@ function renderMenus() {
                 const tr = document.createElement("tr");
                 const computedLunar = getLunarDateString(menu.date);
                 
-                // CẬP NHẬT: Lấy danh sách tên món ăn để hiển thị
-                let dishNames = [];
+                // --- CẬP NHẬT: Hiển thị danh sách món ăn mỗi món 1 dòng ---
+                let dishListHtml = "";
                 menu.dishIds?.forEach(id => {
                     const dish = dishesList.find(d => d.id === id);
-                    if (dish) dishNames.push(dish.name);
+                    if (dish) {
+                        dishListHtml += `<li class="text-[11px] text-slate-700 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-square-check text-amber-500"></i> ${dish.name}</li>`;
+                    }
                 });
-                let dishListStr = dishNames.length > 0 ? dishNames.join(' • ') : 'Chưa có món nào';
+                
+                let dishListDisplay = dishListHtml !== "" 
+                    ? `<ul class="space-y-1.5 mt-1.5 pl-0.5">${dishListHtml}</ul>` 
+                    : '<div class="italic text-slate-400 mt-1 text-[11px]">Chưa chọn món</div>';
 
-                // CẬP NHẬT: Thêm giờ đãi tiệc và danh sách món vào phần hiển thị
                 tr.innerHTML = `
                     <td class="p-3.5 text-center align-top pt-4">
                         <input type="checkbox" value="${menu.id}" class="calc-party-checkbox scale-125 accent-amber-600 cursor-pointer">
@@ -1455,9 +1482,9 @@ function renderMenus() {
                             <span class="bg-amber-50 border border-amber-200 text-amber-800 px-1.5 py-0.2 rounded font-bold uppercase text-[10px]">${menu.type}</span>
                         </div>
                         
-                        <div class="mt-2 text-[11px] text-slate-600 bg-slate-50 border border-slate-100 p-2 rounded-lg leading-relaxed">
-                            <span class="font-bold text-amber-700"><i class="fa-solid fa-utensils mr-1"></i>Thực đơn:</span> 
-                            <span class="italic">${dishListStr}</span>
+                        <div class="mt-2 bg-slate-50 border border-slate-100 p-2.5 rounded-lg leading-relaxed">
+                            <div class="font-black text-[11px] text-amber-800 mb-1 flex items-center gap-1.5 border-b border-slate-200 pb-1"><i class="fa-solid fa-utensils"></i> Thực đơn chi tiết:</div> 
+                            ${dishListDisplay}
                         </div>
                     </td>
                     
