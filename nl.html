@@ -453,23 +453,40 @@
         const TELEGRAM_TOKEN = '8580811533:AAE1IMKPv3QG3TD2fLK2dBp-yYGt29phNZ8'; 
         const TELEGRAM_CHAT_IDS = ['-5197568749']; 
 
-        // --- HÀM TẠO DANH MỤC MÓN ĂN TỰ ĐỘNG (ĐÃ SỬA LỖI ĐỒNG BỘ) ---
+        // --- HÀM TẠO DANH MỤC MÓN ĂN TỰ ĐỘNG (ĐÃ FIX: BƠM CỨNG CÁC NHÓM MẶC ĐỊNH ĐỂ KHÔNG BỊ TRỐNG KHI DB RỖNG) ---
         function renderCategoryOptions() {
             const selectEl = document.getElementById("dish-category");
             if (!selectEl) return;
             
-            // Lấy danh mục duy nhất từ CSDL, loại bỏ null/undefined/trống
-            let uniqueCategoriesFromDB = [...new Set(dishesList.map(d => d.category?.trim()).filter(Boolean))];
+            // 1. Khôi phục lại một bộ khung các nhóm món chuẩn
+            const defaultCategories = [
+                "Món Gỏi / Nộm",
+                "Đồ Nguội / Chả",
+                "Món Phụ Đồ Nguội",
+                "Soup / Súp",
+                "Món Bò",
+                "Món Gà",
+                "Món Heo",
+                "Món Tôm",
+                "Món Mực",
+                "Món Cá",
+                "Món Lẩu",
+                "Cơm / Xôi",
+                "Tráng Miệng",
+                "Khác"
+            ];
             
-            // Nếu CSDL chưa phân loại hoặc trống, thêm mặc định để không bị crash giao diện
-            if (uniqueCategoriesFromDB.length === 0) {
-                uniqueCategoriesFromDB.push("Chưa có danh mục");
-            }
+            // 2. Lấy thêm các danh mục đang có thực tế trong CSDL (giữ lại các nhóm người dùng đã tự gõ)
+            let dbCategories = dishesList.map(d => d.category?.trim()).filter(Boolean);
             
-            uniqueCategoriesFromDB.sort();
+            // 3. Gộp 2 mảng lại và loại bỏ trùng lặp
+            let allCategories = [...new Set([...defaultCategories, ...dbCategories])];
             
+            allCategories.sort(); // Sắp xếp Alphabet
+            
+            // 4. Render lại toàn bộ option cho Dropdown
             selectEl.innerHTML = "";
-            uniqueCategoriesFromDB.forEach(cat => {
+            allCategories.forEach(cat => {
                 const option = document.createElement("option");
                 option.value = cat; 
                 option.textContent = cat;
@@ -659,7 +676,6 @@
             return styles[type?.toLowerCase()?.trim()] || styles["khác"];
         }
 
-        // --- HÀM LỌC MÓN ĂN (ĐÃ TỐI ƯU KHÔNG BỊ TRỐNG KHI CHƯA CHỌN NHÓM) ---
         function filterDishes() {
             const searchVal = document.getElementById("dish-search") ? document.getElementById("dish-search").value.toLowerCase().trim() : "";
             const groupVal = document.getElementById("dish-filter-group") ? document.getElementById("dish-filter-group").value.toLowerCase().trim() : "";
@@ -870,7 +886,7 @@
             document.getElementById("temp-ing-list").innerHTML = "";
         }
 
-        // --- HÀM SỬA MÓN ĂN (SỬA LỖI ESCAPE KÝ TỰ) ---
+        // --- HÀM SỬA MÓN ĂN ---
         function editDish(id) {
             const dish = dishesList.find(d => d.id === id); 
             if (!dish) return;
@@ -912,6 +928,7 @@
 
         let selectedDishIdsInMenuForm = [];
 
+        // --- CŨNG BẢO VỆ HÀM RENDER MENU GROUP CHỐNG LỖI CÁC MÓN BLANK ---
         function renderMenuDishSelector() {
             const container = document.getElementById("menu-dish-selector");
             container.innerHTML = "";
@@ -927,11 +944,13 @@
             };
 
             dishesList.forEach(dish => {
-                const name = dish.name.toLowerCase();
+                const name = (dish.name || "").toLowerCase();
                 const cat = (dish.category || "").toLowerCase();
+                
                 if (cat === "món phụ đồ nguội") {
                     return; 
                 }
+                
                 if (name.includes('gỏi') || name.includes('nộm') || name.includes('chả') || name.includes('nem') || name.includes('nguội') || name.includes('soup') || name.includes('súp') || cat.includes('đồ nguội') || cat.includes('gỏi') || cat.includes('súp')) {
                     groups["Khai Vị / Đồ Nguội / Soup"].push(dish);
                 } else if (name.includes('lẩu') || name.includes('cù lao') || cat.includes('lẩu')) {
