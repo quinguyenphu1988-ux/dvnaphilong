@@ -1307,16 +1307,15 @@ function renderMenus() {
             const today = new Date(); today.setHours(0,0,0,0);
             activeMenus.forEach(menu => {
                 
-                // MỚI: Hiển thị lại danh sách phẳng cho Tab Tiệc (món nối tiếp nhau)
-                let dishNames = [];
+                // MỚI: Danh sách món chiều dọc ép sát dòng, có dấu chấm nhỏ
+                let dishListItems = "";
                 menu.dishIds?.forEach(id => {
                     const dish = dishesList.find(d => d.id === id);
-                    if (dish) dishNames.push(dish.name);
+                    if (dish) {
+                        dishListItems += `<div class="text-[12px] text-slate-700 font-semibold leading-snug py-[2px] flex items-start gap-1.5"><span class="text-amber-500 font-black pt-[1px]">•</span><span class="flex-1">${dish.name}</span></div>`;
+                    }
                 });
-                
-                let dishListHtml = dishNames.length > 0 
-                    ? `<div class="text-[12px] text-slate-700 font-semibold leading-relaxed">${dishNames.join(' <span class="text-amber-500 font-black mx-1">•</span> ')}</div>`
-                    : '<div class="italic text-slate-400 text-[11px]">Chưa chọn món</div>';
+                let dishListHtml = dishListItems !== "" ? dishListItems : '<div class="italic text-slate-400 text-[11px]">Chưa chọn món</div>';
                 
                 const computedLunar = getLunarDateString(menu.date);
                 const partyDate = new Date(menu.date); partyDate.setHours(0,0,0,0);
@@ -1455,15 +1454,17 @@ function renderMenus() {
                 const tr = document.createElement("tr");
                 const computedLunar = getLunarDateString(menu.date);
                 
-                // MỚI: Thu gọn lại thành text liền nhau
-                let dishNames = [];
+                // MỚI: Danh sách món dọc ép sát cho bảng đi chợ
+                let dishListItems = "";
                 menu.dishIds?.forEach(id => {
                     const dish = dishesList.find(d => d.id === id);
-                    if (dish) dishNames.push(dish.name);
+                    if (dish) {
+                        dishListItems += `<div class="text-[11px] text-slate-700 font-medium leading-snug py-[1.5px] flex items-start gap-1"><span class="text-amber-500 font-black pt-[1px]">•</span><span class="flex-1">${dish.name}</span></div>`;
+                    }
                 });
                 
-                let dishListDisplay = dishNames.length > 0 
-                    ? `<div class="mt-1.5 text-[11.5px] text-slate-700 font-medium leading-relaxed italic">${dishNames.join(' <span class="text-amber-500 font-black mx-1">•</span> ')}</div>`
+                let dishListDisplay = dishListItems !== "" 
+                    ? `<div class="mt-1.5 border-t border-slate-200/60 pt-1.5">${dishListItems}</div>`
                     : '<div class="italic text-slate-400 mt-1.5 text-[11px]">Chưa chọn món</div>';
 
                 tr.innerHTML = `
@@ -1484,7 +1485,7 @@ function renderMenus() {
                             <span class="bg-amber-50 border border-amber-200 text-amber-800 px-1.5 py-0.2 rounded font-bold uppercase text-[10px]">${menu.type}</span>
                         </div>
                         
-                        <div class="mt-2.5 bg-slate-50 border border-slate-100 p-2.5 rounded-lg">
+                        <div class="mt-2 bg-slate-50 border border-slate-200/60 p-2 rounded-lg">
                             <div class="font-black text-[11px] text-amber-800 flex items-center gap-1.5"><i class="fa-solid fa-utensils"></i> Thực đơn chi tiết:</div> 
                             ${dishListDisplay}
                         </div>
