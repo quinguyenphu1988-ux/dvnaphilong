@@ -706,6 +706,7 @@
             renderDishes(filtered);
         }
 
+        // --- CẬP NHẬT: GOM NHÓM DANH SÁCH MÓN ĂN TRÊN TAB MÓN ĂN ---
         function renderDishes(listToRender = dishesList) {
             const container = document.getElementById("dishes-container");
             document.getElementById("dish-count").innerText = `${listToRender.length} món`;
@@ -1435,6 +1436,7 @@ function renderMenus() {
             sendTelegramPartyAlerts(activeMenus);
         }
 
+        // --- CẬP NHẬT: GOM NHÓM MÓN ĂN Ở BẢNG ĐI CHỢ ---
         function renderCalcPartiesTable() {
             const tbody = document.getElementById("calc-parties-table-body"); tbody.innerHTML = "";
             
@@ -1449,13 +1451,18 @@ function renderMenus() {
                 const tr = document.createElement("tr");
                 const computedLunar = getLunarDateString(menu.date);
                 
-                // Hiển thị lại danh sách phẳng cho Tab Đi Chợ
-                let dishNames = [];
+                // --- CẬP NHẬT: Hiển thị danh sách món ăn mỗi món 1 dòng ---
+                let dishListHtml = "";
                 menu.dishIds?.forEach(id => {
                     const dish = dishesList.find(d => d.id === id);
-                    if (dish) dishNames.push(dish.name);
+                    if (dish) {
+                        dishListHtml += `<li class="text-[11px] text-slate-700 font-semibold flex items-center gap-1.5"><i class="fa-solid fa-square-check text-amber-500"></i> ${dish.name}</li>`;
+                    }
                 });
-                let dishListStr = dishNames.length > 0 ? dishNames.join(' <span class="text-slate-300 mx-1">•</span> ') : 'Chưa có món nào';
+                
+                let dishListDisplay = dishListHtml !== "" 
+                    ? `<ul class="space-y-1.5 mt-1.5 pl-0.5">${dishListHtml}</ul>` 
+                    : '<div class="italic text-slate-400 mt-1 text-[11px]">Chưa chọn món</div>';
 
                 tr.innerHTML = `
                     <td class="p-3.5 text-center align-top pt-4">
@@ -1475,9 +1482,9 @@ function renderMenus() {
                             <span class="bg-amber-50 border border-amber-200 text-amber-800 px-1.5 py-0.2 rounded font-bold uppercase text-[10px]">${menu.type}</span>
                         </div>
                         
-                        <div class="mt-2 text-[11px] text-slate-600 bg-slate-50 border border-slate-100 p-2.5 rounded-lg leading-relaxed">
-                            <div class="font-black text-amber-800 mb-1 flex items-center gap-1.5 border-b border-slate-200 pb-1"><i class="fa-solid fa-utensils"></i> Thực đơn chi tiết:</div> 
-                            <div class="font-medium mt-1">${dishListStr}</div>
+                        <div class="mt-2 bg-slate-50 border border-slate-100 p-2.5 rounded-lg leading-relaxed">
+                            <div class="font-black text-[11px] text-amber-800 mb-1 flex items-center gap-1.5 border-b border-slate-200 pb-1"><i class="fa-solid fa-utensils"></i> Thực đơn chi tiết:</div> 
+                            ${dishListDisplay}
                         </div>
                     </td>
                     
@@ -1540,142 +1547,4 @@ function renderMenus() {
                         listItemsHtml += `
                             <div class="flex justify-between items-center py-2 border-b border-slate-200/50 last:border-0">
                                 <span class="font-bold text-slate-800 text-xs">${item.name}</span>
-                                <span class="bg-white border border-slate-200 px-2.5 py-0.5 rounded-lg font-black text-slate-900 text-xs">${formattedWeight} ${displayUnit}</span>
-                            </div>
-                        `;
-                    }
-                    catBlock.innerHTML = `<div><h4 class="text-xs font-black uppercase tracking-wider text-slate-900 mb-3 border-b pb-2">Nhóm/Quầy: <span class="capitalize">${cat}</span></h4><div class="divide-y divide-slate-100">${listItemsHtml}</div></div>`;
-                    container.appendChild(catBlock);
-                }
-            });
-            box.scrollIntoView({ behavior: 'smooth' });
-        }
-        
-        function exportMarketToExcel() {
-            if (!globalCalculatedMarket || Object.keys(globalCalculatedMarket).length === 0) {
-                alert("Bạn chưa bấm GỘP VẬT TƯ CHỢ, chưa có dữ liệu để xuất Excel!");
-                return;
-            }
-            
-            const data = [];
-            
-            for (let cat in globalCalculatedMarket) {
-                data.push(["NHÓM: " + cat.toUpperCase(), "", "", ""]);
-                data.push(["TÊN NGUYÊN LIỆU", "TỔNG SỐ LƯỢNG", "ĐƠN VỊ", ""]);
-                
-                for (let key in globalCalculatedMarket[cat]) {
-                    let item = globalCalculatedMarket[cat][key];
-                    let formattedWeight = Math.round(item.totalWeight * 100) / 100;
-                    let displayUnit = item.unit || "";
-                    
-                    if (item.unit && item.unit.toLowerCase() === "gam" && formattedWeight >= 1000) {
-                        formattedWeight = Math.round((formattedWeight / 1000) * 100) / 100;
-                        displayUnit = "kg";
-                    }
-                    
-                    data.push([item.name, formattedWeight, displayUnit, ""]);
-                }
-                data.push(["", "", "", ""]);
-            }
-            
-            const ws = XLSX.utils.aoa_to_sheet(data);
-            ws['!cols'] = [{wch: 35}, {wch: 15}, {wch: 15}, {wch: 10}];
-            
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, "PhieuDiCho");
-            XLSX.writeFile(wb, "Phieu_Di_Cho_PhiLong_Catering.xlsx");
-        }
-
-        async function importDishesFromExcel(mode) {
-            const fileInput = document.getElementById('excel-import-file');
-            const file = fileInput.files[0];
-            
-            if (!file) {
-                alert("Vui lòng chọn file Excel trước!");
-                return;
-            }
-
-            const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
-                    const firstSheet = workbook.Sheets[workbook.SheetNames[0]];
-                    const rows = XLSX.utils.sheet_to_json(firstSheet);
-
-                    const groupedDishes = {};
-                    rows.forEach(row => {
-                        const dishName = (row.TenMon || "").trim();
-                        if (!dishName) return;
-                        
-                        if (!groupedDishes[dishName]) {
-                            groupedDishes[dishName] = [];
-                        }
-                        
-                        if (row.TenNguyenLieu) {
-                            groupedDishes[dishName].push({
-                                name: (row.TenNguyenLieu || "").trim(),
-                                weight: parseFloat(row.SoLuong) || 0,
-                                unit: (row.DonVi || "").trim(),
-                                type: (row.Loai || "khác").trim()
-                            });
-                        }
-                    });
-
-                    let successCount = 0;
-                    const originalBtnText = mode === 'update' ? "Đang cập nhật..." : "Đang thêm mới...";
-                    console.log(originalBtnText);
-
-                    for (const [dishName, excelIngredients] of Object.entries(groupedDishes)) {
-                        const existingDish = dishesList.find(d => d.name.toLowerCase() === dishName.toLowerCase());
-
-                        if (mode === 'update') {
-                            if (existingDish) {
-                                const mergedIngredients = [...(existingDish.ingredients || [])];
-                                excelIngredients.forEach(newIng => {
-                                    mergedIngredients.push(newIng);
-                                });
-                                
-                                const { error } = await _supabase
-                                    .from('dishes')
-                                    .update({ ingredients: mergedIngredients })
-                                    .eq('id', existingDish.id);
-                                
-                                if (!error) successCount++;
-                            }
-                        } 
-                        else if (mode === 'new') {
-                            if (!existingDish) {
-                                const dishData = {
-                                    name: dishName,
-                                    ingredients: excelIngredients,
-                                    image_url: null,
-                                    timestamp: Date.now(),
-                                    category: "Chưa có danh mục" 
-                                };
-                                
-                                const { error } = await _supabase
-                                    .from('dishes')
-                                    .insert([dishData]);
-                                
-                                if (!error) successCount++;
-                            }
-                        }
-                    }
-
-                    alert(`Import thành công! Đã xử lý ${successCount} món ăn.`);
-                    fileInput.value = ""; 
-                    await loadAllCloudData(); 
-                    
-                } catch (err) {
-                    console.error(err);
-                    alert("Đã xảy ra lỗi khi đọc file Excel: " + err.message);
-                }
-            };
-            
-            reader.readAsArrayBuffer(file);
-        }
-		
-    </script>
-</body>
-</html>
+                                <span class="
