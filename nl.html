@@ -1485,9 +1485,15 @@ function renderMenus() {
                             <span class="bg-amber-50 border border-amber-200 text-amber-800 px-1.5 py-0.2 rounded font-bold uppercase text-[10px]">${menu.type}</span>
                         </div>
                         
-                        <div class="mt-2 bg-slate-50 border border-slate-200/60 p-2 rounded-lg">
-                            <div class="font-black text-[11px] text-amber-800 flex items-center gap-1.5"><i class="fa-solid fa-utensils"></i> Thực đơn chi tiết:</div> 
-                            ${dishListDisplay}
+                        <div class="mt-2 bg-slate-50 border border-slate-200/60 rounded-lg overflow-hidden">
+                            <div class="font-black text-[11px] text-amber-800 flex justify-between items-center cursor-pointer p-2 hover:bg-amber-100/50 transition-colors select-none" 
+                                 onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.fa-chevron-down').classList.toggle('rotate-180');">
+                                <div class="flex items-center gap-1.5"><i class="fa-solid fa-utensils"></i> Xem thực đơn chi tiết</div> 
+                                <i class="fa-solid fa-chevron-down transition-transform duration-300"></i>
+                            </div>
+                            <div class="px-2 pb-2 hidden">
+                                ${dishListDisplay}
+                            </div>
                         </div>
                     </td>
                     
