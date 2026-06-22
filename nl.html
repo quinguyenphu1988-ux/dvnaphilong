@@ -155,8 +155,8 @@
                         </div>
                         
                         <div>
-                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Hình ảnh món ăn</label>
-                            <input type="file" id="dish-image" accept="image/*" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-medium">
+                            <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Link hình ảnh (Từ postimg.cc)</label>
+                            <input type="text" id="dish-image" placeholder="Dán link ảnh (Direct link) từ postimg.cc vào đây..." class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2 text-sm font-medium text-blue-600 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
                         </div>
 
                         <div class="bg-slate-50 rounded-xl p-3.5 border border-slate-200/60 space-y-3">
@@ -845,8 +845,8 @@
         async function addDish() {
             const name = document.getElementById("dish-name").value.trim();
             const category = document.getElementById("dish-category").value;
-            const fileInput = document.getElementById("dish-image");
-            const file = fileInput.files[0];
+            // Lấy thẳng link ảnh từ ô text
+            const finalImageUrl = document.getElementById("dish-image").value.trim();
 
             if (!name) { alert("Bạn phải điền tên món ăn!"); return; }
 
@@ -856,37 +856,11 @@
             saveBtn.disabled = true;
 
             try {
-                let finalImageUrl = null;
-
-                if (currentEditingDishId && !file) {
-                    const existingDish = dishesList.find(d => d.id === currentEditingDishId);
-                    if (existingDish) finalImageUrl = existingDish.image_url;
-                }
-
-                if (file) {
-                    const fileExt = file.name.split('.').pop();
-                    const fileName = `mon_an_${Date.now()}.${fileExt}`;
-
-                    const { data: uploadData, error: uploadError } = await _supabase
-                        .storage
-                        .from('dish_images')
-                        .upload(fileName, file);
-
-                    if (uploadError) throw new Error('Lỗi tải ảnh lên: ' + uploadError.message);
-
-                    const { data: publicUrlData } = _supabase
-                        .storage
-                        .from('dish_images')
-                        .getPublicUrl(fileName);
-
-                    finalImageUrl = publicUrlData.publicUrl;
-                }
-
                 const dishData = { 
                     name: name, 
                     category: category,
                     ingredients: temporaryIngredients, 
-                    image_url: finalImageUrl, 
+                    image_url: finalImageUrl || null, 
                     timestamp: Date.now() 
                 };
 
@@ -922,7 +896,7 @@
                 selectEl.selectedIndex = 0;
             }
             
-            document.getElementById("dish-image").value = ""; 
+            document.getElementById("dish-image").value = dish.image_url || ""; 
             temporaryIngredients = []; 
             document.getElementById("temp-ing-list").innerHTML = "";
         }
@@ -951,7 +925,7 @@
                 if (selectEl.options.length > 0) selectEl.selectedIndex = 0;
             }
             
-            document.getElementById("dish-image").value = ""; 
+            document.getElementById("dish-image").value = dish.image_url || ""; 
             temporaryIngredients = [...(dish.ingredients || [])];
             renderTempIngredients(); document.getElementById("dish-name").focus();
             window.scrollTo({ top: 0, behavior: 'smooth' });
