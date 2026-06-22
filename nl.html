@@ -843,75 +843,75 @@
         function removeTempIngredient(index) { temporaryIngredients.splice(index, 1); renderTempIngredients(); }
 
         async function addDish() {
-    const name = document.getElementById("dish-name").value.trim();
-    const category = document.getElementById("dish-category").value;
-    // Lấy thẳng link ảnh từ ô text
-    const finalImageUrl = document.getElementById("dish-image").value.trim();
+            const name = document.getElementById("dish-name").value.trim();
+            const category = document.getElementById("dish-category").value;
+            // Lấy thẳng link ảnh từ ô text
+            const finalImageUrl = document.getElementById("dish-image").value.trim();
 
-    if (!name) { alert("Bạn phải điền tên món ăn!"); return; }
+            if (!name) { alert("Bạn phải điền tên món ăn!"); return; }
 
-    const saveBtn = document.getElementById("btn-save-dish");
-    const originalText = saveBtn.innerHTML;
-    saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...';
-    saveBtn.disabled = true;
+            const saveBtn = document.getElementById("btn-save-dish");
+            const originalText = saveBtn.innerHTML;
+            saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Đang tải dữ liệu...';
+            saveBtn.disabled = true;
 
-    try {
-        const dishData = { 
-            name: name, 
-            category: category,
-            ingredients: temporaryIngredients, 
-            image_url: finalImageUrl || null, 
-            timestamp: Date.now() 
-        };
+            try {
+                const dishData = { 
+                    name: name, 
+                    category: category,
+                    ingredients: temporaryIngredients, 
+                    image_url: finalImageUrl || null, 
+                    timestamp: Date.now() 
+                };
 
-        if (currentEditingDishId) {
-            const { error } = await _supabase.from('dishes').update(dishData).eq('id', currentEditingDishId);
-            if (error) throw error;
-        } else {
-            const { error } = await _supabase.from('dishes').insert([dishData]);
-            if (error) throw error;
+                if (currentEditingDishId) {
+                    const { error } = await _supabase.from('dishes').update(dishData).eq('id', currentEditingDishId);
+                    if (error) throw error;
+                } else {
+                    const { error } = await _supabase.from('dishes').insert([dishData]);
+                    if (error) throw error;
+                }
+
+                resetDishForm();
+                await loadAllCloudData();
+                alert(currentEditingDishId ? "Cập nhật thành công!" : "Thêm món ăn thành công!");
+
+            } catch (error) {
+                alert("Lỗi khi lưu món ăn: " + error.message);
+            } finally {
+                saveBtn.innerHTML = originalText;
+                saveBtn.disabled = false;
+            }
         }
 
-        resetDishForm();
-        await loadAllCloudData();
-        alert(currentEditingDishId ? "Cập nhật thành công!" : "Thêm món ăn thành công!");
-
-    } catch (error) {
-        alert("Lỗi khi lưu món ăn: " + error.message);
-    } finally {
-        saveBtn.innerHTML = originalText;
-        saveBtn.disabled = false;
-    }
-}
-
-function editDish(id) {
-    const dish = dishesList.find(d => d.id === id); 
-    if (!dish) return;
-    currentEditingDishId = dish.id;
-    document.getElementById("dish-name").value = dish.name;
-    
-    renderCategoryOptions();
-    const selectEl = document.getElementById("dish-category");
-    if (dish.category) {
-        const options = Array.from(selectEl.options).map(opt => opt.value);
-        if (!options.includes(dish.category)) {
-            const newOpt = document.createElement("option");
-            newOpt.value = dish.category;
-            newOpt.textContent = dish.category;
-            selectEl.appendChild(newOpt);
+        function editDish(id) {
+            const dish = dishesList.find(d => d.id === id); 
+            if (!dish) return;
+            currentEditingDishId = dish.id;
+            document.getElementById("dish-name").value = dish.name;
+            
+            renderCategoryOptions();
+            const selectEl = document.getElementById("dish-category");
+            if (dish.category) {
+                const options = Array.from(selectEl.options).map(opt => opt.value);
+                if (!options.includes(dish.category)) {
+                    const newOpt = document.createElement("option");
+                    newOpt.value = dish.category;
+                    newOpt.textContent = dish.category;
+                    selectEl.appendChild(newOpt);
+                }
+                selectEl.value = dish.category;
+            } else {
+                if (selectEl.options.length > 0) selectEl.selectedIndex = 0;
+            }
+            
+            // Hiển thị lại link ảnh cũ khi bấm sửa món
+            document.getElementById("dish-image").value = dish.image_url || ""; 
+            temporaryIngredients = [...(dish.ingredients || [])];
+            renderTempIngredients(); 
+            document.getElementById("dish-name").focus();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
-        selectEl.value = dish.category;
-    } else {
-        if (selectEl.options.length > 0) selectEl.selectedIndex = 0;
-    }
-    
-    // Hiển thị lại link ảnh cũ khi bấm sửa món
-    document.getElementById("dish-image").value = dish.image_url || ""; 
-    temporaryIngredients = [...(dish.ingredients || [])];
-    renderTempIngredients(); 
-    document.getElementById("dish-name").focus();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-}
 
 		async function removeDish(id) {
 			if (confirm("Xóa hẳn món ăn này trên hệ thống đám mây?")) {
@@ -922,21 +922,6 @@ function editDish(id) {
 					alert("Đã xóa!");
 				} catch (e) { alert(e.message); }
 			}
-		}
-
-		function resetDishForm() {
-			currentEditingDishId = null; 
-			document.getElementById("dish-name").value = "";
-			
-			renderCategoryOptions();
-			const selectEl = document.getElementById("dish-category");
-			if (selectEl.options.length > 0) {
-				selectEl.selectedIndex = 0;
-			}
-			
-			document.getElementById("dish-image").value = ""; 
-			temporaryIngredients = [];
-			renderTempIngredients();
 		}
 
         // --- CẬP NHẬT HÀM RESET: TRỎ VỀ OPTION ĐẦU TIÊN THAY VÌ GÁN CỨNG ---
@@ -951,46 +936,9 @@ function editDish(id) {
                 selectEl.selectedIndex = 0;
             }
             
-            document.getElementById("dish-image").value = dish.image_url || ""; 
+            document.getElementById("dish-image").value = ""; 
             temporaryIngredients = []; 
             document.getElementById("temp-ing-list").innerHTML = "";
-        }
-
-        // --- CẬP NHẬT HÀM EDIT: GÁN CHÍNH XÁC ---
-        function editDish(id) {
-            const dish = dishesList.find(d => d.id === id); if (!dish) return;
-            currentEditingDishId = dish.id;
-            document.getElementById("dish-name").value = dish.name;
-            
-            // Cập nhật lại dropdown danh mục
-            renderCategoryOptions();
-            
-            const selectEl = document.getElementById("dish-category");
-            if (dish.category) {
-                const options = Array.from(selectEl.options).map(opt => opt.value);
-                // Nếu category này chưa có trong list option (trường hợp hiếm), thêm nó vào
-                if (!options.includes(dish.category)) {
-                    const newOpt = document.createElement("option");
-                    newOpt.value = dish.category;
-                    newOpt.textContent = dish.category;
-                    selectEl.appendChild(newOpt);
-                }
-                selectEl.value = dish.category;
-            } else {
-                if (selectEl.options.length > 0) selectEl.selectedIndex = 0;
-            }
-            
-            document.getElementById("dish-image").value = dish.image_url || ""; 
-            temporaryIngredients = [...(dish.ingredients || [])];
-            renderTempIngredients(); document.getElementById("dish-name").focus();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
-        }
-
-        async function removeDish(id) {
-            if (confirm("Xóa hẳn món ăn này trên hệ thống đám mây?")) {
-                await _supabase.from('dishes').delete().eq('id', id);
-                await loadAllCloudData();
-            }
         }
 
         let selectedDishIdsInMenuForm = [];
