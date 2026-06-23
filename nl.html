@@ -803,8 +803,8 @@
                             </div>
                         </div>
                         <div class="flex justify-end gap-4 mt-4 pt-3 border-t border-slate-100">
-                            <button onclick="editDish(${dish.id})" class="text-xs font-black text-blue-600 hover:text-blue-800 cursor-pointer flex items-center gap-1"><i class="fa-solid fa-pen-to-square"></i> Sửa món</button>
-                            <button onclick="removeDish(${dish.id})" class="text-xs font-black text-rose-500 hover:text-rose-700 cursor-pointer flex items-center gap-1"><i class="fa-solid fa-trash"></i> Xóa</button>
+                            <button onclick="editDish('${dish.id}')" class="text-xs font-black text-blue-600 hover:text-blue-800 cursor-pointer flex items-center gap-1"><i class="fa-solid fa-pen-to-square"></i> Sửa món</button>
+                            <button onclick="removeDish('${dish.id}')" class="text-xs font-black text-rose-500 hover:text-rose-700 cursor-pointer flex items-center gap-1"><i class="fa-solid fa-trash"></i> Xóa</button>
                         </div>
                     `;
                     gridContainer.appendChild(card);
@@ -885,7 +885,7 @@
         }
 
         function editDish(id) {
-            const dish = dishesList.find(d => d.id === id); 
+            const dish = dishesList.find(d => d.id.toString() === id.toString()); 
             if (!dish) return;
             currentEditingDishId = dish.id;
             document.getElementById("dish-name").value = dish.name;
@@ -1036,16 +1036,16 @@
         function renderSelectedDishesBadges() {
             const container = document.getElementById("menu-selected-dishes-badge"); container.innerHTML = "";
             selectedDishIdsInMenuForm.forEach((id, index) => {
-                const dish = dishesList.find(d => d.id === id); if (!dish) return;
+                const dish = dishesList.find(d => d.id.toString() === id.toString()); if (!dish) return;
                 const badge = document.createElement("div");
                 badge.className = "bg-slate-900 text-white text-xs font-semibold px-3 py-2 rounded-xl flex justify-between items-center";
-                badge.innerHTML = `<span>${index + 1}. ${dish.name}</span> <i class="fa-solid fa-circle-xmark cursor-pointer text-rose-400 text-sm" onclick="removeSelectedDishFromMenu(${id})"></i>`;
+                badge.innerHTML = `<span>${index + 1}. ${dish.name}</span> <i class="fa-solid fa-circle-xmark cursor-pointer text-rose-400 text-sm" onclick="removeSelectedDishFromMenu('${id}')"></i>`;
                 container.appendChild(badge);
             });
         }
 
         function removeSelectedDishFromMenu(id) { 
-            selectedDishIdsInMenuForm = selectedDishIdsInMenuForm.filter(x => x !== id); 
+            selectedDishIdsInMenuForm = selectedDishIdsInMenuForm.filter(x => x.toString() !== id.toString()); 
             renderSelectedDishesBadges(); 
             renderMenuDishSelector();
         }
@@ -1177,7 +1177,7 @@ function renderSyncLists() {
                         <div class="font-bold text-[13px] text-slate-800">${item.name}</div>
                         <div class="flex gap-2">
                             <input type="number" id="input-price-${item.dishId}" placeholder="Nhập giá..." class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-rose-600 focus:border-rose-500 outline-none transition">
-                            <button onclick="saveDishPrice('${safeName}', ${item.dishId})" class="bg-rose-500 text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-rose-600 transition shadow-sm cursor-pointer shrink-0">
+                            <button onclick="saveDishPrice('${safeName}', '${item.dishId}')" class="bg-rose-500 text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-rose-600 transition shadow-sm cursor-pointer shrink-0">
                                 <i class="fa-solid fa-floppy-disk"></i> Lưu
                             </button>
                         </div>
@@ -1201,7 +1201,7 @@ function renderSyncLists() {
                         <div class="font-bold text-[13px] text-slate-800">${item.name}</div>
                         <div class="flex gap-2">
                             <input type="number" id="update-price-${item.dishId}" value="${item.price}" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-emerald-700 focus:border-emerald-500 outline-none transition">
-                            <button onclick="updateDishPrice(${item.priceId}, ${item.dishId})" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-emerald-700 transition shadow-sm cursor-pointer shrink-0">
+                            <button onclick="updateDishPrice('${item.priceId}', '${item.dishId}')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-emerald-700 transition shadow-sm cursor-pointer shrink-0">
                                 <i class="fa-solid fa-check"></i> Lưu
                             </button>
                         </div>
@@ -1287,7 +1287,7 @@ function renderMenus() {
                 // MỚI: Danh sách món chiều dọc ép sát dòng, có dấu chấm nhỏ
                 let dishListItems = "";
                 menu.dishIds?.forEach(id => {
-                    const dish = dishesList.find(d => d.id === id);
+                    const dish = dishesList.find(d => d.id.toString() === id.toString());
                     if (dish) {
                         dishListItems += `<div class="text-[12px] text-slate-700 font-semibold leading-snug py-[2px] flex items-start gap-1.5"><span class="text-amber-500 font-black pt-[1px]">•</span><span class="flex-1">${dish.name}</span></div>`;
                     }
@@ -1325,14 +1325,14 @@ function renderMenus() {
                         ${menu.note ? `<div class="mt-3 pt-2 border-t border-slate-100 text-[10px] italic text-slate-500"><span class="font-semibold text-slate-600">Lưu ý:</span> ${menu.note}</div>` : ''}
                     </div>
                     <div class="flex justify-end items-center gap-6 pt-3 border-t border-slate-100 md:border-t-0 md:pt-0 md:flex-col md:justify-center md:gap-2">
-                        <button onclick="markMenuCompleted(${menu.id})" class="w-full flex items-center justify-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-emerald-100 border border-emerald-200">
+                        <button onclick="markMenuCompleted('${menu.id}')" class="w-full flex items-center justify-center gap-2 text-xs font-bold text-emerald-600 bg-emerald-50 px-4 py-2 rounded-lg cursor-pointer hover:bg-emerald-100 border border-emerald-200">
                             <i class="fa-solid fa-check-double"></i> Đã Xong
                         </button>
                         <div class="flex gap-2 w-full">
-                            <button onclick="editMenu(${menu.id})" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold text-blue-600 bg-blue-50 px-2 py-2 rounded-lg cursor-pointer hover:bg-blue-100">
+                            <button onclick="editMenu('${menu.id}')" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold text-blue-600 bg-blue-50 px-2 py-2 rounded-lg cursor-pointer hover:bg-blue-100">
                                 <i class="fa-solid fa-pen"></i> Sửa
                             </button>
-                            <button onclick="removeMenu(${menu.id})" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold text-rose-600 bg-rose-50 px-2 py-2 rounded-lg cursor-pointer hover:bg-rose-100">
+                            <button onclick="removeMenu('${menu.id}')" class="flex-1 flex items-center justify-center gap-2 text-xs font-bold text-rose-600 bg-rose-50 px-2 py-2 rounded-lg cursor-pointer hover:bg-rose-100">
                                 <i class="fa-solid fa-trash"></i> Hủy
                             </button>
                         </div>
@@ -1344,7 +1344,7 @@ function renderMenus() {
 
         let currentEditingMenuId = null;
         function editMenu(id) {
-            const menu = menusList.find(m => m.id === id); if (!menu) return;
+            const menu = menusList.find(m => m.id.toString() === id.toString()); if (!menu) return;
             currentEditingMenuId = menu.id;
             document.getElementById("menu-customer").value = menu.customer;
             document.getElementById("menu-phone").value = menu.phone || "";
@@ -1434,7 +1434,7 @@ function renderMenus() {
                 // MỚI: Danh sách món dọc ép sát cho bảng đi chợ
                 let dishListItems = "";
                 menu.dishIds?.forEach(id => {
-                    const dish = dishesList.find(d => d.id === id);
+                    const dish = dishesList.find(d => d.id.toString() === id.toString());
                     if (dish) {
                         dishListItems += `<div class="text-[11px] text-slate-700 font-medium leading-snug py-[1.5px] flex items-start gap-1"><span class="text-amber-500 font-black pt-[1px]">•</span><span class="flex-1">${dish.name}</span></div>`;
                     }
@@ -1482,28 +1482,57 @@ function renderMenus() {
             });
         }
 
+        // ĐÃ SỬA LẠI LOGIC CHẠY HÀM NÀY
         function calculateIngredients() {
             const checkboxes = document.querySelectorAll(".calc-party-checkbox:checked");
-            if (checkboxes.length === 0) { alert("Vui lòng tích chọn ít nhất một tiệc!"); return; }
+            if (checkboxes.length === 0) { 
+                alert("Vui lòng tích chọn ít nhất một tiệc!"); 
+                return; 
+            }
+            
             let masterIngredients = {};
+            let hasError = false;
+
             checkboxes.forEach(cb => {
-                const menuId = parseInt(cb.value); const menu = menusList.find(m => m.id === menuId);
-                const tablesCount = parseFloat(document.getElementById(`tables-for-menu-${menuId}`).value) || 0;
-                if (!menu || tablesCount <= 0) return;
+                const menuId = cb.value; // Lấy ID đúng chuẩn String
+                const menu = menusList.find(m => m.id.toString() === menuId.toString());
+                if (!menu) return;
+
+                const tablesInput = document.getElementById(`tables-for-menu-${menuId}`);
+                const tablesCount = parseFloat(tablesInput ? tablesInput.value : 0) || 0;
+
+                // CẢNH BÁO NẾU SỐ BÀN BẰNG 0
+                if (tablesCount <= 0) {
+                    alert(`⚠️ Cảnh báo: Tiệc của "${menu.customer}" đang để Tổng Số Bàn = 0.\nVui lòng nhập số bàn ở cột bên phải để hệ thống tính toán khối lượng!`);
+                    hasError = true;
+                    return;
+                }
+
                 menu.dishIds?.forEach(dId => {
-                    const dish = dishesList.find(d => d.id === dId); if (!dish || !dish.ingredients) return;
+                    const dish = dishesList.find(d => d.id.toString() === dId.toString()); 
+                    if (!dish || !dish.ingredients) return;
+                    
                     dish.ingredients.forEach(ing => {
                         const typeKey = ing.type?.toLowerCase()?.trim() || "khác"; 
                         const ingKey = `${ing.name?.toLowerCase()?.trim()}_${ing.unit?.toLowerCase()?.trim()}`;
+                        
                         if (!masterIngredients[typeKey]) masterIngredients[typeKey] = {};
-                        const computedWeight = ing.weight * tablesCount;
+                        
+                        const weight = parseFloat(ing.weight) || 0;
+                        const computedWeight = weight * tablesCount;
+                        
                         if (!masterIngredients[typeKey][ingKey]) {
                             masterIngredients[typeKey][ingKey] = { name: ing.name, totalWeight: computedWeight, unit: ing.unit, type: ing.type };
-                        } else { masterIngredients[typeKey][ingKey].totalWeight += computedWeight; }
+                        } else { 
+                            masterIngredients[typeKey][ingKey].totalWeight += computedWeight; 
+                        }
                     });
                 });
             });
             
+            // NẾU CÓ LỖI (SỐ BÀN = 0) VÀ KHÔNG CÓ DATA THÌ DỪNG LẠI KHÔNG HIỂN THỊ BẢNG
+            if (hasError && Object.keys(masterIngredients).length === 0) return;
+
             globalCalculatedMarket = masterIngredients; 
             renderCalculatedOutput(masterIngredients);
         }
@@ -1513,7 +1542,7 @@ function renderMenus() {
             container.innerHTML = ""; box.classList.remove("hidden"); 
             const categories = Object.keys(masterData);
             if (categories.length === 0) {
-                 container.innerHTML = `<div class="col-span-full p-4 text-center text-slate-500 italic">Không có nguyên liệu nào để tính toán.</div>`;
+                 container.innerHTML = `<div class="col-span-full p-4 text-center text-slate-500 italic">Không có nguyên liệu nào để tính toán. (Hãy đảm bảo món ăn đã được nhập nguyên liệu thành phần)</div>`;
                  return;
             }
             categories.forEach(cat => {
