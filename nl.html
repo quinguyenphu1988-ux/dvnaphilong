@@ -136,6 +136,7 @@
     </nav>
 
     <main class="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
+        <!-- TAB MÓN ĂN -->
         <div id="tab-dishes" class="tab-content active">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 <div class="app-card p-5 space-y-5 lg:sticky lg:top-[160px] max-h-[calc(100vh-200px)] overflow-y-auto shadow-sm">
@@ -264,6 +265,7 @@
             </div>
         </div>
 
+        <!-- TAB LÊN THỰC ĐƠN TIỆC -->
         <div id="tab-menus" class="tab-content">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
                 <div class="app-card p-5 space-y-5 lg:sticky lg:top-[160px] max-h-[calc(100vh-200px)] overflow-y-auto shadow-sm">
@@ -343,6 +345,7 @@
             </div>
         </div>
 
+        <!-- TAB TÍNH ĐI CHỢ MỚI ĐÃ ĐƯỢC CẬP NHẬT CHỐNG LỖI -->
         <div id="tab-calc" class="tab-content space-y-6">
             <div class="app-card p-5 space-y-4">
                 <div class="border-b border-slate-100 pb-2"><h3 class="text-base font-black text-slate-900">GỘP ĐƠN ĐẶT TIỆC TIẾN HÀNH ĐI CHỢ</h3></div>
@@ -358,6 +361,7 @@
                         <tbody id="calc-parties-table-body" class="divide-y divide-slate-200 text-slate-600 font-medium"></tbody>
                     </table>
                 </div>
+                <!-- NÚT BẤM CHẠY HÀM -->
                 <button onclick="calculateIngredients()" class="w-full floating-btn bg-gradient-to-r from-amber-600 to-orange-600 text-white font-bold text-sm py-3.5 rounded-2xl shadow-md cursor-pointer hover:from-amber-700 hover:to-orange-700"><i class="fa-solid fa-wand-magic-sparkles"></i> KHỞI CHẠY ĐỒNG BỘ GỘP VẬT TƯ CHỢ</button>
             </div>
             <div id="calc-result-box" class="hidden bg-white rounded-2xl border border-slate-200 p-6 space-y-5">
@@ -369,52 +373,51 @@
             </div>
         </div>
 		
-		
-
+		<!-- TAB ĐỒNG BỘ GIÁ -->
 		<div id="tab-sync-price" class="tab-content space-y-6 w-full max-w-7xl mx-auto">
-    <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-md">
-        <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
-            <div>
-                <h2 class="text-xl font-black text-slate-800 uppercase">Đồng Bộ Dữ Liệu Giá Món</h2>
-                <p class="text-xs text-slate-500 mt-1">Hệ thống sẽ đối chiếu bảng "dishes" và "danh_muc_gia" để tìm ra các món đang bị thiếu giá.</p>
-            </div>
-            <button onclick="loadSyncPriceData()" class="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-emerald-700 shadow-md flex items-center gap-2 cursor-pointer transition-transform hover:scale-105">
-                <i class="fa-solid fa-rotate"></i> Quét & Làm Mới
-            </button>
-        </div>
+            <div class="bg-white p-6 rounded-3xl border border-slate-100 shadow-md">
+                <div class="flex justify-between items-center mb-6 border-b border-slate-100 pb-4">
+                    <div>
+                        <h2 class="text-xl font-black text-slate-800 uppercase">Đồng Bộ Dữ Liệu Giá Món</h2>
+                        <p class="text-xs text-slate-500 mt-1">Hệ thống sẽ đối chiếu bảng "dishes" và "danh_muc_gia" để tìm ra các món đang bị thiếu giá.</p>
+                    </div>
+                    <button onclick="loadSyncPriceData()" class="bg-emerald-600 text-white px-5 py-2.5 rounded-xl text-sm font-bold hover:bg-emerald-700 shadow-md flex items-center gap-2 cursor-pointer transition-transform hover:scale-105">
+                        <i class="fa-solid fa-rotate"></i> Quét & Làm Mới
+                    </button>
+                </div>
 
-        <div class="flex flex-col sm:flex-row gap-4 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm">
-            <div class="flex-1 relative">
-                <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <input type="text" id="sync-search" placeholder="Nhập tên món ăn cần tìm..." class="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-bold focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition text-amber-900" oninput="renderSyncLists()">
-            </div>
-            <div class="w-full sm:w-64 relative">
-                <i class="fa-solid fa-layer-group absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
-                <select id="sync-category" class="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-bold focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition appearance-none text-amber-900" onchange="renderSyncLists()">
-                    <option value="">Tất cả danh mục</option>
-                </select>
-                <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
-            </div>
-        </div>
+                <div class="flex flex-col sm:flex-row gap-4 mb-6 bg-slate-50 p-4 rounded-2xl border border-slate-200 shadow-sm">
+                    <div class="flex-1 relative">
+                        <i class="fa-solid fa-magnifying-glass absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <input type="text" id="sync-search" placeholder="Nhập tên món ăn cần tìm..." class="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-bold focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition text-amber-900" oninput="renderSyncLists()">
+                    </div>
+                    <div class="w-full sm:w-64 relative">
+                        <i class="fa-solid fa-layer-group absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                        <select id="sync-category" class="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2.5 text-sm font-bold focus:border-amber-500 focus:ring-1 focus:ring-amber-500 outline-none transition appearance-none text-amber-900" onchange="renderSyncLists()">
+                            <option value="">Tất cả danh mục</option>
+                        </select>
+                        <i class="fa-solid fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+                    </div>
+                </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div class="bg-rose-50/50 p-4 rounded-2xl border border-rose-100 shadow-inner">
-                <h3 class="text-base font-black text-rose-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> CẦN NHẬP GIÁ (<span id="missing-count">0</span>)</h3>
-                <div id="missing-price-list" class="space-y-3 max-h-[60vh] overflow-y-auto pr-2 rounded-xl category-scrollbar">
-                    <div class="text-sm text-slate-400 italic text-center py-6">Bấm "Quét & Làm Mới" để tải...</div>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-rose-50/50 p-4 rounded-2xl border border-rose-100 shadow-inner">
+                        <h3 class="text-base font-black text-rose-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-triangle-exclamation"></i> CẦN NHẬP GIÁ (<span id="missing-count">0</span>)</h3>
+                        <div id="missing-price-list" class="space-y-3 max-h-[60vh] overflow-y-auto pr-2 rounded-xl category-scrollbar">
+                            <div class="text-sm text-slate-400 italic text-center py-6">Bấm "Quét & Làm Mới" để tải...</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-50/50 p-4 rounded-2xl border border-slate-200 shadow-inner">
+                        <h3 class="text-base font-black text-emerald-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-check-circle"></i> ĐÃ CÓ GIÁ (<span id="matched-count">0</span>)</h3>
+                        <div id="matched-price-list" class="space-y-2 max-h-[60vh] overflow-y-auto pr-2 rounded-xl category-scrollbar">
+                            <div class="text-sm text-slate-400 italic text-center py-6">Bấm "Quét & Làm Mới" để tải...</div>
+                        </div>
+                    </div>
                 </div>
             </div>
-
-            <div class="bg-slate-50/50 p-4 rounded-2xl border border-slate-200 shadow-inner">
-                <h3 class="text-base font-black text-emerald-700 mb-4 flex items-center gap-2"><i class="fa-solid fa-check-circle"></i> ĐÃ CÓ GIÁ (<span id="matched-count">0</span>)</h3>
-                <div id="matched-price-list" class="space-y-2 max-h-[60vh] overflow-y-auto pr-2 rounded-xl category-scrollbar">
-                    <div class="text-sm text-slate-400 italic text-center py-6">Bấm "Quét & Làm Mới" để tải...</div>
-                </div>
-            </div>
         </div>
-    </div>
-</div>
-</main>
+    </main>
 
     <footer class="bg-slate-900 text-slate-400 text-center py-4 text-[11px] fixed bottom-0 left-0 right-0 z-30 shadow-md">
         <p>© 2026 <b>Dịch Vụ Nấu Ăn Phi Long</b> - Toàn bộ dữ liệu được bảo mật đám mây Supabase.</p>
@@ -454,23 +457,18 @@
         const TELEGRAM_TOKEN = '8580811533:AAE1IMKPv3QG3TD2fLK2dBp-yYGt29phNZ8'; 
         const TELEGRAM_CHAT_IDS = ['-5197568749']; 
 
-        // --- HÀM TẠO DANH MỤC MÓN ĂN TỰ ĐỘNG (CHỈ LẤY CHUẨN TỪ CSDL) ---
         function renderCategoryOptions() {
             const selectEl = document.getElementById("dish-category");
             if (!selectEl) return;
             
-            // Chỉ quét toàn bộ dishesList lấy ra các danh mục duy nhất đã có trên Supabase
             let uniqueCategoriesFromDB = [...new Set(dishesList.map(d => d.category).filter(Boolean))];
             
-            // Xử lý trường hợp CSDL hoàn toàn trống chưa có gì
             if (uniqueCategoriesFromDB.length === 0) {
                 uniqueCategoriesFromDB.push("Chưa có danh mục");
             }
             
-            // Sắp xếp danh sách alphabet cho dễ nhìn (tùy chọn)
             uniqueCategoriesFromDB.sort();
             
-            // Render thẻ option
             selectEl.innerHTML = "";
             uniqueCategoriesFromDB.forEach(cat => {
                 const option = document.createElement("option");
@@ -598,9 +596,7 @@
                 let { data: menus, error: e2 } = await _supabase.from('menus').select('*');
                 if (!e2) menusList = menus || [];
 
-                // Render lại danh mục sau khi load xong dữ liệu
                 renderCategoryOptions();
-
                 filterDishes();
                 renderMenuDishSelector();
                 renderMenus();
@@ -659,14 +655,15 @@
                 "nước chấm": "bg-indigo-50 text-indigo-700 border-indigo-100",
                 "khác": "bg-slate-100 text-slate-700 border-slate-200"
             };
-            return styles[type?.toLowerCase()?.trim()] || styles["khác"];
+            // Sử dụng String() cực kỳ an toàn
+            return styles[type ? String(type).toLowerCase().trim() : "khác"] || styles["khác"];
         }
 
         function filterDishes() {
             const searchVal = document.getElementById("dish-search").value.toLowerCase();
             const groupVal = document.getElementById("dish-filter-group").value.toLowerCase();
             const filtered = dishesList.filter(dish => {
-                const name = dish.name.toLowerCase();
+                const name = (dish.name || "").toLowerCase();
                 const matchSearch = name.includes(searchVal);
                 let matchGroup = true;
                 if (groupVal) {
@@ -706,7 +703,6 @@
             renderDishes(filtered);
         }
 
-        // --- CẬP NHẬT: GOM NHÓM DANH SÁCH MÓN ĂN TRÊN TAB MÓN ĂN ---
         function renderDishes(listToRender = dishesList) {
             const container = document.getElementById("dishes-container");
             document.getElementById("dish-count").innerText = `${listToRender.length} món`;
@@ -717,7 +713,6 @@
                 return;
             }
             
-            // Chia nhóm theo Category
             const groupedDishes = {};
             listToRender.forEach(dish => {
                 const cat = (dish.category || "Chưa phân loại").trim();
@@ -725,10 +720,8 @@
                 groupedDishes[cat].push(dish);
             });
 
-            // Sắp xếp tên nhóm ABC
             const sortedCats = Object.keys(groupedDishes).sort();
 
-            // Khởi tạo trạng thái mở/đóng nếu chưa có (mặc định mở hết)
             if (typeof window.openDishTabGroups === 'undefined') {
                 window.openDishTabGroups = sortedCats; 
             }
@@ -736,11 +729,9 @@
             sortedCats.forEach(cat => {
                 const isOpen = window.openDishTabGroups.includes(cat);
                 
-                // Khung bọc cả nhóm
                 const groupWrapper = document.createElement("div");
                 groupWrapper.className = "bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden mb-6";
 
-                // Tiêu đề của nhóm (bấm để thu gọn / mở rộng)
                 const groupHeader = document.createElement("div");
                 groupHeader.className = "bg-amber-50 p-3.5 flex justify-between items-center cursor-pointer select-none hover:bg-amber-100/50 transition-colors";
                 groupHeader.innerHTML = `
@@ -750,17 +741,14 @@
                     <i class="fa-solid fa-chevron-down text-amber-600 transition-transform duration-300 ${isOpen ? 'rotate-180' : ''}"></i>
                 `;
 
-                // Container chứa danh sách món bên trong
                 const gridContainer = document.createElement("div");
                 gridContainer.className = `p-4 grid grid-cols-1 md:grid-cols-2 gap-4 border-t border-slate-100 ${isOpen ? '' : 'hidden'}`;
 
-                // Xử lý sự kiện click
                 groupHeader.onclick = () => {
                     gridContainer.classList.toggle("hidden");
                     const icon = groupHeader.querySelector(".fa-chevron-down");
                     icon.classList.toggle("rotate-180");
                     
-                    // Lưu trạng thái vào biến window để không bị mất khi load lại
                     if (!gridContainer.classList.contains("hidden")) {
                         if (!window.openDishTabGroups.includes(cat)) window.openDishTabGroups.push(cat);
                     } else {
@@ -768,10 +756,9 @@
                     }
                 };
 
-                // Render các thẻ món ăn vào grid
                 groupedDishes[cat].forEach(dish => {
                     let ingHtml = "";
-                    if(dish.ingredients && dish.ingredients.length > 0) {
+                    if(Array.isArray(dish.ingredients) && dish.ingredients.length > 0) {
                         dish.ingredients.forEach(i => {
                             ingHtml += `<span class="inline-flex items-center border px-2.5 py-1 rounded-lg text-[13px] font-bold ${getTypeBadgeStyle(i.type)}">${i.name}: ${i.weight} ${i.unit}</span>`;
                         });
@@ -845,7 +832,6 @@
         async function addDish() {
             const name = document.getElementById("dish-name").value.trim();
             const category = document.getElementById("dish-category").value;
-            // Lấy thẳng link ảnh từ ô text
             const finalImageUrl = document.getElementById("dish-image").value.trim();
 
             if (!name) { alert("Bạn phải điền tên món ăn!"); return; }
@@ -885,10 +871,10 @@
         }
 
         function editDish(id) {
-            const dish = dishesList.find(d => d.id.toString() === id.toString()); 
+            const dish = dishesList.find(d => String(d.id) === String(id)); 
             if (!dish) return;
             currentEditingDishId = dish.id;
-            document.getElementById("dish-name").value = dish.name;
+            document.getElementById("dish-name").value = dish.name || "";
             
             renderCategoryOptions();
             const selectEl = document.getElementById("dish-category");
@@ -905,9 +891,8 @@
                 if (selectEl.options.length > 0) selectEl.selectedIndex = 0;
             }
             
-            // Hiển thị lại link ảnh cũ khi bấm sửa món
             document.getElementById("dish-image").value = dish.image_url || ""; 
-            temporaryIngredients = [...(dish.ingredients || [])];
+            temporaryIngredients = Array.isArray(dish.ingredients) ? [...dish.ingredients] : [];
             renderTempIngredients(); 
             document.getElementById("dish-name").focus();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -924,12 +909,10 @@
 			}
 		}
 
-        // --- CẬP NHẬT HÀM RESET: TRỎ VỀ OPTION ĐẦU TIÊN THAY VÌ GÁN CỨNG ---
         function resetDishForm() {
             currentEditingDishId = null; 
             document.getElementById("dish-name").value = "";
             
-            // Cập nhật lại dropdown danh mục
             renderCategoryOptions();
             const selectEl = document.getElementById("dish-category");
             if (selectEl.options.length > 0) {
@@ -947,7 +930,6 @@
             const container = document.getElementById("menu-dish-selector");
             container.innerHTML = "";
             
-            // Nhóm theo Category thực tế từ CSDL
             const groups = {};
             dishesList.forEach(dish => {
                 const cat = (dish.category || "Chưa phân loại").trim();
@@ -958,7 +940,7 @@
             const sortedCats = Object.keys(groups).sort();
 
             if (typeof window.openDishSelectorGroups === 'undefined') {
-                window.openDishSelectorGroups = sortedCats.length > 0 ? [sortedCats[0]] : []; // Mặc định mở nhóm đầu tiên
+                window.openDishSelectorGroups = sortedCats.length > 0 ? [sortedCats[0]] : []; 
             }
 
             container.className = "flex flex-col max-h-64 overflow-y-auto rounded-xl gap-2";
@@ -1031,12 +1013,18 @@
             });
         }
 
-        function selectDishToMenuForm(id) { if (!selectedDishIdsInMenuForm.includes(id)) { selectedDishIdsInMenuForm.push(id); renderSelectedDishesBadges(); } }
+        function selectDishToMenuForm(id) { 
+            if (!selectedDishIdsInMenuForm.includes(id)) { 
+                selectedDishIdsInMenuForm.push(id); 
+                renderSelectedDishesBadges(); 
+            } 
+        }
 
         function renderSelectedDishesBadges() {
             const container = document.getElementById("menu-selected-dishes-badge"); container.innerHTML = "";
             selectedDishIdsInMenuForm.forEach((id, index) => {
-                const dish = dishesList.find(d => d.id.toString() === id.toString()); if (!dish) return;
+                const dish = dishesList.find(d => String(d.id) === String(id)); 
+                if (!dish) return;
                 const badge = document.createElement("div");
                 badge.className = "bg-slate-900 text-white text-xs font-semibold px-3 py-2 rounded-xl flex justify-between items-center";
                 badge.innerHTML = `<span>${index + 1}. ${dish.name}</span> <i class="fa-solid fa-circle-xmark cursor-pointer text-rose-400 text-sm" onclick="removeSelectedDishFromMenu('${id}')"></i>`;
@@ -1045,7 +1033,7 @@
         }
 
         function removeSelectedDishFromMenu(id) { 
-            selectedDishIdsInMenuForm = selectedDishIdsInMenuForm.filter(x => x.toString() !== id.toString()); 
+            selectedDishIdsInMenuForm = selectedDishIdsInMenuForm.filter(x => String(x) !== String(id)); 
             renderSelectedDishesBadges(); 
             renderMenuDishSelector();
         }
@@ -1057,221 +1045,217 @@
             const date = document.getElementById("menu-date").value;
             const type = document.getElementById("menu-type").value;
             const note = document.getElementById("menu-note").value.trim();
-            const timeparty = document.getElementById("menu-timeparty").value; // CẬP NHẬT: Lấy giờ
+            const timeparty = document.getElementById("menu-timeparty").value; 
             const tables = parseInt(document.getElementById("menu-tables").value) || 0;
             
             if (!customer || !date) { alert("Vui lòng nhập Tên khách hàng và Ngày tiệc!"); return; }
             if (selectedDishIdsInMenuForm.length === 0) { alert("Vui lòng chọn món ăn cho thực đơn!"); return; }
             
-            // CẬP NHẬT: Thêm timeparty vào menuData
             const menuData = { customer, phone, address, date, type, note, dishIds: selectedDishIdsInMenuForm, tables, timeparty };
             
             if (currentEditingMenuId) {
-                const existingMenu = menusList.find(m => m.id === currentEditingMenuId);
+                const existingMenu = menusList.find(m => String(m.id) === String(currentEditingMenuId));
                 menuData.status = existingMenu ? existingMenu.status : 'pending';
                 await _supabase.from('menus').update(menuData).eq('id', currentEditingMenuId);
-                sendTelegramSingleAlert(menuData, true); // Báo cập nhật
+                sendTelegramSingleAlert(menuData, true); 
             } else {
                 menuData.status = 'pending';
                 await _supabase.from('menus').insert([menuData]);
-                sendTelegramSingleAlert(menuData, false); // Báo thêm mới
+                sendTelegramSingleAlert(menuData, false); 
             }
             resetMenuForm();
             await loadAllCloudData();
             checkNearPartyAlerts();
         }
-		
-		// ==========================================
-// TÍNH NĂNG ĐỒNG BỘ VÀ KIỂM TRA GIÁ MÓN
-// ==========================================
-let syncMissingDishes = [];
-let syncMatchedDishes = [];
 
-async function loadSyncPriceData() {
-    const missingContainer = document.getElementById('missing-price-list');
-    const matchedContainer = document.getElementById('matched-price-list');
-    
-    missingContainer.innerHTML = '<div class="text-center py-8 text-slate-500"><i class="fa-solid fa-spinner fa-spin text-2xl"></i><br>Đang tải...</div>';
-    matchedContainer.innerHTML = '<div class="text-center py-8 text-slate-500"><i class="fa-solid fa-spinner fa-spin text-2xl"></i><br>Đang tải...</div>';
+        // ==========================================
+        // TÍNH NĂNG ĐỒNG BỘ VÀ KIỂM TRA GIÁ MÓN
+        // ==========================================
+        let syncMissingDishes = [];
+        let syncMatchedDishes = [];
 
-    try {
-        let { data: dishes, error: e1 } = await _supabase.from('dishes').select('*');
-        let { data: prices, error: e2 } = await _supabase.from('danh_muc_gia').select('*');
-
-        if (e1) throw e1;
-        if (e2) throw e2;
-
-        syncMissingDishes = [];
-        syncMatchedDishes = [];
-        
-        // Lấy danh sách Category để đổ vào Dropdown lọc
-        let cats = [...new Set(dishes.map(d => (d.category || "Chưa phân loại").trim()))].sort();
-        const syncCatSelect = document.getElementById('sync-category');
-        const currentCat = syncCatSelect.value;
-        syncCatSelect.innerHTML = '<option value="">Tất cả danh mục</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
-        syncCatSelect.value = currentCat;
-
-        dishes.forEach(dish => {
-            let dishName = dish.name.trim();
-            let searchName = dishName.toLowerCase();
-            let cat = (dish.category || "Chưa phân loại").trim();
+        async function loadSyncPriceData() {
+            const missingContainer = document.getElementById('missing-price-list');
+            const matchedContainer = document.getElementById('matched-price-list');
             
-            let foundPrice = prices.find(p => p.key && p.key.toLowerCase().trim() === searchName);
+            missingContainer.innerHTML = '<div class="text-center py-8 text-slate-500"><i class="fa-solid fa-spinner fa-spin text-2xl"></i><br>Đang tải...</div>';
+            matchedContainer.innerHTML = '<div class="text-center py-8 text-slate-500"><i class="fa-solid fa-spinner fa-spin text-2xl"></i><br>Đang tải...</div>';
 
-            if (foundPrice) {
-                syncMatchedDishes.push({ 
-                    name: dishName, 
-                    price: parseFloat(foundPrice.value || foundPrice.price || foundPrice.gia || 0), 
-                    dishId: dish.id, 
-                    priceId: foundPrice.id, // Lấy chính xác ID của bảng danh_muc_gia để update không bị lỗi
-                    category: cat 
+            try {
+                let { data: dishes, error: e1 } = await _supabase.from('dishes').select('*');
+                let { data: prices, error: e2 } = await _supabase.from('danh_muc_gia').select('*');
+
+                if (e1) throw e1;
+                if (e2) throw e2;
+
+                syncMissingDishes = [];
+                syncMatchedDishes = [];
+                
+                let cats = [...new Set(dishes.map(d => (d.category || "Chưa phân loại").trim()))].sort();
+                const syncCatSelect = document.getElementById('sync-category');
+                const currentCat = syncCatSelect.value;
+                syncCatSelect.innerHTML = '<option value="">Tất cả danh mục</option>' + cats.map(c => `<option value="${c}">${c}</option>`).join('');
+                syncCatSelect.value = currentCat;
+
+                dishes.forEach(dish => {
+                    let dishName = (dish.name || "").trim();
+                    let searchName = dishName.toLowerCase();
+                    let cat = (dish.category || "Chưa phân loại").trim();
+                    
+                    let foundPrice = prices.find(p => p.key && String(p.key).toLowerCase().trim() === searchName);
+
+                    if (foundPrice) {
+                        syncMatchedDishes.push({ 
+                            name: dishName, 
+                            price: parseFloat(foundPrice.value || foundPrice.price || foundPrice.gia || 0), 
+                            dishId: dish.id, 
+                            priceId: foundPrice.id,
+                            category: cat 
+                        });
+                    } else {
+                        syncMissingDishes.push({ name: dishName, dishId: dish.id, category: cat });
+                    }
                 });
-            } else {
-                syncMissingDishes.push({ name: dishName, dishId: dish.id, category: cat });
+
+                renderSyncLists();
+
+            } catch (err) {
+                alert("Lỗi tải dữ liệu: " + err.message);
+                console.error(err);
             }
-        });
-
-        renderSyncLists();
-
-    } catch (err) {
-        alert("Lỗi tải dữ liệu: " + err.message);
-        console.error(err);
-    }
-}
-
-function renderSyncLists() {
-    const searchVal = document.getElementById('sync-search').value.toLowerCase().trim();
-    const catVal = document.getElementById('sync-category').value;
-    
-    const missingContainer = document.getElementById('missing-price-list');
-    const matchedContainer = document.getElementById('matched-price-list');
-
-    const filterFn = (item) => {
-        let matchSearch = item.name.toLowerCase().includes(searchVal);
-        let matchCat = catVal === "" || item.category === catVal;
-        return matchSearch && matchCat;
-    };
-
-    const filteredMissing = syncMissingDishes.filter(filterFn);
-    const filteredMatched = syncMatchedDishes.filter(filterFn);
-
-    document.getElementById('missing-count').innerText = filteredMissing.length;
-    document.getElementById('matched-count').innerText = filteredMatched.length;
-
-    // Render Nhóm Cần Giá
-    missingContainer.innerHTML = "";
-    if (filteredMissing.length === 0) {
-        if (syncMissingDishes.length === 0) {
-             missingContainer.innerHTML = `<div class="text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl font-bold text-center py-8 flex flex-col items-center gap-2"><i class="fa-solid fa-check-double text-4xl"></i><span>Tuyệt vời! Tất cả món đều đã có giá.</span></div>`;
-        } else {
-             missingContainer.innerHTML = `<div class="text-slate-400 text-center py-8 italic">Không tìm thấy món phù hợp...</div>`;
         }
-    } else {
-        let groupedMissing = filteredMissing.reduce((acc, obj) => { acc[obj.category] = acc[obj.category] || []; acc[obj.category].push(obj); return acc; }, {});
-        for(let cat in groupedMissing) {
-            missingContainer.innerHTML += `<div class="text-[10px] font-black text-rose-800 uppercase tracking-widest mb-2 mt-4 border-b border-rose-200/60 pb-1 flex items-center gap-1.5"><i class="fa-solid fa-tag"></i> ${cat}</div>`;
-            groupedMissing[cat].forEach((item) => {
-                let safeName = item.name.replace(/'/g, "\'"); 
-                missingContainer.innerHTML += `
-                    <div class="bg-white p-3 rounded-xl border border-rose-200 shadow-sm flex flex-col gap-2 transition hover:border-rose-400 mb-2">
-                        <div class="font-bold text-[13px] text-slate-800">${item.name}</div>
-                        <div class="flex gap-2">
-                            <input type="number" id="input-price-${item.dishId}" placeholder="Nhập giá..." class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-rose-600 focus:border-rose-500 outline-none transition">
-                            <button onclick="saveDishPrice('${safeName}', '${item.dishId}')" class="bg-rose-500 text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-rose-600 transition shadow-sm cursor-pointer shrink-0">
-                                <i class="fa-solid fa-floppy-disk"></i> Lưu
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
+
+        function renderSyncLists() {
+            const searchVal = document.getElementById('sync-search').value.toLowerCase().trim();
+            const catVal = document.getElementById('sync-category').value;
+            
+            const missingContainer = document.getElementById('missing-price-list');
+            const matchedContainer = document.getElementById('matched-price-list');
+
+            const filterFn = (item) => {
+                let matchSearch = (item.name || "").toLowerCase().includes(searchVal);
+                let matchCat = catVal === "" || item.category === catVal;
+                return matchSearch && matchCat;
+            };
+
+            const filteredMissing = syncMissingDishes.filter(filterFn);
+            const filteredMatched = syncMatchedDishes.filter(filterFn);
+
+            document.getElementById('missing-count').innerText = filteredMissing.length;
+            document.getElementById('matched-count').innerText = filteredMatched.length;
+
+            missingContainer.innerHTML = "";
+            if (filteredMissing.length === 0) {
+                if (syncMissingDishes.length === 0) {
+                     missingContainer.innerHTML = `<div class="text-emerald-600 bg-emerald-50 border border-emerald-200 rounded-xl font-bold text-center py-8 flex flex-col items-center gap-2"><i class="fa-solid fa-check-double text-4xl"></i><span>Tuyệt vời! Tất cả món đều đã có giá.</span></div>`;
+                } else {
+                     missingContainer.innerHTML = `<div class="text-slate-400 text-center py-8 italic">Không tìm thấy món phù hợp...</div>`;
+                }
+            } else {
+                let groupedMissing = filteredMissing.reduce((acc, obj) => { acc[obj.category] = acc[obj.category] || []; acc[obj.category].push(obj); return acc; }, {});
+                for(let cat in groupedMissing) {
+                    missingContainer.innerHTML += `<div class="text-[10px] font-black text-rose-800 uppercase tracking-widest mb-2 mt-4 border-b border-rose-200/60 pb-1 flex items-center gap-1.5"><i class="fa-solid fa-tag"></i> ${cat}</div>`;
+                    groupedMissing[cat].forEach((item) => {
+                        // Sửa lỗi mã hóa ký tự để tránh lỗi Javascript (&#39; thay vì \')
+                        let safeName = (item.name || "").replace(/'/g, "&#39;"); 
+                        missingContainer.innerHTML += `
+                            <div class="bg-white p-3 rounded-xl border border-rose-200 shadow-sm flex flex-col gap-2 transition hover:border-rose-400 mb-2">
+                                <div class="font-bold text-[13px] text-slate-800">${item.name}</div>
+                                <div class="flex gap-2">
+                                    <input type="number" id="input-price-${item.dishId}" placeholder="Nhập giá..." class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-rose-600 focus:border-rose-500 outline-none transition">
+                                    <button onclick="saveDishPrice('${safeName}', '${item.dishId}')" class="bg-rose-500 text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-rose-600 transition shadow-sm cursor-pointer shrink-0">
+                                        <i class="fa-solid fa-floppy-disk"></i> Lưu
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            }
+
+            matchedContainer.innerHTML = "";
+            if (filteredMatched.length === 0) {
+                matchedContainer.innerHTML = `<div class="text-slate-400 text-center py-8 italic">Không tìm thấy món phù hợp...</div>`;
+            } else {
+                let groupedMatched = filteredMatched.reduce((acc, obj) => { acc[obj.category] = acc[obj.category] || []; acc[obj.category].push(obj); return acc; }, {});
+                for(let cat in groupedMatched) {
+                    matchedContainer.innerHTML += `<div class="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-2 mt-4 border-b border-emerald-200/60 pb-1 flex items-center gap-1.5"><i class="fa-solid fa-tag"></i> ${cat}</div>`;
+                    groupedMatched[cat].forEach((item) => {
+                        matchedContainer.innerHTML += `
+                            <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-2 transition hover:border-emerald-400 mb-2">
+                                <div class="font-bold text-[13px] text-slate-800">${item.name}</div>
+                                <div class="flex gap-2">
+                                    <input type="number" id="update-price-${item.dishId}" value="${item.price}" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-emerald-700 focus:border-emerald-500 outline-none transition">
+                                    <button onclick="updateDishPrice('${item.priceId}', '${item.dishId}')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-emerald-700 transition shadow-sm cursor-pointer shrink-0">
+                                        <i class="fa-solid fa-check"></i> Lưu
+                                    </button>
+                                </div>
+                            </div>
+                        `;
+                    });
+                }
+            }
         }
-    }
 
-    // Render Nhóm Đã Có Giá
-    matchedContainer.innerHTML = "";
-    if (filteredMatched.length === 0) {
-        matchedContainer.innerHTML = `<div class="text-slate-400 text-center py-8 italic">Không tìm thấy món phù hợp...</div>`;
-    } else {
-        let groupedMatched = filteredMatched.reduce((acc, obj) => { acc[obj.category] = acc[obj.category] || []; acc[obj.category].push(obj); return acc; }, {});
-        for(let cat in groupedMatched) {
-            matchedContainer.innerHTML += `<div class="text-[10px] font-black text-emerald-800 uppercase tracking-widest mb-2 mt-4 border-b border-emerald-200/60 pb-1 flex items-center gap-1.5"><i class="fa-solid fa-tag"></i> ${cat}</div>`;
-            groupedMatched[cat].forEach((item) => {
-                matchedContainer.innerHTML += `
-                    <div class="bg-white p-3 rounded-xl border border-slate-200 shadow-sm flex flex-col gap-2 transition hover:border-emerald-400 mb-2">
-                        <div class="font-bold text-[13px] text-slate-800">${item.name}</div>
-                        <div class="flex gap-2">
-                            <input type="number" id="update-price-${item.dishId}" value="${item.price}" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm font-bold text-emerald-700 focus:border-emerald-500 outline-none transition">
-                            <button onclick="updateDishPrice('${item.priceId}', '${item.dishId}')" class="bg-emerald-600 text-white px-4 py-2 rounded-lg text-xs font-black hover:bg-emerald-700 transition shadow-sm cursor-pointer shrink-0">
-                                <i class="fa-solid fa-check"></i> Lưu
-                            </button>
-                        </div>
-                    </div>
-                `;
-            });
+        async function saveDishPrice(dishName, dishId) {
+            let inputEl = document.getElementById(`input-price-${dishId}`);
+            let priceVal = parseFloat(inputEl.value);
+
+            if (!priceVal || priceVal <= 0) { alert("Vui lòng nhập số tiền hợp lệ!"); return; }
+
+            inputEl.disabled = true;
+            let btn = inputEl.nextElementSibling;
+            let originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            
+            try {
+                // Khôi phục lại tên nếu có dấu nháy đơn
+                let finalName = dishName.replace(/&#39;/g, "'");
+                let { data, error } = await _supabase.from('danh_muc_gia').insert([{ key: finalName, value: priceVal, unit: 'món' }]);
+                if (error) throw error;
+                
+                inputEl.classList.replace('text-rose-600', 'text-emerald-600');
+                inputEl.classList.add('bg-emerald-50');
+                btn.innerHTML = '<i class="fa-solid fa-check"></i> Đã Lưu';
+                btn.classList.replace('bg-rose-500', 'bg-emerald-600');
+                
+                setTimeout(() => { loadSyncPriceData(); }, 1000);
+                
+            } catch (err) {
+                alert("Lỗi khi lưu giá: " + err.message);
+                inputEl.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
         }
-    }
-}
 
-async function saveDishPrice(dishName, dishId) {
-    let inputEl = document.getElementById(`input-price-${dishId}`);
-    let priceVal = parseFloat(inputEl.value);
+        async function updateDishPrice(priceId, dishId) {
+            let inputEl = document.getElementById(`update-price-${dishId}`);
+            let priceVal = parseFloat(inputEl.value);
 
-    if (!priceVal || priceVal <= 0) { alert("Vui lòng nhập số tiền hợp lệ!"); return; }
+            if (!priceVal || priceVal <= 0) { alert("Vui lòng nhập số tiền hợp lệ!"); return; }
 
-    inputEl.disabled = true;
-    let btn = inputEl.nextElementSibling;
-    let originalHtml = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-    
-    try {
-        let { data, error } = await _supabase.from('danh_muc_gia').insert([{ key: dishName, value: priceVal, unit: 'món' }]);
-        if (error) throw error;
-        
-        inputEl.classList.replace('text-rose-600', 'text-emerald-600');
-        inputEl.classList.add('bg-emerald-50');
-        btn.innerHTML = '<i class="fa-solid fa-check"></i> Đã Lưu';
-        btn.classList.replace('bg-rose-500', 'bg-emerald-600');
-        
-        setTimeout(() => { loadSyncPriceData(); }, 1000);
-        
-    } catch (err) {
-        alert("Lỗi khi lưu giá: " + err.message);
-        inputEl.disabled = false;
-        btn.innerHTML = originalHtml;
-    }
-}
+            inputEl.disabled = true;
+            let btn = inputEl.nextElementSibling;
+            let originalHtml = btn.innerHTML;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+            
+            try {
+                let { data, error } = await _supabase.from('danh_muc_gia').update({ value: priceVal }).eq('id', priceId);
+                if (error) throw error;
+                
+                inputEl.classList.add('bg-emerald-100');
+                btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Xong';
+                
+                setTimeout(() => { loadSyncPriceData(); }, 1000);
+                
+            } catch (err) {
+                alert("Lỗi khi cập nhật giá: " + err.message);
+                inputEl.disabled = false;
+                btn.innerHTML = originalHtml;
+            }
+        }
 
-async function updateDishPrice(priceId, dishId) {
-    let inputEl = document.getElementById(`update-price-${dishId}`);
-    let priceVal = parseFloat(inputEl.value);
-
-    if (!priceVal || priceVal <= 0) { alert("Vui lòng nhập số tiền hợp lệ!"); return; }
-
-    inputEl.disabled = true;
-    let btn = inputEl.nextElementSibling;
-    let originalHtml = btn.innerHTML;
-    btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
-    
-    try {
-        // Cập nhật an toàn tuyệt đối qua ID của bảng danh_muc_gia
-        let { data, error } = await _supabase.from('danh_muc_gia').update({ value: priceVal }).eq('id', priceId);
-        if (error) throw error;
-        
-        inputEl.classList.add('bg-emerald-100');
-        btn.innerHTML = '<i class="fa-solid fa-check-double"></i> Xong';
-        
-        setTimeout(() => { loadSyncPriceData(); }, 1000);
-        
-    } catch (err) {
-        alert("Lỗi khi cập nhật giá: " + err.message);
-        inputEl.disabled = false;
-        btn.innerHTML = originalHtml;
-    }
-}
-
-// ==========================================
-
-function renderMenus() {
+        function renderMenus() {
             const container = document.getElementById("menus-container"); 
             container.innerHTML = "";
             
@@ -1284,14 +1268,15 @@ function renderMenus() {
             const today = new Date(); today.setHours(0,0,0,0);
             activeMenus.forEach(menu => {
                 
-                // MỚI: Danh sách món chiều dọc ép sát dòng, có dấu chấm nhỏ
                 let dishListItems = "";
-                menu.dishIds?.forEach(id => {
-                    const dish = dishesList.find(d => d.id.toString() === id.toString());
-                    if (dish) {
-                        dishListItems += `<div class="text-[12px] text-slate-700 font-semibold leading-snug py-[2px] flex items-start gap-1.5"><span class="text-amber-500 font-black pt-[1px]">•</span><span class="flex-1">${dish.name}</span></div>`;
-                    }
-                });
+                if (Array.isArray(menu.dishIds)) {
+                    menu.dishIds.forEach(id => {
+                        const dish = dishesList.find(d => String(d.id) === String(id));
+                        if (dish) {
+                            dishListItems += `<div class="text-[12px] text-slate-700 font-semibold leading-snug py-[2px] flex items-start gap-1.5"><span class="text-amber-500 font-black pt-[1px]">•</span><span class="flex-1">${dish.name}</span></div>`;
+                        }
+                    });
+                }
                 let dishListHtml = dishListItems !== "" ? dishListItems : '<div class="italic text-slate-400 text-[11px]">Chưa chọn món</div>';
                 
                 const computedLunar = getLunarDateString(menu.date);
@@ -1344,18 +1329,19 @@ function renderMenus() {
 
         let currentEditingMenuId = null;
         function editMenu(id) {
-            const menu = menusList.find(m => m.id.toString() === id.toString()); if (!menu) return;
+            const menu = menusList.find(m => String(m.id) === String(id)); 
+            if (!menu) return;
             currentEditingMenuId = menu.id;
             document.getElementById("menu-customer").value = menu.customer;
             document.getElementById("menu-phone").value = menu.phone || "";
             document.getElementById("menu-address").value = menu.address || "";
             document.getElementById("menu-date").value = menu.date;
             document.getElementById("menu-lunar-date").value = getLunarDateString(menu.date) + " Âm"; 
-            document.getElementById("menu-timeparty").value = menu.timeparty || ""; // CẬP NHẬT: Sửa giờ
+            document.getElementById("menu-timeparty").value = menu.timeparty || ""; 
             document.getElementById("menu-type").value = menu.type;
             document.getElementById("menu-note").value = menu.note;
             document.getElementById("menu-tables").value = menu.tables !== undefined ? menu.tables : 0;
-            selectedDishIdsInMenuForm = [...menu.dishIds];
+            selectedDishIdsInMenuForm = Array.isArray(menu.dishIds) ? [...menu.dishIds] : [];
             renderSelectedDishesBadges(); window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -1382,7 +1368,7 @@ function renderMenus() {
             document.getElementById("menu-address").value = ""; 
             document.getElementById("menu-date").value = "";
             document.getElementById("menu-lunar-date").value = ""; 
-            document.getElementById("menu-timeparty").value = ""; // CẬP NHẬT: Xóa trắng giờ
+            document.getElementById("menu-timeparty").value = ""; 
             document.getElementById("menu-note").value = ""; 
             document.getElementById("menu-tables").value = "0"; 
             selectedDishIdsInMenuForm = []; 
@@ -1416,7 +1402,6 @@ function renderMenus() {
             sendTelegramPartyAlerts(activeMenus);
         }
 
-        // --- CẬP NHẬT: GOM NHÓM MÓN ĂN Ở BẢNG ĐI CHỢ THÀNH DÒNG VĂN BẢN ---
         function renderCalcPartiesTable() {
             const tbody = document.getElementById("calc-parties-table-body"); tbody.innerHTML = "";
             
@@ -1431,14 +1416,15 @@ function renderMenus() {
                 const tr = document.createElement("tr");
                 const computedLunar = getLunarDateString(menu.date);
                 
-                // MỚI: Danh sách món dọc ép sát cho bảng đi chợ
                 let dishListItems = "";
-                menu.dishIds?.forEach(id => {
-                    const dish = dishesList.find(d => d.id.toString() === id.toString());
-                    if (dish) {
-                        dishListItems += `<div class="text-[11px] text-slate-700 font-medium leading-snug py-[1.5px] flex items-start gap-1"><span class="text-amber-500 font-black pt-[1px]">•</span><span class="flex-1">${dish.name}</span></div>`;
-                    }
-                });
+                if (Array.isArray(menu.dishIds)) {
+                    menu.dishIds.forEach(id => {
+                        const dish = dishesList.find(d => String(d.id) === String(id));
+                        if (dish) {
+                            dishListItems += `<div class="text-[11px] text-slate-700 font-medium leading-snug py-[1.5px] flex items-start gap-1"><span class="text-amber-500 font-black pt-[1px]">•</span><span class="flex-1">${dish.name}</span></div>`;
+                        }
+                    });
+                }
                 
                 let dishListDisplay = dishListItems !== "" 
                     ? `<div class="mt-1.5 border-t border-slate-200/60 pt-1.5">${dishListItems}</div>`
@@ -1482,59 +1468,76 @@ function renderMenus() {
             });
         }
 
-        // ĐÃ SỬA LẠI LOGIC CHẠY HÀM NÀY
-        function calculateIngredients() {
-            const checkboxes = document.querySelectorAll(".calc-party-checkbox:checked");
-            if (checkboxes.length === 0) { 
-                alert("Vui lòng tích chọn ít nhất một tiệc!"); 
-                return; 
-            }
-            
-            let masterIngredients = {};
-            let hasError = false;
-
-            checkboxes.forEach(cb => {
-                const menuId = cb.value; // Lấy ID đúng chuẩn String
-                const menu = menusList.find(m => m.id.toString() === menuId.toString());
-                if (!menu) return;
-
-                const tablesInput = document.getElementById(`tables-for-menu-${menuId}`);
-                const tablesCount = parseFloat(tablesInput ? tablesInput.value : 0) || 0;
-
-                // CẢNH BÁO NẾU SỐ BÀN BẰNG 0
-                if (tablesCount <= 0) {
-                    alert(`⚠️ Cảnh báo: Tiệc của "${menu.customer}" đang để Tổng Số Bàn = 0.\nVui lòng nhập số bàn ở cột bên phải để hệ thống tính toán khối lượng!`);
-                    hasError = true;
-                    return;
+        // ===============================================
+        // HÀM TÍNH TOÁN (ĐÃ ĐƯỢC CHỐNG LỖI HOÀN TOÀN TẬN GỐC)
+        // ===============================================
+        window.calculateIngredients = function() {
+            try {
+                const checkboxes = document.querySelectorAll(".calc-party-checkbox:checked");
+                if (checkboxes.length === 0) { 
+                    alert("Vui lòng tích chọn ít nhất một tiệc ở cột 'Chọn' bên trái!"); 
+                    return; 
                 }
+                
+                let masterIngredients = {};
+                let hasError = false;
 
-                menu.dishIds?.forEach(dId => {
-                    const dish = dishesList.find(d => d.id.toString() === dId.toString()); 
-                    if (!dish || !dish.ingredients) return;
-                    
-                    dish.ingredients.forEach(ing => {
-                        const typeKey = ing.type?.toLowerCase()?.trim() || "khác"; 
-                        const ingKey = `${ing.name?.toLowerCase()?.trim()}_${ing.unit?.toLowerCase()?.trim()}`;
-                        
-                        if (!masterIngredients[typeKey]) masterIngredients[typeKey] = {};
-                        
-                        const weight = parseFloat(ing.weight) || 0;
-                        const computedWeight = weight * tablesCount;
-                        
-                        if (!masterIngredients[typeKey][ingKey]) {
-                            masterIngredients[typeKey][ingKey] = { name: ing.name, totalWeight: computedWeight, unit: ing.unit, type: ing.type };
-                        } else { 
-                            masterIngredients[typeKey][ingKey].totalWeight += computedWeight; 
-                        }
-                    });
+                checkboxes.forEach(cb => {
+                    const menuId = cb.value;
+                    const menu = menusList.find(m => String(m.id) === String(menuId));
+                    if (!menu) return;
+
+                    const tablesInput = document.getElementById(`tables-for-menu-${menuId}`);
+                    const tablesCount = tablesInput ? parseFloat(tablesInput.value) : 0;
+
+                    if (isNaN(tablesCount) || tablesCount <= 0) {
+                        alert(`⚠️ Cảnh báo: Tiệc của "${menu.customer}" đang để Tổng Số Bàn = 0.\nVui lòng nhập số bàn hợp lệ ở cột bên phải để hệ thống tính toán khối lượng!`);
+                        hasError = true;
+                        return;
+                    }
+
+                    if (Array.isArray(menu.dishIds)) {
+                        menu.dishIds.forEach(dId => {
+                            const dish = dishesList.find(d => String(d.id) === String(dId)); 
+                            if (!dish || !Array.isArray(dish.ingredients)) return;
+                            
+                            dish.ingredients.forEach(ing => {
+                                if (!ing) return;
+                                
+                                const typeKey = ing.type ? String(ing.type).toLowerCase().trim() : "khác"; 
+                                const nameStr = ing.name ? String(ing.name).toLowerCase().trim() : "không_rõ_tên";
+                                const unitStr = ing.unit ? String(ing.unit).toLowerCase().trim() : "";
+                                const ingKey = `${nameStr}_${unitStr}`;
+                                
+                                if (!masterIngredients[typeKey]) masterIngredients[typeKey] = {};
+                                
+                                const weight = parseFloat(ing.weight) || 0;
+                                const computedWeight = weight * tablesCount;
+                                
+                                if (!masterIngredients[typeKey][ingKey]) {
+                                    masterIngredients[typeKey][ingKey] = { 
+                                        name: ing.name || "Không rõ tên", 
+                                        totalWeight: computedWeight, 
+                                        unit: ing.unit || "", 
+                                        type: ing.type || "khác" 
+                                    };
+                                } else { 
+                                    masterIngredients[typeKey][ingKey].totalWeight += computedWeight; 
+                                }
+                            });
+                        });
+                    }
                 });
-            });
-            
-            // NẾU CÓ LỖI (SỐ BÀN = 0) VÀ KHÔNG CÓ DATA THÌ DỪNG LẠI KHÔNG HIỂN THỊ BẢNG
-            if (hasError && Object.keys(masterIngredients).length === 0) return;
+                
+                if (hasError && Object.keys(masterIngredients).length === 0) return;
 
-            globalCalculatedMarket = masterIngredients; 
-            renderCalculatedOutput(masterIngredients);
+                globalCalculatedMarket = masterIngredients; 
+                renderCalculatedOutput(masterIngredients);
+                
+            } catch (error) {
+                console.error("Crash details:", error);
+                alert("Lỗi dữ liệu hệ thống: " + error.message + "\nVui lòng thử tải lại trang hoặc kiểm tra món ăn có bị trống phần nguyên liệu hay không.");
+            }
         }
 
         function renderCalculatedOutput(masterData) {
@@ -1542,7 +1545,7 @@ function renderMenus() {
             container.innerHTML = ""; box.classList.remove("hidden"); 
             const categories = Object.keys(masterData);
             if (categories.length === 0) {
-                 container.innerHTML = `<div class="col-span-full p-4 text-center text-slate-500 italic">Không có nguyên liệu nào để tính toán. (Hãy đảm bảo món ăn đã được nhập nguyên liệu thành phần)</div>`;
+                 container.innerHTML = `<div class="col-span-full p-4 text-center text-slate-500 italic">Hệ thống chưa tìm thấy nguyên liệu nào. (Bạn hãy kiểm tra lại các món ăn trong thực đơn đã được khai báo thành phần nguyên liệu chưa nhé)</div>`;
                  return;
             }
             categories.forEach(cat => {
@@ -1555,7 +1558,7 @@ function renderMenus() {
                         let item = catData[k];
                         let formattedWeight = Math.round(item.totalWeight * 100) / 100;
                         let displayUnit = item.unit || "";
-                        if (item.unit && item.unit.toLowerCase() === "gam" && formattedWeight >= 1000) {
+                        if (item.unit && String(item.unit).toLowerCase() === "gam" && formattedWeight >= 1000) {
                             formattedWeight = Math.round((formattedWeight / 1000) * 100) / 100;
                             displayUnit = "kg";
                         }
@@ -1582,7 +1585,7 @@ function renderMenus() {
             const data = [];
             
             for (let cat in globalCalculatedMarket) {
-                data.push(["NHÓM: " + cat.toUpperCase(), "", "", ""]);
+                data.push(["NHÓM: " + String(cat).toUpperCase(), "", "", ""]);
                 data.push(["TÊN NGUYÊN LIỆU", "TỔNG SỐ LƯỢNG", "ĐƠN VỊ", ""]);
                 
                 for (let key in globalCalculatedMarket[cat]) {
@@ -1590,7 +1593,7 @@ function renderMenus() {
                     let formattedWeight = Math.round(item.totalWeight * 100) / 100;
                     let displayUnit = item.unit || "";
                     
-                    if (item.unit && item.unit.toLowerCase() === "gam" && formattedWeight >= 1000) {
+                    if (item.unit && String(item.unit).toLowerCase() === "gam" && formattedWeight >= 1000) {
                         formattedWeight = Math.round((formattedWeight / 1000) * 100) / 100;
                         displayUnit = "kg";
                     }
@@ -1649,11 +1652,11 @@ function renderMenus() {
                     console.log(originalBtnText);
 
                     for (const [dishName, excelIngredients] of Object.entries(groupedDishes)) {
-                        const existingDish = dishesList.find(d => d.name.toLowerCase() === dishName.toLowerCase());
+                        const existingDish = dishesList.find(d => (d.name || "").toLowerCase() === dishName.toLowerCase());
 
                         if (mode === 'update') {
                             if (existingDish) {
-                                const mergedIngredients = [...(existingDish.ingredients || [])];
+                                const mergedIngredients = Array.isArray(existingDish.ingredients) ? [...existingDish.ingredients] : [];
                                 excelIngredients.forEach(newIng => {
                                     mergedIngredients.push(newIng);
                                 });
@@ -1697,7 +1700,6 @@ function renderMenus() {
             
             reader.readAsArrayBuffer(file);
         }
-		
     </script>
 </body>
 </html>
