@@ -617,6 +617,8 @@
             const activeBtn = document.getElementById(`btn-${tabId}`);
             if(activeBtn) activeBtn.classList.add('active', 'text-amber-600', 'border-amber-600');
 
+            if (tabId === 'tab-calc') { renderCalcPartiesTable(); }
+
             const mobileBtns = document.querySelectorAll('#mobile-bottom-nav button');
             mobileBtns.forEach(b => b.classList.remove('active-nav'));
             if(tabId === 'tab-dishes' && mobileBtns[0]) mobileBtns[0].classList.add('active-nav');
@@ -995,9 +997,11 @@
                         }
 
                         dishRow.onclick = () => {
-                            if (!isSelected) {
+                            if (isSelected) {
+                                removeSelectedDishFromMenu(dish.id);
+                            } else {
                                 selectDishToMenuForm(dish.id);
-                                renderMenuDishSelector(); 
+                                renderMenuDishSelector();
                             }
                         };
 
@@ -1342,7 +1346,9 @@
             document.getElementById("menu-note").value = menu.note;
             document.getElementById("menu-tables").value = menu.tables !== undefined ? menu.tables : 0;
             selectedDishIdsInMenuForm = Array.isArray(menu.dishIds) ? [...menu.dishIds] : [];
-            renderSelectedDishesBadges(); window.scrollTo({ top: 0, behavior: 'smooth' });
+            renderSelectedDishesBadges(); 
+            renderMenuDishSelector();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         async function removeMenu(id) {
@@ -1373,6 +1379,7 @@
             document.getElementById("menu-tables").value = "0"; 
             selectedDishIdsInMenuForm = []; 
             document.getElementById("menu-selected-dishes-badge").innerHTML = "";
+            renderMenuDishSelector();
         }
 
         function checkNearPartyAlerts() {
