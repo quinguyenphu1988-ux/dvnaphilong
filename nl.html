@@ -657,7 +657,6 @@
                 "nước chấm": "bg-indigo-50 text-indigo-700 border-indigo-100",
                 "khác": "bg-slate-100 text-slate-700 border-slate-200"
             };
-            // Sử dụng String() cực kỳ an toàn
             return styles[type ? String(type).toLowerCase().trim() : "khác"] || styles["khác"];
         }
 
@@ -1351,19 +1350,42 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
+        // --- HÀM HỦY TIỆC ĐÃ ĐƯỢC CHỐNG LỖI ID NULL ---
         async function removeMenu(id) {
+            if (!id || id === 'null' || id === 'undefined') {
+                alert("LỖI DỮ LIỆU: Tiệc này không có mã ID hợp lệ để xóa. Vui lòng vào đám mây Supabase để kiểm tra và xóa trực tiếp nhé.");
+                return;
+            }
+
             if (confirm("Chắc chắn hủy lịch tiệc này?")) {
-                await _supabase.from('menus').delete().eq('id', id);
-                await loadAllCloudData();
-                checkNearPartyAlerts();
+                try {
+                    const numericId = parseInt(id, 10);
+                    const { error } = await _supabase.from('menus').delete().eq('id', numericId);
+                    
+                    if (error) throw error;
+                    
+                    await loadAllCloudData();
+                    checkNearPartyAlerts();
+                } catch (err) {
+                    alert("Lỗi khi xóa tiệc: " + err.message);
+                }
             }
         }
         
+        // --- HÀM ĐÁNH DẤU HOÀN THÀNH ĐÃ ĐƯỢC CHỐNG LỖI ID NULL ---
         async function markMenuCompleted(id) {
+            if (!id || id === 'null' || id === 'undefined') {
+                alert("LỖI DỮ LIỆU: Tiệc này đang không có mã ID trên máy chủ. Vui lòng vào Supabase kiểm tra lại cột 'id' nhé!");
+                return;
+            }
+
             if (confirm("Đánh dấu tiệc này đã hoàn thành? (Tiệc sẽ được ẩn khỏi danh sách chờ)")) {
                 try {
-                    const { error } = await _supabase.from('menus').update({ status: 'completed' }).eq('id', id);
+                    const numericId = parseInt(id, 10);
+                    const { error } = await _supabase.from('menus').update({ status: 'completed' }).eq('id', numericId);
+                    
                     if (error) throw error;
+                    
                     await loadAllCloudData();
                     checkNearPartyAlerts();
                 } catch (err) {
