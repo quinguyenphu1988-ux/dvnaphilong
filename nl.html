@@ -1361,9 +1361,15 @@
         
         async function markMenuCompleted(id) {
             if (confirm("Đánh dấu tiệc này đã hoàn thành? (Tiệc sẽ được ẩn khỏi danh sách chờ)")) {
-                await _supabase.from('menus').update({ status: 'completed' }).eq('id', id);
-                await loadAllCloudData();
-                checkNearPartyAlerts();
+                try {
+                    const { error } = await _supabase.from('menus').update({ status: 'completed' }).eq('id', id);
+                    if (error) throw error;
+                    await loadAllCloudData();
+                    checkNearPartyAlerts();
+                } catch (err) {
+                    console.error("Chi tiết lỗi Supabase:", err);
+                    alert("Lỗi không thể đánh dấu Đã Xong: " + err.message);
+                }
             }
         }
 
