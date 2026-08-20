@@ -1041,6 +1041,7 @@
             renderMenuDishSelector();
         }
 
+        // --- HÀM LƯU TIỆC MỚI VÀ CẬP NHẬT ĐÃ ĐƯỢC CHỐNG LỖI ---
         async function saveMenu() {
             const customer = document.getElementById("menu-customer").value.trim();
             const phone = document.getElementById("menu-phone").value.trim();
@@ -1056,19 +1057,34 @@
             
             const menuData = { customer, phone, address, date, type, note, dishIds: selectedDishIdsInMenuForm, tables, timeparty };
             
-            if (currentEditingMenuId) {
-                const existingMenu = menusList.find(m => String(m.id) === String(currentEditingMenuId));
-                menuData.status = existingMenu ? existingMenu.status : 'pending';
-                await _supabase.from('menus').update(menuData).eq('id', currentEditingMenuId);
-                sendTelegramSingleAlert(menuData, true); 
-            } else {
-                menuData.status = 'pending';
-                await _supabase.from('menus').insert([menuData]);
-                sendTelegramSingleAlert(menuData, false); 
+            try {
+                if (currentEditingMenuId) {
+                    const existingMenu = menusList.find(m => String(m.id) === String(currentEditingMenuId));
+                    menuData.status = existingMenu ? existingMenu.status : 'pending';
+                    
+                    const { error } = await _supabase.from('menus').update(menuData).eq('id', currentEditingMenuId);
+                    if (error) throw error;
+                    
+                    sendTelegramSingleAlert(menuData, true); 
+                } else {
+                    menuData.status = 'pending';
+                    
+                    const { error } = await _supabase.from('menus').insert([menuData]);
+                    if (error) throw error;
+                    
+                    sendTelegramSingleAlert(menuData, false); 
+                }
+                
+                resetMenuForm();
+                await loadAllCloudData();
+                checkNearPartyAlerts();
+                
+                alert("Đã lưu tiệc thành công!");
+                
+            } catch (err) {
+                console.error("Lỗi khi lưu tiệc:", err);
+                alert("LỖI KHÔNG THỂ LƯU: " + err.message);
             }
-            resetMenuForm();
-            await loadAllCloudData();
-            checkNearPartyAlerts();
         }
 
         // ==========================================
@@ -1159,7 +1175,6 @@
                 for(let cat in groupedMissing) {
                     missingContainer.innerHTML += `<div class="text-[10px] font-black text-rose-800 uppercase tracking-widest mb-2 mt-4 border-b border-rose-200/60 pb-1 flex items-center gap-1.5"><i class="fa-solid fa-tag"></i> ${cat}</div>`;
                     groupedMissing[cat].forEach((item) => {
-                        // Sửa lỗi mã hóa ký tự để tránh lỗi Javascript (&#39; thay vì \')
                         let safeName = (item.name || "").replace(/'/g, "&#39;"); 
                         missingContainer.innerHTML += `
                             <div class="bg-white p-3 rounded-xl border border-rose-200 shadow-sm flex flex-col gap-2 transition hover:border-rose-400 mb-2">
@@ -1212,7 +1227,6 @@
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             
             try {
-                // Khôi phục lại tên nếu có dấu nháy đơn
                 let finalName = dishName.replace(/&#39;/g, "'");
                 let { data, error } = await _supabase.from('danh_muc_gia').insert([{ key: finalName, value: priceVal, unit: 'món' }]);
                 if (error) throw error;
