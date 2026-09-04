@@ -855,6 +855,7 @@
                     const { error } = await _supabase.from('dishes').update(dishData).eq('id', currentEditingDishId);
                     if (error) throw error;
                 } else {
+                    dishData.id = Date.now(); // FIX ID NULL
                     const { error } = await _supabase.from('dishes').insert([dishData]);
                     if (error) throw error;
                 }
@@ -900,9 +901,14 @@
         }
 
 		async function removeDish(id) {
+            if (!id || id === 'null' || id === 'undefined') {
+                alert("LỖI DỮ LIỆU: Món ăn này không có mã ID hợp lệ. Vui lòng vào Supabase để xóa trực tiếp!");
+                return;
+            }
 			if (confirm("Xóa hẳn món ăn này trên hệ thống đám mây?")) {
 				try {
-					const { error } = await _supabase.from('dishes').delete().eq('id', id);
+                    const numericId = parseInt(id, 10);
+					const { error } = await _supabase.from('dishes').delete().eq('id', numericId);
 					if (error) throw error;
 					await loadAllCloudData();
 					alert("Đã xóa!");
@@ -1068,6 +1074,7 @@
                     sendTelegramSingleAlert(menuData, true); 
                 } else {
                     menuData.status = 'pending';
+                    menuData.id = Date.now(); // FIX ID NULL
                     
                     const { error } = await _supabase.from('menus').insert([menuData]);
                     if (error) throw error;
@@ -1721,6 +1728,7 @@
                         else if (mode === 'new') {
                             if (!existingDish) {
                                 const dishData = {
+                                    id: Date.now() + Math.floor(Math.random() * 10000), // FIX ID NULL
                                     name: dishName,
                                     ingredients: excelIngredients,
                                     image_url: null,
