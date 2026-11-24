@@ -22,15 +22,6 @@
                 extend: {
                     fontFamily: {
                         sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#fffbeb',
-                            100: '#fef3c7',
-                            500: '#f59e0b',
-                            600: '#d97706',
-                            700: '#b45309',
-                        }
                     }
                 }
             }
@@ -38,9 +29,10 @@
     </script>
 
     <style>
+        /* Tông màu phong thủy Đại Lâm Mộc (Mộc tương hợp + Thủy tương sinh) */
         body {
-            background-color: #f4f6fa !important;
-            color: #0f172a !important;
+            background: linear-gradient(160deg, #eef7f2 0%, #f4faf7 50%, #edf6f9 100%) !important;
+            color: #0f2922 !important;
             font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
         }
 
@@ -52,17 +44,17 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* Hiệu ứng nhấp nháy nổi bật cho tiệc có thay đổi */
+        /* Hiệu ứng nhấp nháy nổi bật cho tiệc có thay đổi (Thủy - Mộc) */
         @keyframes partyChangedGlow {
             0%, 100% {
-                box-shadow: 0 0 0 0 rgba(37, 99, 235, 0.55), 0 10px 25px -5px rgba(37, 99, 235, 0.2);
-                border-color: #2563eb;
-                background-color: #eff6ff;
+                box-shadow: 0 0 0 0 rgba(2, 132, 199, 0.55), 0 10px 25px -5px rgba(2, 132, 199, 0.22);
+                border-color: #0284c7;
+                background-color: #f0f9ff;
             }
             50% {
-                box-shadow: 0 0 0 6px rgba(245, 158, 11, 0.45), 0 10px 25px -5px rgba(245, 158, 11, 0.25);
-                border-color: #f59e0b;
-                background-color: #fffbeb;
+                box-shadow: 0 0 0 6px rgba(16, 185, 129, 0.45), 0 10px 25px -5px rgba(16, 185, 129, 0.25);
+                border-color: #10b981;
+                background-color: #ecfdf5;
             }
         }
 
@@ -73,18 +65,18 @@
 
         ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 99px; }
-        ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        ::-webkit-scrollbar-thumb { background: #a7f3d0; border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: #34d399; }
 
         .app-card {
             background: #ffffff;
             border-radius: 20px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.04);
+            border: 1px solid #d1e7dd;
+            box-shadow: 0 4px 20px rgba(6, 78, 59, 0.05);
         }
 
         .glass-header {
-            background: rgba(255, 255, 255, 0.88) !important;
+            background: rgba(255, 255, 255, 0.9) !important;
             backdrop-filter: blur(16px);
             -webkit-backdrop-filter: blur(16px);
         }
@@ -95,19 +87,19 @@
 
         .form-input {
             width: 100%;
-            background-color: #f8fafc;
-            border: 1px solid #e2e8f0;
+            background-color: #f4faf7;
+            border: 1px solid #cce3d8;
             border-radius: 12px;
             padding: 9px 13px;
             font-size: 13px;
             font-weight: 500;
-            color: #0f172a;
+            color: #0f2922;
             transition: all 0.18s ease;
         }
         .form-input:focus {
             background-color: #ffffff;
-            border-color: #d97706;
-            box-shadow: 0 0 0 3px rgba(217, 119, 6, 0.12);
+            border-color: #059669;
+            box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.15);
             outline: none;
         }
 
@@ -138,15 +130,15 @@
             bottom: 0;
             left: 0;
             right: 0;
-            background: rgba(255, 255, 255, 0.96);
+            background: rgba(255, 255, 255, 0.97);
             backdrop-filter: blur(14px);
-            border-top: 1px solid #e2e8f0;
+            border-top: 1px solid #d1e7dd;
             display: flex;
             justify-content: space-around;
             align-items: center;
             padding: 10px 6px calc(10px + env(safe-area-inset-bottom)) 6px;
             z-index: 9999;
-            box-shadow: 0 -6px 24px rgba(15, 23, 42, 0.06);
+            box-shadow: 0 -6px 24px rgba(6, 78, 59, 0.08);
         }
         #mobile-bottom-nav button {
             position: relative;
@@ -166,7 +158,7 @@
             transition: all 0.2s ease;
         }
         #mobile-bottom-nav button.active-nav {
-            color: #d97706;
+            color: #047857;
         }
         #mobile-bottom-nav button i {
             font-size: 20px;
@@ -188,25 +180,25 @@
         #menus-container { padding-bottom: 80px; }
     </style>
 </head>
-<body class="min-h-screen antialiased selection:bg-amber-200 selection:text-amber-900">
+<body class="min-h-screen antialiased selection:bg-emerald-200 selection:text-emerald-950">
 
     <!-- TOAST CONTAINER -->
     <div id="toast-container"></div>
 
     <!-- HEADER -->
-    <header class="glass-header border-b border-slate-200/80 sticky top-0 z-50">
+    <header class="glass-header border-b border-emerald-200/80 sticky top-0 z-50">
         <div class="max-w-7xl mx-auto px-4 py-3 flex flex-col sm:flex-row justify-between items-center gap-3">
             <div class="flex items-center gap-3 w-full sm:w-auto justify-between sm:justify-start">
                 <div class="flex items-center gap-3">
                     <div class="relative">
-                        <img src="https://i.postimg.cc/CLt4khwr/logo.png" alt="Logo Phi Long" class="h-11 w-11 rounded-2xl object-cover border-2 border-amber-300 shadow-sm">
+                        <img src="https://i.postimg.cc/CLt4khwr/logo.png" alt="Logo Phi Long" class="h-11 w-11 rounded-2xl object-cover border-2 border-emerald-400 shadow-sm">
                         <span class="absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 bg-emerald-500 border-2 border-white rounded-full" title="Đã kết nối đám mây"></span>
                     </div>
                     <div>
-                        <h1 class="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-amber-600 via-orange-600 to-amber-700 bg-clip-text text-transparent leading-tight">
+                        <h1 class="text-lg sm:text-xl font-extrabold tracking-tight bg-gradient-to-r from-emerald-800 via-emerald-600 to-teal-700 bg-clip-text text-transparent leading-tight">
                             Dịch Vụ Nấu Ăn PHI LONG
                         </h1>
-                        <p class="text-[11px] font-semibold text-slate-500 tracking-wide">Hệ Thống Quản Lý Tiệc &amp; Vật Tư</p>
+                        <p class="text-[11px] font-semibold text-emerald-700/80 tracking-wide">Hệ Thống Quản Lý Tiệc &amp; Vật Tư</p>
                     </div>
                 </div>
             </div>
@@ -214,21 +206,21 @@
             <!-- CỤM THÔNG BÁO TRÊN HEADER -->
             <div class="flex flex-wrap items-center gap-2 w-full sm:w-auto justify-end">
                 <!-- Thông báo tiệc có thay đổi (nhấp nháy) -->
-                <div id="changed-party-alert" class="hidden cursor-pointer bg-blue-600 text-white px-3 py-2 rounded-xl shadow-md hover:bg-blue-700 transition-all animate-pulse" onclick="jumpToChangedParty()">
+                <div id="changed-party-alert" class="hidden cursor-pointer bg-sky-600 text-white px-3 py-2 rounded-xl shadow-md hover:bg-sky-700 transition-all animate-pulse" onclick="jumpToChangedParty()">
                     <div class="flex items-center gap-2">
-                        <i class="fa-solid fa-bell fa-shake text-amber-300 text-sm"></i>
+                        <i class="fa-solid fa-bell fa-shake text-emerald-200 text-sm"></i>
                         <span id="changed-alert-text" class="text-xs font-extrabold">Có 0 tiệc vừa thay đổi</span>
                     </div>
                 </div>
 
                 <!-- Thông báo tiệc sắp diễn ra -->
-                <div id="near-party-alert" class="hidden cursor-pointer bg-rose-50 border border-rose-200 px-3 py-2 rounded-xl hover:bg-rose-100 transition-colors" onclick="switchTab('tab-menus')">
+                <div id="near-party-alert" class="hidden cursor-pointer bg-emerald-50 border border-emerald-300 px-3 py-2 rounded-xl hover:bg-emerald-100 transition-colors" onclick="switchTab('tab-menus')">
                     <div class="flex items-center gap-2">
                         <span class="flex h-2.5 w-2.5 relative shrink-0">
-                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
-                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-rose-600"></span>
+                            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-500 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-700"></span>
                         </span>
-                        <span id="alert-summary-text" class="text-xs font-bold text-rose-700">Có 0 tiệc sắp tới</span>
+                        <span id="alert-summary-text" class="text-xs font-bold text-emerald-800">Có 0 tiệc sắp tới</span>
                     </div>
                 </div>
             </div>
@@ -236,19 +228,19 @@
     </header>
 
     <!-- DESKTOP NAV -->
-    <nav id="desktop-top-nav" class="bg-white/95 backdrop-blur border-b border-slate-200 sticky top-[69px] z-40">
+    <nav id="desktop-top-nav" class="bg-white/95 backdrop-blur border-b border-emerald-100 sticky top-[69px] z-40">
         <div class="max-w-7xl mx-auto flex overflow-x-auto px-4 gap-2 py-2">
-            <button onclick="switchTab('tab-dishes')" id="btn-tab-dishes" class="tab-btn active px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all bg-amber-50 text-amber-700 border border-amber-200">
+            <button onclick="switchTab('tab-dishes')" id="btn-tab-dishes" class="tab-btn active px-4 py-2.5 rounded-xl font-bold text-xs flex items-center gap-2 transition-all bg-emerald-50 text-emerald-800 border border-emerald-200">
                 <i class="fa-solid fa-utensils"></i> Danh Mục Món Ăn
             </button>
-            <button onclick="switchTab('tab-menus')" id="btn-tab-menus" class="tab-btn relative px-4 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-2 transition-all text-slate-600 hover:bg-slate-100 border border-transparent">
+            <button onclick="switchTab('tab-menus')" id="btn-tab-menus" class="tab-btn relative px-4 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-2 transition-all text-slate-600 hover:bg-emerald-50/60 border border-transparent">
                 <i class="fa-solid fa-calendar-check"></i> Đặt Thực Đơn Tiệc
-                <span id="desktop-changed-dot" class="hidden w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping"></span>
+                <span id="desktop-changed-dot" class="hidden w-2.5 h-2.5 rounded-full bg-sky-600 animate-ping"></span>
             </button>
-            <button onclick="switchTab('tab-calc')" id="btn-tab-calc" class="tab-btn px-4 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-2 transition-all text-slate-600 hover:bg-slate-100 border border-transparent">
+            <button onclick="switchTab('tab-calc')" id="btn-tab-calc" class="tab-btn px-4 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-2 transition-all text-slate-600 hover:bg-emerald-50/60 border border-transparent">
                 <i class="fa-solid fa-basket-shopping"></i> Tính Vật Tư Đi Chợ
             </button>
-            <button onclick="switchTab('tab-sync-price'); loadSyncPriceData();" id="btn-tab-sync-price" class="tab-btn px-4 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-2 transition-all text-slate-600 hover:bg-slate-100 border border-transparent">
+            <button onclick="switchTab('tab-sync-price'); loadSyncPriceData();" id="btn-tab-sync-price" class="tab-btn px-4 py-2.5 rounded-xl font-semibold text-xs flex items-center gap-2 transition-all text-slate-600 hover:bg-emerald-50/60 border border-transparent">
                 <i class="fa-solid fa-tags"></i> Kiểm Tra Giá Món
             </button>
         </div>
@@ -264,12 +256,12 @@
                 <div class="lg:col-span-4 space-y-5 lg:sticky lg:top-[132px] max-h-[calc(100vh-150px)] overflow-y-auto pr-0.5">
                     <!-- Form thêm/sửa món thủ công -->
                     <div class="app-card p-5 space-y-4">
-                        <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                            <h3 id="dish-form-title" class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                                <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-plus text-xs"></i></span>
+                        <div class="flex items-center justify-between border-b border-emerald-100 pb-3">
+                            <h3 id="dish-form-title" class="text-sm font-extrabold text-emerald-950 flex items-center gap-2">
+                                <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-plus text-xs"></i></span>
                                 THÊM MÓN ĂN MỚI
                             </h3>
-                            <button onclick="resetDishForm()" title="Làm mới form" class="text-xs font-semibold text-slate-400 hover:text-slate-700 px-2 py-1 rounded-lg hover:bg-slate-100 transition">
+                            <button onclick="resetDishForm()" title="Làm mới form" class="text-xs font-semibold text-slate-500 hover:text-emerald-700 px-2 py-1 rounded-lg hover:bg-emerald-50 transition cursor-pointer">
                                 <i class="fa-solid fa-rotate-left"></i> Làm mới
                             </button>
                         </div>
@@ -287,19 +279,19 @@
                                 </div>
                                 <div>
                                     <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Link Hình Ảnh (Direct link)</label>
-                                    <input type="text" id="dish-image" placeholder="https://i.postimg.cc/..." class="form-input text-blue-600">
+                                    <input type="text" id="dish-image" placeholder="https://i.postimg.cc/..." class="form-input text-sky-700">
                                 </div>
                             </div>
 
                             <!-- Khối nhập nguyên liệu -->
-                            <div class="bg-slate-50 rounded-2xl p-3.5 border border-slate-200/80 space-y-2.5">
-                                <div class="text-[11px] font-extrabold text-slate-700 uppercase flex items-center gap-1.5">
-                                    <i class="fa-solid fa-carrot text-amber-500"></i> Định lượng nguyên liệu (1 bàn)
+                            <div class="bg-emerald-50/50 rounded-2xl p-3.5 border border-emerald-200/70 space-y-2.5">
+                                <div class="text-[11px] font-extrabold text-emerald-900 uppercase flex items-center gap-1.5">
+                                    <i class="fa-solid fa-carrot text-emerald-600"></i> Định lượng nguyên liệu (1 bàn)
                                 </div>
-                                <input type="text" id="ing-name" placeholder="Tên nguyên liệu (VD: Thịt bò, Hành tây)..." class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:border-amber-500 outline-none">
+                                <input type="text" id="ing-name" placeholder="Tên nguyên liệu (VD: Thịt bò, Hành tây)..." class="w-full bg-white border border-emerald-200 rounded-xl px-3 py-2 text-xs font-medium focus:border-emerald-600 outline-none">
                                 <div class="grid grid-cols-2 gap-2">
-                                    <input type="number" step="any" id="ing-weight" placeholder="Số lượng" class="w-full bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs font-medium focus:border-amber-500 outline-none">
-                                    <select id="ing-unit" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-medium focus:border-amber-500 outline-none">
+                                    <input type="number" step="any" id="ing-weight" placeholder="Số lượng" class="w-full bg-white border border-emerald-200 rounded-xl px-3 py-2 text-xs font-medium focus:border-emerald-600 outline-none">
+                                    <select id="ing-unit" class="w-full bg-white border border-emerald-200 rounded-xl px-2.5 py-2 text-xs font-medium focus:border-emerald-600 outline-none">
                                         <option value="gam">gam</option>
                                         <option value="kg">kg</option>
                                         <option value="cái">cái</option>
@@ -321,7 +313,7 @@
                                         <option value="khác">khác...</option>
                                     </select>
                                 </div>
-                                <select id="ing-type" class="w-full bg-white border border-slate-200 rounded-xl px-2.5 py-2 text-xs font-medium focus:border-amber-500 outline-none">
+                                <select id="ing-type" class="w-full bg-white border border-emerald-200 rounded-xl px-2.5 py-2 text-xs font-medium focus:border-emerald-600 outline-none">
                                     <option value="bò">Bò</option>
                                     <option value="gà">Gà</option>
                                     <option value="vịt">Vịt</option>
@@ -348,75 +340,72 @@
                                     <option value="nước chấm">Nước chấm</option>
                                     <option value="khác">Khác...</option>
                                 </select>
-                                <button onclick="addIngredientToTempList()" class="w-full bg-white hover:bg-amber-50 text-amber-700 border border-amber-300 font-bold text-xs py-2 rounded-xl transition cursor-pointer">
+                                <button onclick="addIngredientToTempList()" class="w-full bg-white hover:bg-emerald-100/70 text-emerald-800 border border-emerald-300 font-bold text-xs py-2 rounded-xl transition cursor-pointer">
                                     <i class="fa-solid fa-plus-circle mr-1"></i> Thêm nguyên liệu vào món
                                 </button>
                                 <div id="temp-ing-list" class="flex flex-wrap gap-1.5 pt-1 max-h-28 overflow-y-auto"></div>
                             </div>
                         </div>
 
-                        <button id="btn-save-dish" onclick="addDish()" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-amber-500/20 transition cursor-pointer">
+                        <button id="btn-save-dish" onclick="addDish()" class="w-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-600 hover:from-emerald-800 hover:to-teal-700 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-emerald-600/20 transition cursor-pointer">
                             <i class="fa-solid fa-circle-check mr-1.5"></i> Lưu Cấu Trúc Món
                         </button>
                     </div>
 
-                    <!-- KHỐI NHẬP MÓN TỪ EXCEL HOÀN THIỆN -->
-                    <div class="app-card p-5 space-y-3.5 border-emerald-200/80">
+                    <!-- KHỐI NHẬP MÓN TỪ EXCEL -->
+                    <div class="app-card p-5 space-y-3.5 border-teal-200/80">
                         <div class="flex items-center justify-between cursor-pointer select-none" onclick="document.getElementById('excel-import-wrap').classList.toggle('hidden'); document.getElementById('excel-chevron').classList.toggle('rotate-180')">
                             <div class="flex items-center gap-2.5">
-                                <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-file-excel text-base"></i></span>
+                                <span class="w-8 h-8 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center"><i class="fa-solid fa-file-excel text-base"></i></span>
                                 <div>
-                                    <h3 class="text-xs font-extrabold text-slate-900 uppercase">Nhập Món Từ File Excel</h3>
+                                    <h3 class="text-xs font-extrabold text-emerald-950 uppercase">Nhập Món Từ File Excel</h3>
                                     <p class="text-[11px] text-slate-500">Tải mẫu, xem trước &amp; nhập hàng loạt</p>
                                 </div>
                             </div>
-                            <i id="excel-chevron" class="fa-solid fa-chevron-down text-slate-400 text-xs transition-transform duration-200 rotate-180"></i>
+                            <i id="excel-chevron" class="fa-solid fa-chevron-down text-emerald-600 text-xs transition-transform duration-200 rotate-180"></i>
                         </div>
 
-                        <div id="excel-import-wrap" class="space-y-3 pt-2 border-t border-slate-100">
-                            <!-- Bước 1: Tải file mẫu -->
-                            <div class="bg-emerald-50/70 border border-emerald-200/70 rounded-xl p-3 space-y-2">
+                        <div id="excel-import-wrap" class="space-y-3 pt-2 border-t border-emerald-100">
+                            <div class="bg-teal-50/70 border border-teal-200/70 rounded-xl p-3 space-y-2">
                                 <div class="flex items-center justify-between gap-2">
-                                    <span class="text-[11px] font-bold text-emerald-900">1. Dùng file mẫu chuẩn:</span>
-                                    <button onclick="downloadExcelTemplate()" class="bg-white hover:bg-emerald-100 text-emerald-700 border border-emerald-300 text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1.5 shadow-sm">
+                                    <span class="text-[11px] font-bold text-teal-900">1. Dùng file mẫu chuẩn:</span>
+                                    <button onclick="downloadExcelTemplate()" class="bg-white hover:bg-teal-100 text-teal-800 border border-teal-300 text-[11px] font-bold px-2.5 py-1.5 rounded-lg transition cursor-pointer flex items-center gap-1.5 shadow-sm">
                                         <i class="fa-solid fa-download"></i> Tải file mẫu (.xlsx)
                                     </button>
                                 </div>
-                                <p class="text-[10px] text-emerald-800/90 leading-relaxed">
+                                <p class="text-[10px] text-teal-900/90 leading-relaxed">
                                     Cột hỗ trợ: <b>TenMon, DanhMuc, TenNguyenLieu, SoLuong, DonVi, Loai, HinhAnh</b>.
                                     <br><i>Mẹo:</i> Các dòng nguyên liệu tiếp theo của cùng 1 món có thể <b>để trống cột TenMon</b>.
                                 </p>
                             </div>
 
-                            <!-- Bước 2: Chọn file -->
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-600 mb-1.5">2. Chọn file Excel từ máy:</label>
-                                <label for="excel-import-file" class="flex flex-col items-center justify-center w-full border-2 border-dashed border-emerald-300 hover:border-emerald-500 bg-slate-50 hover:bg-emerald-50/40 rounded-xl p-3.5 cursor-pointer transition text-center">
+                                <label for="excel-import-file" class="flex flex-col items-center justify-center w-full border-2 border-dashed border-emerald-300 hover:border-emerald-600 bg-emerald-50/30 hover:bg-emerald-50 rounded-xl p-3.5 cursor-pointer transition text-center">
                                     <i class="fa-solid fa-cloud-arrow-up text-emerald-600 text-xl mb-1"></i>
-                                    <span id="excel-file-label" class="text-xs font-bold text-slate-700">Bấm để chọn file .xlsx / .xls</span>
+                                    <span id="excel-file-label" class="text-xs font-bold text-emerald-950">Bấm để chọn file .xlsx / .xls</span>
                                     <span class="text-[10px] text-slate-400 mt-0.5">Hệ thống sẽ phân tích &amp; cho xem trước</span>
                                     <input type="file" id="excel-import-file" accept=".xlsx, .xls" class="hidden" onchange="previewExcelFile(event)">
                                 </label>
                             </div>
 
-                            <!-- Bước 3: Xem trước & Xác nhận nhập -->
-                            <div id="excel-preview-area" class="hidden space-y-3 bg-slate-50 border border-slate-200 rounded-xl p-3">
+                            <div id="excel-preview-area" class="hidden space-y-3 bg-emerald-50/40 border border-emerald-200 rounded-xl p-3">
                                 <div class="flex items-center justify-between">
-                                    <span class="text-xs font-extrabold text-slate-800"><i class="fa-solid fa-eye text-blue-600 mr-1"></i> Xem trước danh sách</span>
+                                    <span class="text-xs font-extrabold text-emerald-950"><i class="fa-solid fa-eye text-sky-600 mr-1"></i> Xem trước danh sách</span>
                                     <button onclick="clearExcelPreview()" class="text-[11px] font-bold text-rose-500 hover:text-rose-700 cursor-pointer">Hủy file</button>
                                 </div>
                                 <div id="excel-preview-stats" class="flex flex-wrap gap-1.5 text-[11px] font-bold"></div>
                                 <div id="excel-preview-list" class="max-h-44 overflow-y-auto space-y-1.5 pr-1"></div>
 
-                                <div class="space-y-1.5 pt-2 border-t border-slate-200">
+                                <div class="space-y-1.5 pt-2 border-t border-emerald-200/70">
                                     <label class="block text-[11px] font-bold text-slate-600">3. Chọn chế độ nhập lên đám mây:</label>
-                                    <select id="excel-import-mode" class="w-full bg-white border border-slate-300 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-700 outline-none focus:border-emerald-500">
+                                    <select id="excel-import-mode" class="w-full bg-white border border-emerald-300 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-700 outline-none focus:border-emerald-600">
                                         <option value="smart">Thêm món mới + Cập nhật gộp NL món cũ (Khuyên dùng)</option>
                                         <option value="new">Chỉ thêm các món mới (Bỏ qua món đã có)</option>
                                         <option value="update_merge">Chỉ gộp thêm nguyên liệu vào món cũ</option>
                                         <option value="overwrite">Thêm mới + Ghi đè toàn bộ NL món cũ</option>
                                     </select>
-                                    <button id="btn-confirm-excel-import" onclick="executeExcelImport()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-2.5 rounded-xl shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5">
+                                    <button id="btn-confirm-excel-import" onclick="executeExcelImport()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-2.5 rounded-xl shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5">
                                         <i class="fa-solid fa-upload"></i> Xác Nhận Nhập Danh Sách
                                     </button>
                                 </div>
@@ -429,10 +418,10 @@
                 <div class="lg:col-span-8 space-y-4">
                     <div class="app-card p-4 flex flex-col md:flex-row justify-between items-stretch md:items-center gap-3">
                         <div class="flex items-center gap-2.5 shrink-0">
-                            <span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-layer-group text-sm"></i></span>
+                            <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-layer-group text-sm"></i></span>
                             <div>
-                                <h3 class="text-sm font-extrabold text-slate-900">DANH MỤC MÓN ĂN</h3>
-                                <span id="dish-count" class="text-[11px] font-bold text-amber-700">0 món</span>
+                                <h3 class="text-sm font-extrabold text-emerald-950">DANH MỤC MÓN ĂN</h3>
+                                <span id="dish-count" class="text-[11px] font-bold text-emerald-700">0 món</span>
                             </div>
                         </div>
                         <div class="flex flex-col sm:flex-row gap-2 flex-1 md:justify-end">
@@ -468,12 +457,12 @@
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
                 <!-- Form lên thực đơn -->
                 <div class="lg:col-span-4 app-card p-5 space-y-4 lg:sticky lg:top-[132px] max-h-[calc(100vh-150px)] overflow-y-auto">
-                    <div class="flex items-center justify-between border-b border-slate-100 pb-3">
-                        <h3 id="menu-form-title" class="text-sm font-extrabold text-slate-900 flex items-center gap-2">
-                            <span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-calendar-plus text-xs"></i></span>
+                    <div class="flex items-center justify-between border-b border-emerald-100 pb-3">
+                        <h3 id="menu-form-title" class="text-sm font-extrabold text-emerald-950 flex items-center gap-2">
+                            <span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-calendar-plus text-xs"></i></span>
                             LÊN THỰC ĐƠN MỚI
                         </h3>
-                        <button onclick="resetMenuForm()" class="text-xs font-semibold text-slate-400 hover:text-slate-700 px-2 py-1 rounded-lg hover:bg-slate-100 transition cursor-pointer">
+                        <button onclick="resetMenuForm()" class="text-xs font-semibold text-slate-500 hover:text-emerald-700 px-2 py-1 rounded-lg hover:bg-emerald-50 transition cursor-pointer">
                             <i class="fa-solid fa-eraser"></i> Xóa trắng
                         </button>
                     </div>
@@ -516,14 +505,14 @@
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Ngày Âm Lịch</label>
-                                <input type="text" id="menu-lunar-date" placeholder="Tự tính..." disabled class="form-input bg-slate-100 text-purple-700 font-bold">
+                                <input type="text" id="menu-lunar-date" placeholder="Tự tính..." disabled class="form-input bg-emerald-50/70 text-teal-800 font-bold">
                             </div>
                         </div>
 
                         <div class="grid grid-cols-2 gap-2.5">
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Số bàn</label>
-                                <input type="number" id="menu-tables" value="0" min="0" class="form-input font-bold text-amber-700">
+                                <input type="number" id="menu-tables" value="0" min="0" class="form-input font-bold text-emerald-800">
                             </div>
                             <div>
                                 <label class="block text-[11px] font-bold text-slate-500 uppercase mb-1">Giờ đãi tiệc</label>
@@ -538,10 +527,10 @@
                     </div>
 
                     <!-- Chọn món vào thực đơn -->
-                    <div class="border-t border-slate-100 pt-3.5 space-y-2.5">
+                    <div class="border-t border-emerald-100 pt-3.5 space-y-2.5">
                         <div class="flex items-center justify-between">
-                            <label class="text-[11px] font-extrabold text-slate-700 uppercase">Chọn món vào thực đơn:</label>
-                            <span id="selected-dish-count-label" class="text-[11px] font-bold text-amber-600">0 món</span>
+                            <label class="text-[11px] font-extrabold text-emerald-900 uppercase">Chọn món vào thực đơn:</label>
+                            <span id="selected-dish-count-label" class="text-[11px] font-bold text-emerald-700">0 món</span>
                         </div>
                         <div class="relative">
                             <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
@@ -551,7 +540,7 @@
                         <div class="space-y-1.5 pt-1" id="menu-selected-dishes-badge"></div>
                     </div>
 
-                    <button id="btn-save-menu" onclick="saveMenu()" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-amber-500/20 transition cursor-pointer">
+                    <button id="btn-save-menu" onclick="saveMenu()" class="w-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-600 hover:from-emerald-800 hover:to-teal-700 text-white font-bold text-sm py-3 rounded-xl shadow-md shadow-emerald-600/20 transition cursor-pointer">
                         <i class="fa-solid fa-bookmark mr-1.5"></i> Lưu Lịch Đặt Tiệc
                     </button>
                 </div>
@@ -560,13 +549,13 @@
                 <div class="lg:col-span-8 space-y-4">
                     <div class="app-card px-4 py-3.5 flex flex-wrap justify-between items-center gap-3">
                         <div class="flex items-center gap-2.5">
-                            <span class="w-8 h-8 rounded-xl bg-orange-100 text-orange-600 flex items-center justify-center"><i class="fa-solid fa-book-open text-sm"></i></span>
+                            <span class="w-8 h-8 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center"><i class="fa-solid fa-book-open text-sm"></i></span>
                             <div>
-                                <h3 class="text-sm font-extrabold text-slate-900 uppercase">Sổ Theo Dõi Tiệc Đang Chờ</h3>
-                                <p class="text-[11px] text-slate-500">Tiệc mới sẽ báo Telegram • Tiệc thay đổi sẽ nhấp nháy trực tiếp tại đây</p>
+                                <h3 class="text-sm font-extrabold text-emerald-950 uppercase">Sổ Theo Dõi Tiệc Sắp Tới</h3>
+                                <p class="text-[11px] text-slate-500">Tự động ẩn tiệc đã qua ngày • Tiệc thay đổi sẽ nhấp nháy trực tiếp</p>
                             </div>
                         </div>
-                        <span id="active-menus-count" class="bg-amber-100 text-amber-800 text-xs font-extrabold px-3 py-1 rounded-xl">0 tiệc</span>
+                        <span id="active-menus-count" class="bg-emerald-100 text-emerald-800 text-xs font-extrabold px-3 py-1 rounded-xl">0 tiệc</span>
                     </div>
                     <div id="menus-container" class="space-y-4"></div>
                 </div>
@@ -576,40 +565,40 @@
         <!-- ==================== TAB 3: TÍNH VẬT TƯ ĐI CHỢ ==================== -->
         <div id="tab-calc" class="tab-content space-y-6">
             <div class="app-card p-5 space-y-4">
-                <div class="flex flex-wrap justify-between items-center gap-2 border-b border-slate-100 pb-3">
+                <div class="flex flex-wrap justify-between items-center gap-2 border-b border-emerald-100 pb-3">
                     <div class="flex items-center gap-2.5">
-                        <span class="w-8 h-8 rounded-xl bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-basket-shopping text-sm"></i></span>
+                        <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-basket-shopping text-sm"></i></span>
                         <div>
-                            <h3 class="text-sm font-extrabold text-slate-900 uppercase">Gộp Đơn Đặt Tiệc Đi Chợ</h3>
-                            <p class="text-[11px] text-slate-500">Tích chọn các tiệc cần gộp và kiểm tra số bàn trước khi tính</p>
+                            <h3 class="text-sm font-extrabold text-emerald-950 uppercase">Gộp Đơn Đặt Tiệc Đi Chợ</h3>
+                            <p class="text-[11px] text-slate-500">Chỉ hiển thị các tiệc từ hôm nay trở về sau</p>
                         </div>
                     </div>
                 </div>
 
-                <div class="border border-slate-200 rounded-2xl overflow-hidden bg-white overflow-x-auto">
+                <div class="border border-emerald-200/80 rounded-2xl overflow-hidden bg-white overflow-x-auto">
                     <table class="w-full text-left text-xs border-collapse min-w-[320px]">
                         <thead>
-                            <tr class="bg-slate-50 border-b border-slate-200 font-extrabold uppercase text-slate-600 text-[11px]">
+                            <tr class="bg-emerald-50/80 border-b border-emerald-200/70 font-extrabold uppercase text-emerald-900 text-[11px]">
                                 <th class="p-3.5 text-center w-14">Chọn</th>
                                 <th class="p-3.5">Khách Hàng &amp; Thực Đơn</th>
                                 <th class="p-3.5 text-center w-28">Số Bàn</th>
                             </tr>
                         </thead>
-                        <tbody id="calc-parties-table-body" class="divide-y divide-slate-100 text-slate-700 font-medium"></tbody>
+                        <tbody id="calc-parties-table-body" class="divide-y divide-emerald-100 text-slate-700 font-medium"></tbody>
                     </table>
                 </div>
 
-                <button onclick="calculateIngredients()" class="w-full bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 text-white font-extrabold text-sm py-3.5 rounded-2xl shadow-lg shadow-amber-500/20 transition cursor-pointer">
+                <button onclick="calculateIngredients()" class="w-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-600 hover:from-emerald-800 hover:to-teal-700 text-white font-extrabold text-sm py-3.5 rounded-2xl shadow-lg shadow-emerald-600/20 transition cursor-pointer">
                     <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> TÍNH TOÁN &amp; GỘP VẬT TƯ ĐI CHỢ
                 </button>
             </div>
 
             <div id="calc-result-box" class="hidden app-card p-5 sm:p-6 space-y-5">
-                <div class="flex flex-wrap justify-between items-center gap-3 pb-4 border-b border-slate-100">
-                    <h3 class="text-base font-extrabold text-slate-900 flex items-center gap-2">
+                <div class="flex flex-wrap justify-between items-center gap-3 pb-4 border-b border-emerald-100">
+                    <h3 class="text-base font-extrabold text-emerald-950 flex items-center gap-2">
                         <i class="fa-solid fa-clipboard-check text-emerald-600"></i> PHIẾU GOM NHÓM ĐI CHỢ
                     </h3>
-                    <button onclick="exportMarketToExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-4 py-2.5 rounded-xl cursor-pointer shadow-sm transition flex items-center gap-1.5">
+                    <button onclick="exportMarketToExcel()" class="bg-teal-700 hover:bg-teal-800 text-white font-bold text-xs px-4 py-2.5 rounded-xl cursor-pointer shadow-sm transition flex items-center gap-1.5">
                         <i class="fa-solid fa-file-excel"></i> Xuất File Excel
                     </button>
                 </div>
@@ -620,20 +609,20 @@
         <!-- ==================== TAB 4: KIỂM TRA GIÁ MÓN ==================== -->
         <div id="tab-sync-price" class="tab-content space-y-6">
             <div class="app-card p-5 sm:p-6">
-                <div class="flex flex-wrap justify-between items-center gap-4 mb-5 border-b border-slate-100 pb-4">
+                <div class="flex flex-wrap justify-between items-center gap-4 mb-5 border-b border-emerald-100 pb-4">
                     <div class="flex items-center gap-3">
                         <span class="w-10 h-10 rounded-2xl bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-scale-balanced text-lg"></i></span>
                         <div>
-                            <h2 class="text-lg font-extrabold text-slate-900 uppercase">Đồng Bộ Dữ Liệu Giá Món</h2>
-                            <p class="text-xs text-slate-500">Đối chiếu bảng <b>dishes</b> và <b>danh_muc_gia</b> để phát hiện món thiếu giá</p>
+                            <h2 class="text-lg font-extrabold text-emerald-950 uppercase">Đồng Bộ Dữ Liệu Giá Món</h2>
+                            <p class="text-xs text-slate-500">Đối chiếu bảng <b>dishes</b> và <b>danh_muc_gia</b> • Tự động phân cách hàng nghìn</p>
                         </div>
                     </div>
-                    <button onclick="loadSyncPriceData()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm flex items-center gap-2 cursor-pointer transition">
+                    <button onclick="loadSyncPriceData()" class="bg-emerald-700 hover:bg-emerald-800 text-white px-4 py-2.5 rounded-xl text-xs font-bold shadow-sm flex items-center gap-2 cursor-pointer transition">
                         <i class="fa-solid fa-rotate"></i> Quét &amp; Làm Mới
                     </button>
                 </div>
 
-                <div class="flex flex-col sm:flex-row gap-3 mb-5 bg-slate-50 p-3.5 rounded-2xl border border-slate-200/80">
+                <div class="flex flex-col sm:flex-row gap-3 mb-5 bg-emerald-50/50 p-3.5 rounded-2xl border border-emerald-200/70">
                     <div class="flex-1 relative">
                         <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-xs"></i>
                         <input type="text" id="sync-search" placeholder="Nhập tên món ăn cần tìm..." class="form-input bg-white pl-9" oninput="renderSyncLists()">
@@ -646,7 +635,7 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <div class="bg-rose-50/60 p-4 rounded-2xl border border-rose-200/70">
+                    <div class="bg-rose-50/50 p-4 rounded-2xl border border-rose-200/70">
                         <h3 class="text-sm font-extrabold text-rose-700 mb-3 flex items-center gap-2">
                             <i class="fa-solid fa-triangle-exclamation"></i> CẦN NHẬP GIÁ (<span id="missing-count">0</span>)
                         </h3>
@@ -655,8 +644,8 @@
                         </div>
                     </div>
 
-                    <div class="bg-emerald-50/40 p-4 rounded-2xl border border-emerald-200/70">
-                        <h3 class="text-sm font-extrabold text-emerald-700 mb-3 flex items-center gap-2">
+                    <div class="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-200/80">
+                        <h3 class="text-sm font-extrabold text-emerald-800 mb-3 flex items-center gap-2">
                             <i class="fa-solid fa-check-circle"></i> ĐÃ CÓ GIÁ (<span id="matched-count">0</span>)
                         </h3>
                         <div id="matched-price-list" class="space-y-2.5 max-h-[60vh] overflow-y-auto pr-1">
@@ -669,8 +658,8 @@
     </main>
 
     <!-- FOOTER DESKTOP -->
-    <footer class="bg-white border-t border-slate-200 text-slate-500 text-center py-3 text-[11px] mt-10">
-        <p>© 2026 <b class="text-slate-700">Dịch Vụ Nấu Ăn Phi Long</b> — Hệ thống đồng bộ đám mây Supabase</p>
+    <footer class="bg-white/90 border-t border-emerald-100 text-slate-500 text-center py-3 text-[11px] mt-10">
+        <p>© 2026 <b class="text-emerald-800">Dịch Vụ Nấu Ăn Phi Long</b> — Hệ thống đồng bộ đám mây Supabase</p>
     </footer>
 
     <!-- MOBILE BOTTOM NAV -->
@@ -682,7 +671,7 @@
         <button onclick="switchTab('tab-menus')">
             <i class="fa-solid fa-calendar-check"></i>
             <span>Tiệc</span>
-            <span id="mobile-changed-dot" class="hidden absolute top-1 right-5 w-2.5 h-2.5 rounded-full bg-blue-600 animate-ping"></span>
+            <span id="mobile-changed-dot" class="hidden absolute top-1 right-5 w-2.5 h-2.5 rounded-full bg-sky-600 animate-ping"></span>
         </button>
         <button onclick="switchTab('tab-calc')">
             <i class="fa-solid fa-basket-shopping"></i>
@@ -706,7 +695,6 @@
         const TELEGRAM_TOKEN = '8580811533:AAE1IMKPv3QG3TD2fLK2dBp-yYGt29phNZ8';
         const TELEGRAM_CHAT_IDS = ['-5197568749'];
 
-        // Biến trạng thái toàn cục
         let dishesList = [];
         let menusList = [];
         let temporaryIngredients = [];
@@ -714,22 +702,54 @@
         let currentEditingMenuId = null;
         let selectedDishIdsInMenuForm = [];
         let globalCalculatedMarket = null;
-        let parsedExcelDishes = []; // Lưu danh sách xem trước từ Excel
+        let parsedExcelDishes = [];
 
-        // Key lưu trạng thái theo dõi tiệc thay đổi trên trình duyệt
         const MENU_SNAPSHOT_KEY = 'philong_menus_snapshot_v2';
         const MENU_CHANGED_KEY = 'philong_menus_changed_v2';
 
         // ==========================================
-        // TOAST THÔNG BÁO ĐẸP
+        // TIỆN ÍCH NGÀY THÁNG & ĐỊNH DẠNG TIỀN TỆ
+        // ==========================================
+        function isUpcomingOrToday(dateStr) {
+            if (!dateStr) return false;
+            const parts = String(dateStr).split('-');
+            if (parts.length !== 3) return false;
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const partyDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
+            partyDate.setHours(0, 0, 0, 0);
+            return partyDate.getTime() >= today.getTime();
+        }
+
+        function getActiveUpcomingMenus() {
+            return menusList.filter(m => m.status !== 'completed' && isUpcomingOrToday(m.date));
+        }
+
+        function formatVND(num) {
+            const clean = String(num ?? '').replace(/\D/g, '');
+            if (!clean) return '';
+            return clean.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+        }
+
+        function parseVND(str) {
+            const clean = String(str ?? '').replace(/\D/g, '');
+            return clean ? parseInt(clean, 10) : 0;
+        }
+
+        function handlePriceInputFormat(inputEl) {
+            inputEl.value = formatVND(inputEl.value);
+        }
+
+        // ==========================================
+        // TOAST THÔNG BÁO
         // ==========================================
         function showToast(message, type = 'success') {
             const container = document.getElementById('toast-container');
             const colors = {
-                success: 'bg-emerald-600 text-white border-emerald-500',
+                success: 'bg-emerald-700 text-white border-emerald-600',
                 error: 'bg-rose-600 text-white border-rose-500',
-                warning: 'bg-amber-500 text-white border-amber-400',
-                info: 'bg-blue-600 text-white border-blue-500'
+                warning: 'bg-amber-600 text-white border-amber-500',
+                info: 'bg-sky-600 text-white border-sky-500'
             };
             const icons = {
                 success: 'fa-circle-check',
@@ -785,14 +805,11 @@
         }
 
         // ==========================================
-        // HỆ THỐNG PHÁT HIỆN & NHẤP NHÁY TIỆC THAY ĐỔI
+        // PHÁT HIỆN & NHẤP NHÁY TIỆC THAY ĐỔI
         // ==========================================
         function getChangedMenusMap() {
-            try {
-                return JSON.parse(localStorage.getItem(MENU_CHANGED_KEY) || '{}');
-            } catch {
-                return {};
-            }
+            try { return JSON.parse(localStorage.getItem(MENU_CHANGED_KEY) || '{}'); }
+            catch { return {}; }
         }
 
         function saveChangedMenusMap(map) {
@@ -831,11 +848,8 @@
         function syncAndDetectMenuChanges(activeMenus) {
             let prevSnapshots = {};
             const hasSavedBefore = localStorage.getItem(MENU_SNAPSHOT_KEY) !== null;
-            try {
-                prevSnapshots = JSON.parse(localStorage.getItem(MENU_SNAPSHOT_KEY) || '{}');
-            } catch {
-                prevSnapshots = {};
-            }
+            try { prevSnapshots = JSON.parse(localStorage.getItem(MENU_SNAPSHOT_KEY) || '{}'); }
+            catch { prevSnapshots = {}; }
 
             const changedMap = getChangedMenusMap();
             const currentSnapshots = {};
@@ -849,20 +863,16 @@
                     const diffs = diffMenuObjects(prevSnapshots[idKey], snap);
                     if (diffs.length > 0) {
                         const existingDiffs = Array.isArray(changedMap[idKey]?.diffs) ? changedMap[idKey].diffs : [];
-                        const mergedDiffs = [...new Set([...existingDiffs, ...diffs])];
                         changedMap[idKey] = {
-                            diffs: mergedDiffs,
+                            diffs: [...new Set([...existingDiffs, ...diffs])],
                             at: Date.now()
                         };
                     }
                 }
             });
 
-            // Xóa cờ thay đổi của những tiệc không còn trong danh sách chờ
             Object.keys(changedMap).forEach(idKey => {
-                if (!currentSnapshots[idKey]) {
-                    delete changedMap[idKey];
-                }
+                if (!currentSnapshots[idKey]) delete changedMap[idKey];
             });
 
             localStorage.setItem(MENU_SNAPSHOT_KEY, JSON.stringify(currentSnapshots));
@@ -874,9 +884,8 @@
             const idKey = String(menuId);
             const changedMap = getChangedMenusMap();
             const existingDiffs = Array.isArray(changedMap[idKey]?.diffs) ? changedMap[idKey].diffs : [];
-            const mergedDiffs = [...new Set([...existingDiffs, ...(diffs.length ? diffs : ['Thông tin tiệc'])])];
             changedMap[idKey] = {
-                diffs: mergedDiffs,
+                diffs: [...new Set([...existingDiffs, ...(diffs.length ? diffs : ['Thông tin tiệc'])])],
                 at: Date.now()
             };
             saveChangedMenusMap(changedMap);
@@ -897,9 +906,7 @@
 
         function updateChangedAlertUI() {
             const changedMap = getChangedMenusMap();
-            const changedIds = Object.keys(changedMap);
-            const count = changedIds.length;
-
+            const count = Object.keys(changedMap).length;
             const headerAlert = document.getElementById('changed-party-alert');
             const headerText = document.getElementById('changed-alert-text');
             const desktopDot = document.getElementById('desktop-changed-dot');
@@ -923,9 +930,7 @@
             if (changedIds.length > 0) {
                 setTimeout(() => {
                     const card = document.getElementById(`menu-card-${changedIds[0]}`);
-                    if (card) {
-                        card.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }
+                    if (card) card.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }, 150);
             }
         }
@@ -952,12 +957,10 @@
 
         window.addEventListener("DOMContentLoaded", async () => {
             await loadAllCloudData();
-
             const dateInput = document.getElementById('menu-date');
             if (dateInput) {
                 dateInput.addEventListener('change', function (e) {
-                    const lunarInput = document.getElementById('menu-lunar-date');
-                    lunarInput.value = getLunarDateString(e.target.value) + " Âm";
+                    document.getElementById('menu-lunar-date').value = getLunarDateString(e.target.value) + " Âm";
                 });
             }
         });
@@ -970,10 +973,9 @@
                 let { data: menus, error: e2 } = await _supabase.from('menus').select('*');
                 if (!e2) menusList = menus || [];
 
-                // Sắp xếp tiệc theo ngày gần nhất lên trên
                 menusList.sort((a, b) => new Date(a.date || '2099-01-01') - new Date(b.date || '2099-01-01'));
 
-                const activeMenus = menusList.filter(m => m.status !== 'completed');
+                const activeMenus = getActiveUpcomingMenus();
                 syncAndDetectMenuChanges(activeMenus);
 
                 renderCategoryOptions();
@@ -991,7 +993,7 @@
         function switchTab(tabId) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
             document.querySelectorAll('.tab-btn').forEach(el => {
-                el.classList.remove('active', 'bg-amber-50', 'text-amber-700', 'border-amber-200', 'font-bold');
+                el.classList.remove('active', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-200', 'font-bold');
                 el.classList.add('text-slate-600', 'border-transparent', 'font-semibold');
             });
 
@@ -999,7 +1001,7 @@
             const activeBtn = document.getElementById(`btn-${tabId}`);
             if (activeBtn) {
                 activeBtn.classList.remove('text-slate-600', 'border-transparent', 'font-semibold');
-                activeBtn.classList.add('active', 'bg-amber-50', 'text-amber-700', 'border-amber-200', 'font-bold');
+                activeBtn.classList.add('active', 'bg-emerald-50', 'text-emerald-800', 'border-emerald-200', 'font-bold');
             }
 
             if (tabId === 'tab-calc') renderCalcPartiesTable();
@@ -1039,29 +1041,29 @@
         function getTypeBadgeStyle(type) {
             const styles = {
                 "bò": "bg-rose-50 text-rose-700 border-rose-200",
-                "gà": "bg-yellow-50 text-yellow-800 border-yellow-200",
+                "gà": "bg-amber-50 text-amber-800 border-amber-200",
                 "vịt": "bg-lime-50 text-lime-800 border-lime-200",
                 "heo": "bg-pink-50 text-pink-700 border-pink-200",
                 "dê": "bg-stone-100 text-stone-700 border-stone-200",
-                "cá": "bg-cyan-50 text-cyan-700 border-cyan-200",
+                "cá": "bg-cyan-50 text-cyan-800 border-cyan-200",
                 "tôm": "bg-orange-50 text-orange-700 border-orange-200",
                 "cua": "bg-red-50 text-red-700 border-red-200",
                 "ghẹ": "bg-red-50 text-red-700 border-red-200",
                 "mực": "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200",
-                "ốc": "bg-teal-50 text-teal-700 border-teal-200",
+                "ốc": "bg-teal-50 text-teal-800 border-teal-200",
                 "lươn": "bg-amber-50 text-amber-800 border-amber-200",
-                "ếch": "bg-green-50 text-green-700 border-green-200",
-                "trứng": "bg-yellow-50 text-yellow-700 border-yellow-200",
+                "ếch": "bg-green-50 text-green-800 border-green-200",
+                "trứng": "bg-yellow-50 text-yellow-800 border-yellow-200",
                 "nấm": "bg-zinc-100 text-zinc-700 border-zinc-200",
                 "đậu hũ": "bg-orange-50 text-orange-700 border-orange-200",
-                "rau củ quả": "bg-emerald-50 text-emerald-700 border-emerald-200",
+                "rau củ quả": "bg-emerald-50 text-emerald-800 border-emerald-200",
                 "trái cây": "bg-violet-50 text-violet-700 border-violet-200",
-                "gạo nếp": "bg-gray-100 text-gray-800 border-gray-200",
+                "gạo nếp": "bg-slate-100 text-slate-700 border-slate-200",
                 "bún mì": "bg-yellow-50 text-yellow-800 border-yellow-200",
                 "đồ khô": "bg-stone-50 text-stone-700 border-stone-200",
                 "nguyên liệu": "bg-purple-50 text-purple-700 border-purple-200",
                 "gia vị": "bg-slate-100 text-slate-700 border-slate-200",
-                "nước chấm": "bg-indigo-50 text-indigo-700 border-indigo-200",
+                "nước chấm": "bg-sky-50 text-sky-800 border-sky-200",
                 "khác": "bg-slate-100 text-slate-700 border-slate-200"
             };
             return styles[type ? String(type).toLowerCase().trim() : "khác"] || styles["khác"];
@@ -1124,17 +1126,17 @@
                 groupWrapper.className = "app-card overflow-hidden";
 
                 const groupHeader = document.createElement("div");
-                groupHeader.className = "bg-gradient-to-r from-amber-50/90 to-orange-50/50 px-4 py-3 flex justify-between items-center cursor-pointer select-none hover:from-amber-100/70 transition";
+                groupHeader.className = "bg-gradient-to-r from-emerald-50 to-teal-50/70 px-4 py-3 flex justify-between items-center cursor-pointer select-none hover:from-emerald-100/70 transition";
                 groupHeader.innerHTML = `
-                    <div class="text-xs font-extrabold text-amber-900 uppercase tracking-wider flex items-center gap-2">
-                        <i class="fa-solid fa-folder-open text-amber-600"></i> ${cat}
-                        <span class="text-[10px] font-extrabold text-amber-700 bg-white border border-amber-200 px-2 py-0.5 rounded-full">${groupedDishes[cat].length}</span>
+                    <div class="text-xs font-extrabold text-emerald-900 uppercase tracking-wider flex items-center gap-2">
+                        <i class="fa-solid fa-folder-open text-emerald-600"></i> ${cat}
+                        <span class="text-[10px] font-extrabold text-emerald-800 bg-white border border-emerald-200 px-2 py-0.5 rounded-full">${groupedDishes[cat].length}</span>
                     </div>
-                    <i class="fa-solid fa-chevron-down text-amber-600 text-xs transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}"></i>
+                    <i class="fa-solid fa-chevron-down text-emerald-700 text-xs transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}"></i>
                 `;
 
                 const gridContainer = document.createElement("div");
-                gridContainer.className = `p-4 grid grid-cols-1 md:grid-cols-2 gap-3.5 border-t border-slate-100 ${isOpen ? '' : 'hidden'}`;
+                gridContainer.className = `p-4 grid grid-cols-1 md:grid-cols-2 gap-3.5 border-t border-emerald-100 ${isOpen ? '' : 'hidden'}`;
 
                 groupHeader.onclick = () => {
                     gridContainer.classList.toggle("hidden");
@@ -1157,24 +1159,24 @@
                     }
 
                     const imageHtml = dish.image_url
-                        ? `<img src="${dish.image_url}" alt="${dish.name}" class="w-20 h-20 object-cover rounded-2xl border border-slate-200 shrink-0 shadow-sm">`
-                        : `<div class="w-20 h-20 bg-slate-50 flex items-center justify-center rounded-2xl border border-slate-200/80 text-slate-300 shrink-0"><i class="fa-solid fa-bowl-food text-2xl"></i></div>`;
+                        ? `<img src="${dish.image_url}" alt="${dish.name}" class="w-20 h-20 object-cover rounded-2xl border border-emerald-200 shrink-0 shadow-sm">`
+                        : `<div class="w-20 h-20 bg-emerald-50/50 flex items-center justify-center rounded-2xl border border-emerald-200/70 text-emerald-300 shrink-0"><i class="fa-solid fa-bowl-food text-2xl"></i></div>`;
 
                     const card = document.createElement("div");
-                    card.className = "bg-white rounded-2xl border border-slate-200/80 p-3.5 flex flex-col justify-between hover:border-amber-400 hover:shadow-md transition-all";
+                    card.className = "bg-white rounded-2xl border border-emerald-100 p-3.5 flex flex-col justify-between hover:border-emerald-400 hover:shadow-md transition-all";
                     card.innerHTML = `
                         <div class="flex items-start gap-3.5">
                             ${imageHtml}
                             <div class="flex-1 min-w-0 space-y-2">
                                 <div class="flex justify-between items-start gap-2">
-                                    <h4 class="font-extrabold text-sm text-slate-900 leading-snug">${dish.name}</h4>
-                                    <span class="text-[10px] bg-slate-100 text-slate-500 font-bold px-2 py-0.5 rounded-md shrink-0">10 người</span>
+                                    <h4 class="font-extrabold text-sm text-emerald-950 leading-snug">${dish.name}</h4>
+                                    <span class="text-[10px] bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-md shrink-0">10 người</span>
                                 </div>
                                 <div class="flex flex-wrap gap-1.5">${ingHtml}</div>
                             </div>
                         </div>
-                        <div class="flex justify-end gap-2 mt-3 pt-2.5 border-t border-slate-100">
-                            <button onclick="editDish('${dish.id}')" class="text-[11px] font-bold text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-lg cursor-pointer transition flex items-center gap-1">
+                        <div class="flex justify-end gap-2 mt-3 pt-2.5 border-t border-emerald-50">
+                            <button onclick="editDish('${dish.id}')" class="text-[11px] font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 px-3 py-1.5 rounded-lg cursor-pointer transition flex items-center gap-1">
                                 <i class="fa-solid fa-pen-to-square"></i> Sửa
                             </button>
                             <button onclick="removeDish('${dish.id}')" class="text-[11px] font-bold text-rose-600 bg-rose-50 hover:bg-rose-100 px-3 py-1.5 rounded-lg cursor-pointer transition flex items-center gap-1">
@@ -1272,7 +1274,7 @@
             const dish = dishesList.find(d => String(d.id) === String(id));
             if (!dish) return;
             currentEditingDishId = dish.id;
-            document.getElementById("dish-form-title").innerHTML = `<span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></span> ĐANG SỬA MÓN ĂN`;
+            document.getElementById("dish-form-title").innerHTML = `<span class="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></span> ĐANG SỬA MÓN ĂN`;
             document.getElementById("dish-name").value = dish.name || "";
 
             renderCategoryOptions();
@@ -1297,7 +1299,7 @@
 
         async function removeDish(id) {
             if (!id || id === 'null' || id === 'undefined') {
-                showToast("Món ăn này không có ID hợp lệ. Vui lòng xóa trực tiếp trên Supabase!", "error");
+                showToast("Món ăn này không có ID hợp lệ!", "error");
                 return;
             }
             if (confirm("Xóa hẳn món ăn này trên hệ thống đám mây?")) {
@@ -1315,7 +1317,7 @@
 
         function resetDishForm() {
             currentEditingDishId = null;
-            document.getElementById("dish-form-title").innerHTML = `<span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-plus text-xs"></i></span> THÊM MÓN ĂN MỚI`;
+            document.getElementById("dish-form-title").innerHTML = `<span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-plus text-xs"></i></span> THÊM MÓN ĂN MỚI`;
             document.getElementById("dish-name").value = "";
             renderCategoryOptions();
             const selectEl = document.getElementById("dish-category");
@@ -1326,7 +1328,7 @@
         }
 
         // ==========================================
-        // NHẬP MÓN TỪ EXCEL (HOÀN THIỆN: MẪU + XEM TRƯỚC + NHẬP HÀNG LOẠT)
+        // NHẬP MÓN TỪ EXCEL
         // ==========================================
         function downloadExcelTemplate() {
             const sampleRows = [
@@ -1358,8 +1360,7 @@
 
         function getCellByAliases(rowObj, aliases) {
             for (const key of Object.keys(rowObj)) {
-                const norm = normalizeColKey(key);
-                if (aliases.includes(norm)) return rowObj[key];
+                if (aliases.includes(normalizeColKey(key))) return rowObj[key];
             }
             return "";
         }
@@ -1367,7 +1368,6 @@
         function previewExcelFile(event) {
             const file = event.target.files[0];
             if (!file) return;
-
             document.getElementById('excel-file-label').innerText = file.name;
 
             const reader = new FileReader();
@@ -1398,7 +1398,6 @@
                         let rawUnit = String(getCellByAliases(row, ['donvi', 'dvt', 'donvitinh', 'unit'])).trim();
                         let rawType = String(getCellByAliases(row, ['loai', 'nhomnguyenlieu', 'loainl', 'quay', 'type'])).trim();
 
-                        // Nếu dòng dưới bỏ trống TenMon nhưng có nguyên liệu -> tự kế thừa món dòng trên
                         if (!rawDishName && rawIngName && lastDishName) {
                             rawDishName = lastDishName;
                             if (!rawCat) rawCat = lastCategory;
@@ -1440,11 +1439,10 @@
 
                     parsedExcelDishes = Array.from(groupedMap.values());
                     if (parsedExcelDishes.length === 0) {
-                        showToast("Không đọc được món nào! Kiểm tra lại tên cột TenMon.", "error");
+                        showToast("Không đọc được món nào! Kiểm tra lại cột TenMon.", "error");
                         clearExcelPreview();
                         return;
                     }
-
                     renderExcelPreview();
                 } catch (err) {
                     console.error(err);
@@ -1466,18 +1464,18 @@
 
             statsEl.innerHTML = `
                 <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md">+${newCount} món mới</span>
-                <span class="bg-blue-100 text-blue-800 px-2 py-0.5 rounded-md">${existCount} món đã có</span>
+                <span class="bg-sky-100 text-sky-800 px-2 py-0.5 rounded-md">${existCount} món đã có</span>
                 <span class="bg-slate-200 text-slate-700 px-2 py-0.5 rounded-md">${totalIngs} NL</span>
             `;
 
             listEl.innerHTML = parsedExcelDishes.map(item => `
-                <div class="bg-white border border-slate-200 rounded-xl p-2.5 flex items-center justify-between gap-2 text-xs">
+                <div class="bg-white border border-emerald-200/80 rounded-xl p-2.5 flex items-center justify-between gap-2 text-xs">
                     <div class="min-w-0">
-                        <div class="font-extrabold text-slate-800 truncate">${item.name}</div>
+                        <div class="font-extrabold text-emerald-950 truncate">${item.name}</div>
                         <div class="text-[10px] text-slate-500">${item.category} • ${item.ingredients.length} nguyên liệu</div>
                     </div>
                     ${item.existingDish
-                        ? `<span class="shrink-0 text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded-md">Đã có</span>`
+                        ? `<span class="shrink-0 text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200 px-2 py-0.5 rounded-md">Đã có</span>`
                         : `<span class="shrink-0 text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2 py-0.5 rounded-md">Mới</span>`
                     }
                 </div>
@@ -1534,11 +1532,8 @@
                                     (m.name || '').trim().toLowerCase() === newIng.name.toLowerCase() &&
                                     (m.unit || '').trim().toLowerCase() === newIng.unit.toLowerCase()
                                 );
-                                if (dupIndex >= 0) {
-                                    merged[dupIndex] = newIng; // Cập nhật nếu trùng nguyên liệu
-                                } else {
-                                    merged.push(newIng);
-                                }
+                                if (dupIndex >= 0) merged[dupIndex] = newIng;
+                                else merged.push(newIng);
                             });
                             const updatePayload = { ingredients: merged };
                             if (item.category && item.category !== "Chưa có danh mục") updatePayload.category = item.category;
@@ -1602,16 +1597,16 @@
             sortedCats.forEach(groupName => {
                 const dishes = groups[groupName];
                 const groupDiv = document.createElement("div");
-                groupDiv.className = "bg-white rounded-xl border border-slate-200 overflow-hidden shrink-0";
+                groupDiv.className = "bg-white rounded-xl border border-emerald-200/80 overflow-hidden shrink-0";
 
                 const isOpen = searchKeyword ? true : window.openDishSelectorGroups.includes(groupName);
                 const header = document.createElement("button");
                 header.type = "button";
-                header.className = "w-full flex justify-between items-center px-3 py-2.5 bg-amber-50/70 text-amber-900 font-extrabold text-[11px] uppercase tracking-wide cursor-pointer";
+                header.className = "w-full flex justify-between items-center px-3 py-2.5 bg-emerald-50/80 text-emerald-900 font-extrabold text-[11px] uppercase tracking-wide cursor-pointer";
                 header.innerHTML = `<span>${groupName} (${dishes.length})</span> <i class="fa-solid fa-chevron-down transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}"></i>`;
 
                 const listContainer = document.createElement("div");
-                listContainer.className = `divide-y divide-slate-100 ${isOpen ? '' : 'hidden'}`;
+                listContainer.className = `divide-y divide-emerald-50 ${isOpen ? '' : 'hidden'}`;
 
                 header.onclick = (e) => {
                     e.preventDefault();
@@ -1627,10 +1622,10 @@
                 dishes.forEach(dish => {
                     const isSelected = selectedDishIdsInMenuForm.some(id => String(id) === String(dish.id));
                     const dishRow = document.createElement("div");
-                    dishRow.className = `flex justify-between items-center px-3 py-2.5 cursor-pointer transition ${isSelected ? 'bg-amber-50/60' : 'hover:bg-slate-50'}`;
+                    dishRow.className = `flex justify-between items-center px-3 py-2.5 cursor-pointer transition ${isSelected ? 'bg-emerald-50/70' : 'hover:bg-slate-50'}`;
                     dishRow.innerHTML = `
-                        <span class="text-xs ${isSelected ? 'text-amber-700 font-extrabold' : 'text-slate-700 font-semibold'}">${dish.name}</span>
-                        <div class="shrink-0 w-6 h-6 flex items-center justify-center rounded-lg ${isSelected ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-400'}">
+                        <span class="text-xs ${isSelected ? 'text-emerald-800 font-extrabold' : 'text-slate-700 font-semibold'}">${dish.name}</span>
+                        <div class="shrink-0 w-6 h-6 flex items-center justify-center rounded-lg ${isSelected ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-400'}">
                             <i class="fa-solid ${isSelected ? 'fa-check' : 'fa-plus'} text-[10px]"></i>
                         </div>
                     `;
@@ -1666,8 +1661,8 @@
                 const dish = dishesList.find(d => String(d.id) === String(id));
                 if (!dish) return;
                 const badge = document.createElement("div");
-                badge.className = "bg-slate-800 text-white text-xs font-semibold px-3 py-2 rounded-xl flex justify-between items-center";
-                badge.innerHTML = `<span><b class="text-amber-400 mr-1">${index + 1}.</b> ${dish.name}</span> <i class="fa-solid fa-circle-xmark cursor-pointer text-rose-400 hover:text-rose-300 text-sm" onclick="removeSelectedDishFromMenu('${id}')"></i>`;
+                badge.className = "bg-emerald-900 text-white text-xs font-semibold px-3 py-2 rounded-xl flex justify-between items-center";
+                badge.innerHTML = `<span><b class="text-emerald-300 mr-1">${index + 1}.</b> ${dish.name}</span> <i class="fa-solid fa-circle-xmark cursor-pointer text-rose-300 hover:text-rose-200 text-sm" onclick="removeSelectedDishFromMenu('${id}')"></i>`;
                 container.appendChild(badge);
             });
         }
@@ -1708,7 +1703,6 @@
                     const existingMenu = menusList.find(m => String(m.id) === String(currentEditingMenuId));
                     menuData.status = existingMenu ? existingMenu.status : 'pending';
 
-                    // Tính chi tiết thay đổi để nhấp nháy ngay trên thẻ tiệc (KHÔNG gửi Telegram)
                     const oldSnap = existingMenu ? buildMenuSnapshotObj(existingMenu) : null;
                     const newSnap = buildMenuSnapshotObj(menuData);
                     const diffs = diffMenuObjects(oldSnap, newSnap);
@@ -1725,7 +1719,6 @@
                     const { error } = await _supabase.from('menus').insert([menuData]);
                     if (error) throw error;
 
-                    // CHỈ GỬI TELEGRAM KHI CÓ TIỆC MỚI
                     sendTelegramNewPartyAlert(menuData);
                     showToast("Đã lưu tiệc mới và gửi thông báo Telegram!", "success");
                 }
@@ -1745,12 +1738,12 @@
             const container = document.getElementById("menus-container");
             container.innerHTML = "";
 
-            const activeMenus = menusList.filter(m => m.status !== 'completed');
+            const activeMenus = getActiveUpcomingMenus();
             const countBadge = document.getElementById("active-menus-count");
             if (countBadge) countBadge.innerText = `${activeMenus.length} tiệc`;
 
             if (activeMenus.length === 0) {
-                container.innerHTML = `<div class="app-card p-10 text-center text-xs text-slate-400 italic">Chưa có lịch đặt tiệc nào đang chờ.</div>`;
+                container.innerHTML = `<div class="app-card p-10 text-center text-xs text-slate-400 italic">Hiện không có tiệc nào từ hôm nay trở về sau.</div>`;
                 return;
             }
 
@@ -1764,43 +1757,44 @@
                     menu.dishIds.forEach((id, idx) => {
                         const dish = dishesList.find(d => String(d.id) === String(id));
                         if (dish) {
-                            dishListItems += `<div class="text-xs text-slate-700 font-semibold leading-snug py-1 flex items-start gap-1.5 border-b border-slate-100 last:border-0"><span class="text-amber-600 font-extrabold">${idx + 1}.</span><span class="flex-1">${dish.name}</span></div>`;
+                            dishListItems += `<div class="text-xs text-slate-700 font-semibold leading-snug py-1 flex items-start gap-1.5 border-b border-emerald-100/70 last:border-0"><span class="text-emerald-700 font-extrabold">${idx + 1}.</span><span class="flex-1">${dish.name}</span></div>`;
                         }
                     });
                 }
                 const dishListHtml = dishListItems || '<div class="italic text-slate-400 text-xs">Chưa chọn món</div>';
 
                 const computedLunar = getLunarDateString(menu.date);
-                const partyDate = new Date(menu.date);
+                const parts = String(menu.date).split('-');
+                const partyDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
                 partyDate.setHours(0, 0, 0, 0);
-                const dayDiff = Math.ceil((partyDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+                const dayDiff = Math.round((partyDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
                 const isNear = (dayDiff >= 0 && dayDiff <= 5);
 
                 const changeInfo = changedMap[String(menu.id)];
                 const isChanged = Boolean(changeInfo);
 
-                let cardStyleClass = "border-slate-200 bg-white hover:border-amber-300";
+                let cardStyleClass = "border-emerald-200/80 bg-white hover:border-emerald-400";
                 if (isChanged) {
                     cardStyleClass = "party-changed-blink";
                 } else if (isNear) {
-                    cardStyleClass = "border-rose-300 shadow-md shadow-rose-100/70 bg-rose-50/30";
+                    cardStyleClass = "border-emerald-400 shadow-md shadow-emerald-100 bg-emerald-50/30";
                 }
 
                 const changedBanner = isChanged
-                    ? `<div class="col-span-full flex flex-wrap items-center justify-between gap-2 bg-blue-600 text-white px-3.5 py-2 rounded-xl shadow-sm">
+                    ? `<div class="col-span-full flex flex-wrap items-center justify-between gap-2 bg-sky-600 text-white px-3.5 py-2 rounded-xl shadow-sm">
                             <div class="flex items-center gap-2 text-xs font-extrabold">
-                                <i class="fa-solid fa-bell fa-shake text-amber-300"></i>
+                                <i class="fa-solid fa-bell fa-shake text-emerald-200"></i>
                                 <span>TIỆC VỪA CÓ THAY ĐỔI:</span>
-                                <span class="font-semibold text-blue-100">${(changeInfo.diffs || []).join(', ')}</span>
+                                <span class="font-semibold text-sky-100">${(changeInfo.diffs || []).join(', ')}</span>
                             </div>
-                            <button onclick="acknowledgeMenuChange('${menu.id}')" class="bg-white text-blue-700 hover:bg-blue-50 text-[11px] font-extrabold px-3 py-1 rounded-lg cursor-pointer transition shrink-0">
+                            <button onclick="acknowledgeMenuChange('${menu.id}')" class="bg-white text-sky-700 hover:bg-sky-50 text-[11px] font-extrabold px-3 py-1 rounded-lg cursor-pointer transition shrink-0">
                                 <i class="fa-solid fa-check mr-1"></i> Đã xem
                             </button>
                        </div>`
                     : "";
 
                 const nearBadge = isNear
-                    ? `<span class="inline-flex items-center gap-1 bg-rose-600 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full"><i class="fa-solid fa-clock"></i> ${dayDiff === 0 ? 'HÔM NAY' : `Còn ${dayDiff} ngày`}</span>`
+                    ? `<span class="inline-flex items-center gap-1 bg-teal-700 text-white text-[10px] font-extrabold px-2.5 py-0.5 rounded-full"><i class="fa-solid fa-clock"></i> ${dayDiff === 0 ? 'HÔM NAY' : `Còn ${dayDiff} ngày`}</span>`
                     : "";
 
                 const block = document.createElement("div");
@@ -1811,33 +1805,33 @@
                     ${changedBanner}
                     <div class="md:col-span-5 space-y-2">
                         <div class="flex flex-wrap items-center gap-1.5">
-                            <span class="text-[10px] bg-amber-600 text-white font-extrabold px-2.5 py-0.5 rounded-full uppercase">${menu.type}</span>
+                            <span class="text-[10px] bg-emerald-700 text-white font-extrabold px-2.5 py-0.5 rounded-full uppercase">${menu.type}</span>
                             ${nearBadge}
                         </div>
-                        <h4 class="font-extrabold text-base text-slate-900 leading-tight">${menu.customer}</h4>
+                        <h4 class="font-extrabold text-base text-emerald-950 leading-tight">${menu.customer}</h4>
                         <div class="space-y-1 text-xs font-semibold text-slate-600">
-                            <div><i class="fa-solid fa-phone w-4 text-center text-slate-400 mr-1"></i> ${menu.phone || 'Chưa có SĐT'}</div>
-                            <div><i class="fa-solid fa-users w-4 text-center text-amber-600 mr-1"></i> <b class="text-slate-900">${menu.tables || 0} bàn</b></div>
+                            <div><i class="fa-solid fa-phone w-4 text-center text-emerald-600 mr-1"></i> ${menu.phone || 'Chưa có SĐT'}</div>
+                            <div><i class="fa-solid fa-users w-4 text-center text-teal-600 mr-1"></i> <b class="text-emerald-950">${menu.tables || 0} bàn</b></div>
                             <div><i class="fa-solid fa-location-dot w-4 text-center text-rose-500 mr-1"></i> ${menu.address || 'Chưa cập nhật địa chỉ'}</div>
                         </div>
-                        <div class="bg-slate-50 border border-slate-200/70 rounded-xl p-2.5 grid grid-cols-2 gap-1.5 text-[11px] font-bold">
-                            <div class="text-orange-600"><i class="fa-solid fa-calendar-day mr-1"></i> ${menu.date}</div>
-                            <div class="text-purple-700"><i class="fa-solid fa-moon mr-1"></i> ${computedLunar} Âm</div>
-                            <div class="text-blue-600 col-span-2"><i class="fa-solid fa-clock mr-1"></i> Giờ đãi: ${menu.timeparty || 'Chưa hẹn'}</div>
+                        <div class="bg-emerald-50/70 border border-emerald-200/70 rounded-xl p-2.5 grid grid-cols-2 gap-1.5 text-[11px] font-bold">
+                            <div class="text-emerald-800"><i class="fa-solid fa-calendar-day mr-1"></i> ${menu.date}</div>
+                            <div class="text-teal-800"><i class="fa-solid fa-moon mr-1"></i> ${computedLunar} Âm</div>
+                            <div class="text-sky-700 col-span-2"><i class="fa-solid fa-clock mr-1"></i> Giờ đãi: ${menu.timeparty || 'Chưa hẹn'}</div>
                         </div>
                     </div>
 
-                    <div class="md:col-span-5 bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/70 flex flex-col">
-                        <div class="text-[10px] font-extrabold text-slate-400 uppercase mb-1.5">Thực đơn chi tiết</div>
+                    <div class="md:col-span-5 bg-emerald-50/30 p-3.5 rounded-xl border border-emerald-100 flex flex-col">
+                        <div class="text-[10px] font-extrabold text-emerald-700/70 uppercase mb-1.5">Thực đơn chi tiết</div>
                         <div class="mb-auto">${dishListHtml}</div>
-                        ${menu.note ? `<div class="mt-2.5 pt-2 border-t border-slate-200 text-[11px] text-amber-800 bg-amber-50 px-2.5 py-1.5 rounded-lg font-medium"><i class="fa-solid fa-note-sticky mr-1"></i> ${menu.note}</div>` : ''}
+                        ${menu.note ? `<div class="mt-2.5 pt-2 border-t border-emerald-100 text-[11px] text-teal-900 bg-teal-50 px-2.5 py-1.5 rounded-lg font-medium"><i class="fa-solid fa-note-sticky mr-1"></i> ${menu.note}</div>` : ''}
                     </div>
 
-                    <div class="md:col-span-2 flex md:flex-col justify-end md:justify-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-slate-100">
+                    <div class="md:col-span-2 flex md:flex-col justify-end md:justify-center gap-2 pt-2 md:pt-0 border-t md:border-t-0 border-emerald-100">
                         <button onclick="markMenuCompleted('${menu.id}')" class="flex-1 md:flex-none flex items-center justify-center gap-1.5 text-xs font-bold text-emerald-700 bg-emerald-50 hover:bg-emerald-100 px-3 py-2.5 rounded-xl cursor-pointer border border-emerald-200 transition">
                             <i class="fa-solid fa-check-double"></i> Đã Xong
                         </button>
-                        <button onclick="editMenu('${menu.id}')" class="flex-1 md:flex-none flex items-center justify-center gap-1.5 text-xs font-bold text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-2.5 rounded-xl cursor-pointer border border-blue-200 transition">
+                        <button onclick="editMenu('${menu.id}')" class="flex-1 md:flex-none flex items-center justify-center gap-1.5 text-xs font-bold text-sky-700 bg-sky-50 hover:bg-sky-100 px-3 py-2.5 rounded-xl cursor-pointer border border-sky-200 transition">
                             <i class="fa-solid fa-pen"></i> Sửa
                         </button>
                         <button onclick="removeMenu('${menu.id}')" class="flex-1 md:flex-none flex items-center justify-center gap-1.5 text-xs font-bold text-rose-700 bg-rose-50 hover:bg-rose-100 px-3 py-2.5 rounded-xl cursor-pointer border border-rose-200 transition">
@@ -1853,7 +1847,7 @@
             const menu = menusList.find(m => String(m.id) === String(id));
             if (!menu) return;
             currentEditingMenuId = menu.id;
-            document.getElementById("menu-form-title").innerHTML = `<span class="w-7 h-7 rounded-lg bg-blue-100 text-blue-600 flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></span> ĐANG SỬA THÔNG TIN TIỆC`;
+            document.getElementById("menu-form-title").innerHTML = `<span class="w-7 h-7 rounded-lg bg-sky-100 text-sky-700 flex items-center justify-center"><i class="fa-solid fa-pen text-xs"></i></span> ĐANG SỬA THÔNG TIN TIỆC`;
             document.getElementById("menu-customer").value = menu.customer || "";
             document.getElementById("menu-phone").value = menu.phone || "";
             document.getElementById("menu-address").value = menu.address || "";
@@ -1907,7 +1901,7 @@
 
         function resetMenuForm() {
             currentEditingMenuId = null;
-            document.getElementById("menu-form-title").innerHTML = `<span class="w-7 h-7 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center"><i class="fa-solid fa-calendar-plus text-xs"></i></span> LÊN THỰC ĐƠN MỚI`;
+            document.getElementById("menu-form-title").innerHTML = `<span class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-calendar-plus text-xs"></i></span> LÊN THỰC ĐƠN MỚI`;
             document.getElementById("menu-customer").value = "";
             document.getElementById("menu-phone").value = "";
             document.getElementById("menu-address").value = "";
@@ -1928,11 +1922,12 @@
             today.setHours(0, 0, 0, 0);
             let countNearParties = 0;
 
-            const activeMenus = menusList.filter(m => m.status !== 'completed');
+            const activeMenus = getActiveUpcomingMenus();
             activeMenus.forEach(m => {
-                const partyDate = new Date(m.date);
+                const parts = String(m.date).split('-');
+                const partyDate = new Date(parseInt(parts[0], 10), parseInt(parts[1], 10) - 1, parseInt(parts[2], 10));
                 partyDate.setHours(0, 0, 0, 0);
-                const dayDiff = Math.ceil((partyDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
+                const dayDiff = Math.round((partyDate.getTime() - today.getTime()) / (1000 * 3600 * 24));
                 if (dayDiff >= 0 && dayDiff <= 5) countNearParties++;
             });
 
@@ -1942,7 +1937,6 @@
             } else {
                 alertBox.classList.add("hidden");
             }
-            // KHÔNG gửi Telegram định kỳ ở đây theo đúng yêu cầu
         }
 
         // ==========================================
@@ -1952,15 +1946,15 @@
             const tbody = document.getElementById("calc-parties-table-body");
             tbody.innerHTML = "";
 
-            const activeMenus = menusList.filter(m => m.status !== 'completed');
+            const activeMenus = getActiveUpcomingMenus();
             if (activeMenus.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-slate-400 italic">Không có dữ liệu thực đơn tiệc chờ.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="3" class="p-8 text-center text-slate-400 italic">Không có tiệc nào từ hôm nay trở về sau.</td></tr>`;
                 return;
             }
 
             activeMenus.forEach(menu => {
                 const tr = document.createElement("tr");
-                tr.className = "hover:bg-amber-50/30 transition";
+                tr.className = "hover:bg-emerald-50/40 transition";
                 const computedLunar = getLunarDateString(menu.date);
 
                 let dishListItems = "";
@@ -1968,29 +1962,29 @@
                     menu.dishIds.forEach(id => {
                         const dish = dishesList.find(d => String(d.id) === String(id));
                         if (dish) {
-                            dishListItems += `<div class="text-[11px] text-slate-700 font-medium py-0.5 flex items-start gap-1.5"><span class="text-amber-500 font-black">•</span><span>${dish.name}</span></div>`;
+                            dishListItems += `<div class="text-[11px] text-slate-700 font-medium py-0.5 flex items-start gap-1.5"><span class="text-emerald-600 font-black">•</span><span>${dish.name}</span></div>`;
                         }
                     });
                 }
 
                 const dishListDisplay = dishListItems
-                    ? `<div class="mt-1.5 border-t border-slate-200/70 pt-1.5">${dishListItems}</div>`
+                    ? `<div class="mt-1.5 border-t border-emerald-100 pt-1.5">${dishListItems}</div>`
                     : '<div class="italic text-slate-400 mt-1.5 text-[11px]">Chưa chọn món</div>';
 
                 tr.innerHTML = `
                     <td class="p-3.5 text-center align-top pt-4">
-                        <input type="checkbox" value="${menu.id}" class="calc-party-checkbox w-4 h-4 accent-amber-600 cursor-pointer">
+                        <input type="checkbox" value="${menu.id}" class="calc-party-checkbox w-4 h-4 accent-emerald-700 cursor-pointer">
                     </td>
                     <td class="p-3.5">
-                        <div class="font-extrabold text-sm text-slate-900">${menu.customer} <span class="text-[11px] font-medium text-slate-400 ml-1">(${menu.phone || 'Trống'})</span></div>
+                        <div class="font-extrabold text-sm text-emerald-950">${menu.customer} <span class="text-[11px] font-medium text-slate-400 ml-1">(${menu.phone || 'Trống'})</span></div>
                         <div class="text-[11px] text-slate-600 font-bold mt-1 flex flex-wrap items-center gap-2">
-                            <span class="text-blue-600"><i class="fa-solid fa-clock"></i> ${menu.timeparty || '--:--'}</span>
-                            <span class="text-orange-600"><i class="fa-solid fa-calendar-day"></i> ${menu.date}</span>
-                            <span class="text-purple-700"><i class="fa-solid fa-moon"></i> ${computedLunar} Âm</span>
-                            <span class="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-md uppercase text-[10px]">${menu.type}</span>
+                            <span class="text-sky-700"><i class="fa-solid fa-clock"></i> ${menu.timeparty || '--:--'}</span>
+                            <span class="text-emerald-700"><i class="fa-solid fa-calendar-day"></i> ${menu.date}</span>
+                            <span class="text-teal-800"><i class="fa-solid fa-moon"></i> ${computedLunar} Âm</span>
+                            <span class="bg-emerald-100 text-emerald-800 px-2 py-0.5 rounded-md uppercase text-[10px]">${menu.type}</span>
                         </div>
-                        <div class="mt-2 bg-slate-50 border border-slate-200/80 rounded-xl overflow-hidden">
-                            <div class="font-bold text-[11px] text-amber-800 flex justify-between items-center cursor-pointer px-3 py-2 hover:bg-amber-50 transition select-none"
+                        <div class="mt-2 bg-emerald-50/40 border border-emerald-200/70 rounded-xl overflow-hidden">
+                            <div class="font-bold text-[11px] text-emerald-900 flex justify-between items-center cursor-pointer px-3 py-2 hover:bg-emerald-50 transition select-none"
                                  onclick="this.nextElementSibling.classList.toggle('hidden'); this.querySelector('.fa-chevron-down').classList.toggle('rotate-180');">
                                 <span><i class="fa-solid fa-utensils mr-1.5"></i> Xem thực đơn chi tiết</span>
                                 <i class="fa-solid fa-chevron-down transition-transform duration-200"></i>
@@ -1999,7 +1993,7 @@
                         </div>
                     </td>
                     <td class="p-3.5 text-center align-top pt-3">
-                        <input type="number" min="0" value="${menu.tables !== undefined ? menu.tables : 0}" id="tables-for-menu-${menu.id}" class="w-20 bg-white border border-slate-300 rounded-xl text-center font-extrabold text-sm text-amber-700 py-1.5 focus:border-amber-500 outline-none">
+                        <input type="number" min="0" value="${menu.tables !== undefined ? menu.tables : 0}" id="tables-for-menu-${menu.id}" class="w-20 bg-white border border-emerald-300 rounded-xl text-center font-extrabold text-sm text-emerald-800 py-1.5 focus:border-emerald-600 outline-none">
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -2087,7 +2081,7 @@
                 const catData = masterData[cat];
                 if (catData && Object.keys(catData).length > 0) {
                     const catBlock = document.createElement("div");
-                    catBlock.className = "bg-slate-50 border border-slate-200 rounded-2xl p-4";
+                    catBlock.className = "bg-emerald-50/40 border border-emerald-200/80 rounded-2xl p-4";
                     let listItemsHtml = "";
                     for (let k in catData) {
                         let item = catData[k];
@@ -2098,15 +2092,15 @@
                             displayUnit = "kg";
                         }
                         listItemsHtml += `
-                            <div class="flex justify-between items-center py-2 border-b border-slate-200/60 last:border-0">
+                            <div class="flex justify-between items-center py-2 border-b border-emerald-100 last:border-0">
                                 <span class="font-bold text-slate-800 text-xs">${item.name}</span>
-                                <span class="bg-white border border-slate-200 px-2.5 py-0.5 rounded-lg font-extrabold text-amber-700 text-xs">${formattedWeight} ${displayUnit}</span>
+                                <span class="bg-white border border-emerald-200 px-2.5 py-0.5 rounded-lg font-extrabold text-emerald-800 text-xs">${formattedWeight} ${displayUnit}</span>
                             </div>
                         `;
                     }
                     catBlock.innerHTML = `
-                        <h4 class="text-xs font-extrabold uppercase tracking-wider text-slate-800 mb-2.5 pb-2 border-b border-slate-200 flex items-center gap-1.5">
-                            <span class="w-2 h-2 rounded-full bg-amber-500"></span> Quầy: <span class="capitalize text-amber-700">${cat}</span>
+                        <h4 class="text-xs font-extrabold uppercase tracking-wider text-emerald-950 mb-2.5 pb-2 border-b border-emerald-200/80 flex items-center gap-1.5">
+                            <span class="w-2 h-2 rounded-full bg-emerald-600"></span> Quầy: <span class="capitalize text-emerald-700">${cat}</span>
                         </h4>
                         <div>${listItemsHtml}</div>
                     `;
@@ -2148,7 +2142,7 @@
         }
 
         // ==========================================
-        // TAB 4: ĐỒNG BỘ & KIỂM TRA GIÁ MÓN
+        // TAB 4: ĐỒNG BỘ & KIỂM TRA GIÁ MÓN (CÓ DẤU PHÂN CÁCH)
         // ==========================================
         let syncMissingDishes = [];
         let syncMatchedDishes = [];
@@ -2227,8 +2221,11 @@
                         missingContainer.innerHTML += `
                             <div class="bg-white p-3 rounded-xl border border-rose-200/80 flex flex-col gap-2 mb-2 shadow-sm">
                                 <div class="font-bold text-xs text-slate-800">${item.name}</div>
-                                <div class="flex gap-2">
-                                    <input type="number" id="input-price-${item.dishId}" placeholder="Nhập giá (VNĐ)..." class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold text-rose-600 focus:border-rose-500 outline-none">
+                                <div class="flex gap-2 items-center">
+                                    <div class="relative flex-1">
+                                        <input type="text" inputmode="numeric" id="input-price-${item.dishId}" oninput="handlePriceInputFormat(this)" placeholder="VD: 250.000" class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-3 pr-10 py-1.5 text-xs font-extrabold text-rose-600 focus:border-rose-500 outline-none">
+                                        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-slate-400">đ</span>
+                                    </div>
                                     <button onclick="saveDishPrice('${safeName}', '${item.dishId}')" class="bg-rose-500 hover:bg-rose-600 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition shrink-0">
                                         <i class="fa-solid fa-floppy-disk"></i> Lưu
                                     </button>
@@ -2248,11 +2245,14 @@
                     matchedContainer.innerHTML += `<div class="text-[10px] font-extrabold text-emerald-800 uppercase tracking-wider mb-1.5 mt-3 pb-1 border-b border-emerald-200/70">${cat}</div>`;
                     grouped[cat].forEach(item => {
                         matchedContainer.innerHTML += `
-                            <div class="bg-white p-3 rounded-xl border border-slate-200 flex flex-col gap-2 mb-2 shadow-sm">
-                                <div class="font-bold text-xs text-slate-800">${item.name}</div>
-                                <div class="flex gap-2">
-                                    <input type="number" id="update-price-${item.dishId}" value="${item.price}" class="flex-1 bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold text-emerald-700 focus:border-emerald-500 outline-none">
-                                    <button onclick="updateDishPrice('${item.priceId}', '${item.dishId}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition shrink-0">
+                            <div class="bg-white p-3 rounded-xl border border-emerald-200/80 flex flex-col gap-2 mb-2 shadow-sm">
+                                <div class="font-bold text-xs text-emerald-950">${item.name}</div>
+                                <div class="flex gap-2 items-center">
+                                    <div class="relative flex-1">
+                                        <input type="text" inputmode="numeric" id="update-price-${item.dishId}" value="${formatVND(item.price)}" oninput="handlePriceInputFormat(this)" class="w-full bg-emerald-50/40 border border-emerald-200 rounded-lg pl-3 pr-10 py-1.5 text-xs font-extrabold text-emerald-800 focus:border-emerald-600 outline-none">
+                                        <span class="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-emerald-600">đ</span>
+                                    </div>
+                                    <button onclick="updateDishPrice('${item.priceId}', '${item.dishId}')" class="bg-emerald-700 hover:bg-emerald-800 text-white px-3.5 py-1.5 rounded-lg text-xs font-bold cursor-pointer transition shrink-0">
                                         <i class="fa-solid fa-check"></i> Lưu
                                     </button>
                                 </div>
@@ -2265,20 +2265,20 @@
 
         async function saveDishPrice(dishName, dishId) {
             let inputEl = document.getElementById(`input-price-${dishId}`);
-            let priceVal = parseFloat(inputEl.value);
+            let priceVal = parseVND(inputEl.value);
             if (!priceVal || priceVal <= 0) {
                 showToast("Vui lòng nhập số tiền hợp lệ!", "warning");
                 return;
             }
             inputEl.disabled = true;
-            let btn = inputEl.nextElementSibling;
+            let btn = inputEl.parentElement.nextElementSibling;
             let originalHtml = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             try {
                 let finalName = dishName.replace(/&#39;/g, "'");
                 let { error } = await _supabase.from('danh_muc_gia').insert([{ key: finalName, value: priceVal, unit: 'món' }]);
                 if (error) throw error;
-                showToast(`Đã lưu giá cho món "${finalName}"!`, "success");
+                showToast(`Đã lưu giá ${formatVND(priceVal)}đ cho món "${finalName}"!`, "success");
                 setTimeout(() => loadSyncPriceData(), 500);
             } catch (err) {
                 showToast("Lỗi khi lưu giá: " + err.message, "error");
@@ -2289,19 +2289,19 @@
 
         async function updateDishPrice(priceId, dishId) {
             let inputEl = document.getElementById(`update-price-${dishId}`);
-            let priceVal = parseFloat(inputEl.value);
+            let priceVal = parseVND(inputEl.value);
             if (!priceVal || priceVal <= 0) {
                 showToast("Vui lòng nhập số tiền hợp lệ!", "warning");
                 return;
             }
             inputEl.disabled = true;
-            let btn = inputEl.nextElementSibling;
+            let btn = inputEl.parentElement.nextElementSibling;
             let originalHtml = btn.innerHTML;
             btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
             try {
                 let { error } = await _supabase.from('danh_muc_gia').update({ value: priceVal }).eq('id', priceId);
                 if (error) throw error;
-                showToast("Đã cập nhật giá món!", "success");
+                showToast(`Đã cập nhật giá thành ${formatVND(priceVal)}đ!`, "success");
                 setTimeout(() => loadSyncPriceData(), 500);
             } catch (err) {
                 showToast("Lỗi cập nhật giá: " + err.message, "error");
