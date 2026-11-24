@@ -315,6 +315,7 @@
                                     <option value="vịt">Vịt (Quầy Thịt)</option>
                                     <option value="heo">Heo (Quầy Thịt)</option>
                                     <option value="dê">Dê (Quầy Thịt)</option>
+                                    <option value="thịt">Thịt (Quầy Thịt)</option>
                                     <option value="trứng">Trứng (Quầy Thịt)</option>
                                     <option value="lươn">Lươn (Quầy Thịt)</option>
                                     <option value="ếch">Ếch (Quầy Thịt)</option>
@@ -325,6 +326,7 @@
                                     <option value="mực">Mực (Thủy Hải Sản)</option>
                                     <option value="ốc">Ốc (Thủy Hải Sản)</option>
                                     <option value="rau củ quả">Rau Củ Quả (Quầy Rau Củ)</option>
+                                    <option value="rau">Rau (Quầy Rau Củ)</option>
                                     <option value="nấm">Nấm (Quầy Rau Củ)</option>
                                     <option value="đậu hũ">Đậu hũ / Đồ chay (Quầy Rau Củ)</option>
                                     <option value="gia vị">Gia vị / Hành tỏi ớt (Hành Tỏi Ớt)</option>
@@ -332,6 +334,7 @@
                                     <option value="gạo nếp">Gạo / Nếp (Đồ Khô &amp; Bún Mì)</option>
                                     <option value="bún mì">Bún / Mì / Miến (Đồ Khô &amp; Bún Mì)</option>
                                     <option value="đồ khô">Đồ khô (Đồ Khô &amp; Bún Mì)</option>
+                                    <option value="thuốc bắc">Thuốc bắc (Đồ Khô &amp; Bún Mì)</option>
                                     <option value="nguyên liệu">Nguyên Liệu (Đồ Khô &amp; Bún Mì)</option>
                                     <option value="trái cây">Trái cây / Tráng miệng (Tráng Miệng)</option>
                                     <option value="khác">Khác...</option>
@@ -355,7 +358,7 @@
                                 <span class="w-8 h-8 rounded-xl bg-teal-100 text-teal-700 flex items-center justify-center"><i class="fa-solid fa-file-excel text-base"></i></span>
                                 <div>
                                     <h3 class="text-xs font-extrabold text-emerald-950 uppercase">Nhập Món Từ File Excel</h3>
-                                    <p class="text-[11px] text-slate-500">Tải mẫu, xem trước &amp; nhập hàng loạt</p>
+                                    <p class="text-[11px] text-slate-500">Tự nhận cột &amp; tự phân loại danh mục</p>
                                 </div>
                             </div>
                             <i id="excel-chevron" class="fa-solid fa-chevron-down text-emerald-600 text-xs transition-transform duration-200 rotate-180"></i>
@@ -370,8 +373,7 @@
                                     </button>
                                 </div>
                                 <p class="text-[10px] text-teal-900/90 leading-relaxed">
-                                    Cột hỗ trợ: <b>TenMon, DanhMuc, TenNguyenLieu, SoLuong, DonVi, Loai, HinhAnh</b>.
-                                    <br><i>Mẹo:</i> Các dòng nguyên liệu tiếp theo của cùng 1 món có thể <b>để trống cột TenMon</b>.
+                                    Hỗ trợ linh hoạt tên cột có dấu/không dấu. Nếu thiếu cột <b>DanhMuc</b>, hệ thống tự phân loại theo tên món ăn.
                                 </p>
                             </div>
 
@@ -397,9 +399,9 @@
                                     <label class="block text-[11px] font-bold text-slate-600">3. Chọn chế độ nhập lên đám mây:</label>
                                     <select id="excel-import-mode" class="w-full bg-white border border-emerald-300 rounded-xl px-2.5 py-2 text-xs font-bold text-slate-700 outline-none focus:border-emerald-600">
                                         <option value="smart">Thêm món mới + Cập nhật gộp NL món cũ (Khuyên dùng)</option>
+                                        <option value="overwrite">Thêm mới + Ghi đè toàn bộ NL &amp; Danh mục món cũ</option>
                                         <option value="new">Chỉ thêm các món mới (Bỏ qua món đã có)</option>
                                         <option value="update_merge">Chỉ gộp thêm nguyên liệu vào món cũ</option>
-                                        <option value="overwrite">Thêm mới + Ghi đè toàn bộ NL món cũ</option>
                                     </select>
                                     <button id="btn-confirm-excel-import" onclick="executeExcelImport()" class="w-full bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs py-2.5 rounded-xl shadow-sm transition cursor-pointer flex items-center justify-center gap-1.5">
                                         <i class="fa-solid fa-upload"></i> Xác Nhận Nhập Danh Sách
@@ -555,7 +557,7 @@
             </div>
         </div>
 
-        <!-- ==================== TAB 3: TÍNH VẬT TƯ ĐI CHỢ (6 QUẦY + HAO HỤT + LÀM TRÒN + ZALO) ==================== -->
+        <!-- ==================== TAB 3: TÍNH VẬT TƯ ĐI CHỢ ==================== -->
         <div id="tab-calc" class="tab-content space-y-6">
             <div class="app-card p-5 space-y-4 no-print">
                 <div class="flex flex-wrap justify-between items-center gap-2 border-b border-emerald-100 pb-3">
@@ -568,7 +570,6 @@
                     </div>
                 </div>
 
-                <!-- Thanh bù hao hụt sơ chế -->
                 <div class="bg-emerald-50/60 border border-emerald-200/80 rounded-2xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div class="space-y-1">
                         <div class="flex items-center gap-2">
@@ -603,7 +604,6 @@
                 </button>
             </div>
 
-            <!-- KẾT QUẢ BẢNG ĐI CHỢ 6 QUẦY -->
             <div id="calc-result-box" class="hidden app-card p-4 sm:p-6 space-y-4">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-emerald-100">
                     <div>
@@ -625,7 +625,6 @@
                     </div>
                 </div>
 
-                <!-- Thanh tiến độ checklist đi chợ -->
                 <div class="bg-emerald-50/70 p-3 rounded-xl border border-emerald-200/80 flex flex-wrap items-center justify-between gap-2 text-xs no-print">
                     <div class="flex items-center gap-2">
                         <i class="fa-solid fa-list-check text-emerald-700"></i>
@@ -639,7 +638,6 @@
                     </div>
                 </div>
 
-                <!-- Danh sách 6 quầy -->
                 <div id="calc-ingredients-output" class="space-y-4"></div>
             </div>
         </div>
@@ -732,7 +730,6 @@
         const TELEGRAM_TOKEN = '8580811533:AAE1IMKPv3QG3TD2fLK2dBp-yYGt29phNZ8';
         const TELEGRAM_CHAT_IDS = ['-5197568749'];
 
-        // 6 QUẦY CHỢ THỰC TẾ
         const MARKET_GROUPS = {
             thit: { key: 'thit', name: 'Quầy Thịt', icon: '🥩' },
             haisan: { key: 'haisan', name: 'Quầy Thủy Hải Sản', icon: '🦐' },
@@ -750,7 +747,6 @@
         let selectedDishIdsInMenuForm = [];
         let parsedExcelDishes = [];
 
-        // Trạng thái tính đi chợ 6 quầy
         let calcWastePercent = 0;
         let globalMarketResult = null;
         let globalSelectedPartiesMeta = [];
@@ -1096,6 +1092,7 @@
                 "gà": "bg-amber-50 text-amber-800 border-amber-200",
                 "vịt": "bg-lime-50 text-lime-800 border-lime-200",
                 "heo": "bg-pink-50 text-pink-700 border-pink-200",
+                "thịt": "bg-rose-50 text-rose-700 border-rose-200",
                 "dê": "bg-stone-100 text-stone-700 border-stone-200",
                 "cá": "bg-cyan-50 text-cyan-800 border-cyan-200",
                 "tôm": "bg-orange-50 text-orange-700 border-orange-200",
@@ -1109,10 +1106,12 @@
                 "nấm": "bg-zinc-100 text-zinc-700 border-zinc-200",
                 "đậu hũ": "bg-orange-50 text-orange-700 border-orange-200",
                 "rau củ quả": "bg-emerald-50 text-emerald-800 border-emerald-200",
+                "rau": "bg-emerald-50 text-emerald-800 border-emerald-200",
                 "trái cây": "bg-violet-50 text-violet-700 border-violet-200",
                 "gạo nếp": "bg-slate-100 text-slate-700 border-slate-200",
                 "bún mì": "bg-yellow-50 text-yellow-800 border-yellow-200",
                 "đồ khô": "bg-stone-50 text-stone-700 border-stone-200",
+                "thuốc bắc": "bg-amber-50 text-amber-900 border-amber-300",
                 "nguyên liệu": "bg-purple-50 text-purple-700 border-purple-200",
                 "gia vị": "bg-slate-100 text-slate-700 border-slate-200",
                 "nước chấm": "bg-sky-50 text-sky-800 border-sky-200",
@@ -1380,7 +1379,7 @@
         }
 
         // ==========================================
-        // NHẬP MÓN TỪ EXCEL
+        // NHẬP MÓN TỪ EXCEL (TỰ NHẬN CỘT + TỰ ĐOÁN DANH MỤC)
         // ==========================================
         function downloadExcelTemplate() {
             const sampleRows = [
@@ -1406,10 +1405,41 @@
         }
 
         function getCellByAliases(rowObj, aliases) {
-            for (const key of Object.keys(rowObj)) {
-                if (aliases.includes(normalizeColKey(key))) return rowObj[key];
+            const keys = Object.keys(rowObj);
+            // Ưu tiên khớp chính xác
+            for (const key of keys) {
+                const norm = normalizeColKey(key);
+                if (aliases.includes(norm)) return rowObj[key];
+            }
+            // Dự phòng khớp chứa từ khóa (VD: "Số lượng (Định lượng)" -> "soluongdinhluong" chứa "soluong")
+            for (const key of keys) {
+                const norm = normalizeColKey(key);
+                if (aliases.some(alias => alias.length >= 4 && norm.includes(alias))) {
+                    return rowObj[key];
+                }
             }
             return "";
+        }
+
+        function guessCategoryFromDishName(dishName) {
+            const n = String(dishName || "").toLowerCase().trim();
+            if (!n) return "Chưa có danh mục";
+
+            // Ưu tiên phân loại theo nhóm món chính xác nhất
+            if (n.includes("lẩu")) return "Món Lẩu";
+            if (n.includes("soup") || n.includes("súp")) return "Món Súp";
+            if (n.includes("gỏi") || n.includes("nộm")) return "Món Gỏi";
+            if (n.includes("tráng miệng") || n.includes("chè ") || n.includes("rau câu") || n.includes("trái cây") || n.includes("flan") || n.includes("yaourt")) return "Tráng Miệng";
+            if (n.includes("đồ nguội") || n.includes("khai vị") || n.includes("chả giò") || n.includes("nem nướng")) return "Đồ Nguội";
+            if (/^(cơm|xôi|mì |miến )/.test(n)) return "Món Cơm";
+            if (n.includes("bò") || n.includes("bê ")) return "Món Bò";
+            if (n.includes("gà")) return "Món Gà";
+            if (n.includes("heo") || n.includes("lợn") || n.includes("sườn") || n.includes("vịt")) return "Heo và Vịt";
+            if (n.includes("cá ")) return "Món Cá";
+            if (n.includes("tôm") || n.includes("mực") || n.includes("cua") || n.includes("ghẹ") || n.includes("hải sản")) return "Món Tôm và Mực";
+            if (n.includes("cơm") || n.includes("xôi")) return "Món Cơm";
+
+            return "Chưa có danh mục";
         }
 
         function previewExcelFile(event) {
@@ -1441,9 +1471,9 @@
                         let rawCat = String(getCellByAliases(row, ['danhmuc', 'loaimon', 'nhommon', 'category'])).trim();
                         let rawImg = String(getCellByAliases(row, ['hinhanh', 'linkanh', 'anh', 'image', 'imageurl'])).trim();
                         let rawIngName = String(getCellByAliases(row, ['tennguyenlieu', 'nguyenlieu', 'tennl', 'ingredient'])).trim();
-                        let rawWeight = getCellByAliases(row, ['soluong', 'khoiluong', 'dinhluong', 'sl', 'weight']);
-                        let rawUnit = String(getCellByAliases(row, ['donvi', 'dvt', 'donvitinh', 'unit'])).trim();
-                        let rawType = String(getCellByAliases(row, ['loai', 'nhomnguyenlieu', 'loainl', 'quay', 'type'])).trim();
+                        let rawWeight = getCellByAliases(row, ['soluongdinhluong', 'soluong', 'khoiluong', 'dinhluong', 'sl', 'weight']);
+                        let rawUnit = String(getCellByAliases(row, ['donvitinh', 'donvi', 'dvt', 'unit'])).trim();
+                        let rawType = String(getCellByAliases(row, ['phanloainguyenlieu', 'nhomnguyenlieu', 'loainguyenlieu', 'loainl', 'loai', 'phanloai', 'quay', 'type'])).trim();
 
                         if (!rawDishName && rawIngName && lastDishName) {
                             rawDishName = lastDishName;
@@ -1460,9 +1490,13 @@
                         const keyLower = rawDishName.toLowerCase();
                         if (!groupedMap.has(keyLower)) {
                             const existing = dishesList.find(d => (d.name || "").trim().toLowerCase() === keyLower);
+                            const existingCat = (existing?.category && existing.category !== "Chưa có danh mục" && existing.category !== "Chưa phân loại") ? existing.category : "";
+                            const finalCategory = rawCat || existingCat || guessCategoryFromDishName(rawDishName);
+
                             groupedMap.set(keyLower, {
                                 name: rawDishName,
-                                category: rawCat || (existing?.category) || "Chưa có danh mục",
+                                category: finalCategory,
+                                autoCategorized: !rawCat && !existingCat,
                                 image_url: rawImg || (existing?.image_url) || null,
                                 ingredients: [],
                                 existingDish: existing || null
@@ -1470,7 +1504,10 @@
                         }
 
                         const entry = groupedMap.get(keyLower);
-                        if (rawCat && entry.category === "Chưa có danh mục") entry.category = rawCat;
+                        if (rawCat) {
+                            entry.category = rawCat;
+                            entry.autoCategorized = false;
+                        }
                         if (rawImg && !entry.image_url) entry.image_url = rawImg;
 
                         if (rawIngName) {
@@ -1486,7 +1523,7 @@
 
                     parsedExcelDishes = Array.from(groupedMap.values());
                     if (parsedExcelDishes.length === 0) {
-                        showToast("Không đọc được món nào! Kiểm tra lại cột TenMon.", "error");
+                        showToast("Không đọc được món nào! Kiểm tra lại cột Tên món.", "error");
                         clearExcelPreview();
                         return;
                     }
@@ -1519,7 +1556,9 @@
                 <div class="bg-white border border-emerald-200/80 rounded-xl p-2.5 flex items-center justify-between gap-2 text-xs">
                     <div class="min-w-0">
                         <div class="font-extrabold text-emerald-950 truncate">${item.name}</div>
-                        <div class="text-[10px] text-slate-500">${item.category} • ${item.ingredients.length} nguyên liệu</div>
+                        <div class="text-[10px] text-slate-500">
+                            <span class="font-bold text-emerald-700">${item.category}</span>${item.autoCategorized ? ' (tự phân loại)' : ''} • ${item.ingredients.length} nguyên liệu
+                        </div>
                     </div>
                     ${item.existingDish
                         ? `<span class="shrink-0 text-[10px] font-bold bg-sky-50 text-sky-700 border border-sky-200 px-2 py-0.5 rounded-md">Đã có</span>`
@@ -1990,14 +2029,13 @@
             const t = String(rawType || '').toLowerCase().trim();
             const n = String(rawName || '').toLowerCase().trim();
 
-            if (['thit', 'bò', 'gà', 'vịt', 'heo', 'dê', 'trứng', 'ếch', 'lươn'].includes(t)) return 'thit';
-            if (['haisan', 'cá', 'tôm', 'cua', 'ghẹ', 'mực', 'ốc'].includes(t)) return 'haisan';
-            if (['raucu', 'rau củ quả', 'nấm', 'đậu hũ'].includes(t)) return 'raucu';
+            if (['thit', 'thịt', 'bò', 'gà', 'vịt', 'heo', 'dê', 'trứng', 'ếch', 'lươn'].includes(t)) return 'thit';
+            if (['haisan', 'hải sản', 'cá', 'tôm', 'cua', 'ghẹ', 'mực', 'ốc'].includes(t)) return 'haisan';
+            if (['raucu', 'rau củ quả', 'rau', 'rau củ', 'nấm', 'đậu hũ'].includes(t)) return 'raucu';
             if (['giavi', 'gia vị', 'nước chấm'].includes(t)) return 'giavi';
             if (['trangmieng', 'trái cây', 'tráng miệng'].includes(t)) return 'trangmieng';
-            if (['dokho', 'gạo nếp', 'bún mì', 'đồ khô', 'nguyên liệu'].includes(t)) return 'dokho';
+            if (['dokho', 'gạo nếp', 'bún mì', 'đồ khô', 'thuốc bắc', 'nguyên liệu'].includes(t)) return 'dokho';
 
-            // Tự nhận diện dự phòng theo tên nếu loại là "khác"
             if (/(thịt|bò|gà|vịt|heo|sườn|ba rọi|trứng|chả|pa-tê|pate|giò)/.test(n)) return 'thit';
             if (/(tôm|mực|cá|cua|ghẹ|ốc|nghêu|sò|bạch tuộc|hải sản)/.test(n)) return 'haisan';
             if (/(hành|tỏi|ớt|sả|riềng|gừng|ngò|rau om|tiêu|đường|muối|nước mắm|tương|hạt nêm|bột ngọt|sa tế|chanh)/.test(n)) return 'giavi';
