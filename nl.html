@@ -290,6 +290,7 @@
                                     <select id="ing-unit" class="w-full bg-white border border-emerald-200 rounded-xl px-2.5 py-2 text-xs font-medium focus:border-emerald-600 outline-none">
                                         <option value="gam">gam</option>
                                         <option value="kg">kg</option>
+                                        <option value="viên">viên</option>
                                         <option value="cái">cái</option>
                                         <option value="chai">chai</option>
                                         <option value="bọc">bọc</option>
@@ -325,6 +326,7 @@
                                     <option value="ghẹ">Ghẹ (Thủy Hải Sản)</option>
                                     <option value="mực">Mực (Thủy Hải Sản)</option>
                                     <option value="ốc">Ốc (Thủy Hải Sản)</option>
+                                    <option value="đồ nguội">Đồ nguội / Chả / Nem (Quầy Đồ Nguội)</option>
                                     <option value="rau củ quả">Rau Củ Quả (Quầy Rau Củ)</option>
                                     <option value="rau">Rau (Quầy Rau Củ)</option>
                                     <option value="nấm">Nấm (Quầy Rau Củ)</option>
@@ -564,7 +566,7 @@
                     <div class="flex items-center gap-2.5">
                         <span class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center"><i class="fa-solid fa-basket-shopping text-sm"></i></span>
                         <div>
-                            <h3 class="text-sm font-extrabold text-emerald-950 uppercase">Gộp Đơn Đặt Tiệc Đi Chợ (6 Quầy Chợ)</h3>
+                            <h3 class="text-sm font-extrabold text-emerald-950 uppercase">Gộp Đơn Đặt Tiệc Đi Chợ (7 Quầy Chợ)</h3>
                             <p class="text-[11px] text-slate-500">Tích chọn các tiệc sắp tới, chỉnh bù hao hụt và bấm tính toán</p>
                         </div>
                     </div>
@@ -600,7 +602,7 @@
                 </div>
 
                 <button onclick="calculateIngredients()" class="w-full bg-gradient-to-r from-emerald-700 via-emerald-600 to-teal-600 hover:from-emerald-800 hover:to-teal-700 text-white font-extrabold text-sm py-3.5 rounded-2xl shadow-lg shadow-emerald-600/20 transition cursor-pointer">
-                    <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> TÍNH TOÁN &amp; GOM 6 QUẦY ĐI CHỢ
+                    <i class="fa-solid fa-wand-magic-sparkles mr-1.5"></i> TÍNH TOÁN &amp; GOM 7 QUẦY ĐI CHỢ
                 </button>
             </div>
 
@@ -608,7 +610,7 @@
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-emerald-100">
                     <div>
                         <h3 class="text-base sm:text-lg font-extrabold text-emerald-950 flex items-center gap-2">
-                            <i class="fa-solid fa-clipboard-check text-emerald-600"></i> BẢNG ĐI CHỢ GOM THEO 6 QUẦY
+                            <i class="fa-solid fa-clipboard-check text-emerald-600"></i> BẢNG ĐI CHỢ GOM THEO 7 QUẦY
                         </h3>
                         <p id="calc-summary-subtitle" class="text-xs text-slate-500 mt-0.5"></p>
                     </div>
@@ -733,6 +735,7 @@
         const MARKET_GROUPS = {
             thit: { key: 'thit', name: 'Quầy Thịt', icon: '🥩' },
             haisan: { key: 'haisan', name: 'Quầy Thủy Hải Sản', icon: '🦐' },
+            donguoi: { key: 'donguoi', name: 'Quầy Đồ Nguội', icon: '🍢' },
             raucu: { key: 'raucu', name: 'Quầy Rau Củ', icon: '🥦' },
             giavi: { key: 'giavi', name: 'Quầy Hành Tỏi Ớt & Gia Vị', icon: '🧄' },
             dokho: { key: 'dokho', name: 'Quầy Đồ Khô & Bún Mì', icon: '🍜' },
@@ -1100,6 +1103,7 @@
                 "ghẹ": "bg-red-50 text-red-700 border-red-200",
                 "mực": "bg-fuchsia-50 text-fuchsia-700 border-fuchsia-200",
                 "ốc": "bg-teal-50 text-teal-800 border-teal-200",
+                "đồ nguội": "bg-orange-50 text-orange-800 border-orange-200",
                 "lươn": "bg-amber-50 text-amber-800 border-amber-200",
                 "ếch": "bg-green-50 text-green-800 border-green-200",
                 "trứng": "bg-yellow-50 text-yellow-800 border-yellow-200",
@@ -1406,12 +1410,10 @@
 
         function getCellByAliases(rowObj, aliases) {
             const keys = Object.keys(rowObj);
-            // Ưu tiên khớp chính xác
             for (const key of keys) {
                 const norm = normalizeColKey(key);
                 if (aliases.includes(norm)) return rowObj[key];
             }
-            // Dự phòng khớp chứa từ khóa (VD: "Số lượng (Định lượng)" -> "soluongdinhluong" chứa "soluong")
             for (const key of keys) {
                 const norm = normalizeColKey(key);
                 if (aliases.some(alias => alias.length >= 4 && norm.includes(alias))) {
@@ -1425,7 +1427,6 @@
             const n = String(dishName || "").toLowerCase().trim();
             if (!n) return "Chưa có danh mục";
 
-            // Ưu tiên phân loại theo nhóm món chính xác nhất
             if (n.includes("lẩu")) return "Món Lẩu";
             if (n.includes("soup") || n.includes("súp")) return "Món Súp";
             if (n.includes("gỏi") || n.includes("nộm")) return "Món Gỏi";
@@ -2023,12 +2024,13 @@
         }
 
         // ==========================================
-        // TAB 3: TÍNH VẬT TƯ ĐI CHỢ (6 QUẦY + LÀM TRÒN + ZALO)
+        // TAB 3: TÍNH VẬT TƯ ĐI CHỢ (7 QUẦY + LÀM TRÒN + ZALO)
         // ==========================================
         function mapTypeToMarketGroup(rawType, rawName = '') {
             const t = String(rawType || '').toLowerCase().trim();
             const n = String(rawName || '').toLowerCase().trim();
 
+            if (['donguoi', 'đồ nguội', 'chả', 'nem'].includes(t)) return 'donguoi';
             if (['thit', 'thịt', 'bò', 'gà', 'vịt', 'heo', 'dê', 'trứng', 'ếch', 'lươn'].includes(t)) return 'thit';
             if (['haisan', 'hải sản', 'cá', 'tôm', 'cua', 'ghẹ', 'mực', 'ốc'].includes(t)) return 'haisan';
             if (['raucu', 'rau củ quả', 'rau', 'rau củ', 'nấm', 'đậu hũ'].includes(t)) return 'raucu';
@@ -2036,7 +2038,8 @@
             if (['trangmieng', 'trái cây', 'tráng miệng'].includes(t)) return 'trangmieng';
             if (['dokho', 'gạo nếp', 'bún mì', 'đồ khô', 'thuốc bắc', 'nguyên liệu'].includes(t)) return 'dokho';
 
-            if (/(thịt|bò|gà|vịt|heo|sườn|ba rọi|trứng|chả|pa-tê|pate|giò)/.test(n)) return 'thit';
+            if (/(chả lụa|chả giò|nem|pa-tê|pate|giò thủ|xúc xích|lạp xưởng|đồ nguội)/.test(n)) return 'donguoi';
+            if (/(thịt|bò|gà|vịt|heo|sườn|ba rọi|trứng)/.test(n)) return 'thit';
             if (/(tôm|mực|cá|cua|ghẹ|ốc|nghêu|sò|bạch tuộc|hải sản)/.test(n)) return 'haisan';
             if (/(hành|tỏi|ớt|sả|riềng|gừng|ngò|rau om|tiêu|đường|muối|nước mắm|tương|hạt nêm|bột ngọt|sa tế|chanh)/.test(n)) return 'giavi';
             if (/(rau|cải|cà chua|cà rốt|bông|nấm|xà lách|dưa leo|thơm|dứa|bắp|đậu|khoai|bí|bầu|khổ qua)/.test(n)) return 'raucu';
@@ -2192,6 +2195,7 @@
                 const groupedMap = {
                     thit: new Map(),
                     haisan: new Map(),
+                    donguoi: new Map(),
                     raucu: new Map(),
                     giavi: new Map(),
                     dokho: new Map(),
@@ -2477,7 +2481,7 @@
             const wb = XLSX.utils.book_new();
             XLSX.utils.book_append_sheet(wb, ws, "PhieuDiCho");
             XLSX.writeFile(wb, "Phieu_Di_Cho_PhiLong_Catering.xlsx");
-            showToast("Đã xuất file Excel đi chợ 6 quầy!", "success");
+            showToast("Đã xuất file Excel đi chợ!", "success");
         }
 
         // ==========================================
